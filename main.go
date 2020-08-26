@@ -53,10 +53,10 @@ func WGS84EarthRadius(lat float64) float64 {
 
 // Bounding box surrounding the point at given coordinates, assuming local
 // approximation of Earth surface as a sphere of radius given by WGS84.
-func boundingBox(lat_deg, lon_deg, halfside_km float64) (a, b, c, d float64) {
-	var lat = deg2rad(lat_deg)
-	var lon = deg2rad(lon_deg)
-	var halfSide = 1000 * halfside_km
+func boundingBox(latDeg, lonDeg, halfsideKM float64) (a, b, c, d float64) {
+	var lat = deg2rad(latDeg)
+	var lon = deg2rad(lonDeg)
+	var halfSide = 1000 * halfsideKM
 
 	// Radius of Earth at given latitude
 	var radius = WGS84EarthRadius(lat)
