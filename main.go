@@ -235,7 +235,8 @@ func main() {
 	h = loadCache("./cache")
 	fmt.Printf("history has %d\n", len(h))
 
-	for _, e := range h {
+	for idx := range h {
+		e := h[idx]
 		if e.Op == "DELETE" {
 			fmt.Printf("%s at:%s:", e.Op, e.At)
 			fmt.Printf(" TREE: key:%s: type:%s: desc:%s: by:%s: at:%s: lat:%s: lon:%s:",
