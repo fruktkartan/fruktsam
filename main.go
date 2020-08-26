@@ -37,16 +37,16 @@ func rad2deg(rad float64) float64 {
 }
 
 // Semi-axes of WGS-84 geoidal reference.
-const WGS84A = 6378137.0 // Major semiaxis [m]
-const WGS84B = 6356752.3 // Minor semiaxis [m]
+const wgs84A = 6378137.0 // Major semiaxis [m]
+const wgs84B = 6356752.3 // Minor semiaxis [m]
 
 // Earth radius at a given latitude, according to the WGS-84 ellipsoid [m].
-func WGS84EarthRadius(lat float64) float64 {
+func wgs84EarthRadius(lat float64) float64 {
 	// http://en.wikipedia.org/wiki/Earth_radius
-	var An = WGS84A * WGS84A * math.Cos(lat)
-	var Bn = WGS84B * WGS84B * math.Sin(lat)
-	var Ad = WGS84A * math.Cos(lat)
-	var Bd = WGS84B * math.Sin(lat)
+	var An = wgs84A * wgs84A * math.Cos(lat)
+	var Bn = wgs84B * wgs84B * math.Sin(lat)
+	var Ad = wgs84A * math.Cos(lat)
+	var Bd = wgs84B * math.Sin(lat)
 
 	return math.Sqrt((An*An + Bn*Bn) / (Ad*Ad + Bd*Bd))
 }
@@ -59,7 +59,7 @@ func boundingBox(latDeg, lonDeg, halfsideKM float64) (a, b, c, d float64) {
 	var halfSide = 1000 * halfsideKM
 
 	// Radius of Earth at given latitude
-	var radius = WGS84EarthRadius(lat)
+	var radius = wgs84EarthRadius(lat)
 	// Radius of the parallel at given latitude
 	var pradius = radius * math.Cos(lat)
 
@@ -101,7 +101,7 @@ type tree struct {
 }
 type history []historyEntry
 
-func (c history) Store(cachefile string) {
+func (c history) store(cachefile string) {
 	b := new(bytes.Buffer)
 	enc := gob.NewEncoder(b)
 	err := enc.Encode(c)
@@ -228,7 +228,7 @@ func main() {
 	if _, err = os.Stat("./cache"); err != nil {
 		fmt.Printf("filling cache file\n")
 		dataFromDB(&h)
-		h.Store("./cache")
+		h.store("./cache")
 	} else {
 		fmt.Printf("cache file found\n")
 	}
