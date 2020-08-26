@@ -5,9 +5,6 @@ import (
 	"encoding/gob"
 	"encoding/json"
 	"fmt"
-	"image"
-	"image/color"
-	"image/draw"
 	"io"
 	"log"
 	"math"
@@ -15,10 +12,6 @@ import (
 	"os"
 	"strings"
 	"time"
-
-	sm "github.com/flopp/go-staticmaps"
-	"github.com/fogleman/gg"
-	"github.com/golang/geo/s2"
 
 	"database/sql"
 
@@ -43,22 +36,23 @@ func rad2deg(rad float64) float64 {
 	return 180 * rad / math.Pi
 }
 
-// Semi-axes of WGS-84 geoidal reference
-const WGS84_a = 6378137.0 // Major semiaxis [m]
-const WGS84_b = 6356752.3 // Minor semiaxis [m]
+// Semi-axes of WGS-84 geoidal reference.
+const WGS84A = 6378137.0 // Major semiaxis [m]
+const WGS84B = 6356752.3 // Minor semiaxis [m]
 
-// Earth radius at a given latitude, according to the WGS-84 ellipsoid [m]
+// Earth radius at a given latitude, according to the WGS-84 ellipsoid [m].
 func WGS84EarthRadius(lat float64) float64 {
 	// http://en.wikipedia.org/wiki/Earth_radius
-	var An = WGS84_a * WGS84_a * math.Cos(lat)
-	var Bn = WGS84_b * WGS84_b * math.Sin(lat)
-	var Ad = WGS84_a * math.Cos(lat)
-	var Bd = WGS84_b * math.Sin(lat)
+	var An = WGS84A * WGS84A * math.Cos(lat)
+	var Bn = WGS84B * WGS84B * math.Sin(lat)
+	var Ad = WGS84A * math.Cos(lat)
+	var Bd = WGS84B * math.Sin(lat)
+
 	return math.Sqrt((An*An + Bn*Bn) / (Ad*Ad + Bd*Bd))
 }
 
 // Bounding box surrounding the point at given coordinates, assuming local
-// approximation of Earth surface as a sphere of radius given by WGS84
+// approximation of Earth surface as a sphere of radius given by WGS84.
 func boundingBox(lat_deg, lon_deg, halfside_km float64) (a, b, c, d float64) {
 	var lat = deg2rad(lat_deg)
 	var lon = deg2rad(lon_deg)
@@ -77,7 +71,7 @@ func boundingBox(lat_deg, lon_deg, halfside_km float64) (a, b, c, d float64) {
 	return rad2deg(latMin), rad2deg(lonMin), rad2deg(latMax), rad2deg(lonMax)
 }
 
-func getJson(url string, trees *[]Foo) error {
+func getJSON(url string, trees *[]Foo) error {
 	var c = &http.Client{Timeout: 10 * time.Second}
 	r, err := c.Get(url)
 	if err != nil {
@@ -94,11 +88,12 @@ func getJson(url string, trees *[]Foo) error {
 			log.Fatal(err)
 		}
 	}
+
 	return nil
 }
 
 type historyEntry struct {
-	Id, At, Op string
+	ID, At, Op string
 	Old, New   tree
 }
 type tree struct {
@@ -126,7 +121,7 @@ func (c history) Store(cachefile string) {
 	}
 }
 
-func LoadCache(cachefile string) history {
+func loadCache(cachefile string) history {
 	cache := history{}
 
 	f, err := os.Open(cachefile)
@@ -134,6 +129,7 @@ func LoadCache(cachefile string) history {
 		if !os.IsNotExist(err) {
 			panic(err)
 		}
+
 		return cache
 	}
 	defer f.Close()
@@ -143,6 +139,7 @@ func LoadCache(cachefile string) history {
 	if err != nil {
 		panic(err)
 	}
+
 	return cache
 }
 
@@ -169,28 +166,28 @@ func dataFromDB(data *history) {
 		e := historyEntry{}
 		var oldKey, oldType, oldDesc, oldBy, oldAt, oldLat, oldLon sql.NullString
 		var newKey, newType, newDesc, newBy, newAt, newLat, newLon sql.NullString
-		err := rows.Scan(&e.Id, &e.At, &e.Op,
+		err := rows.Scan(&e.ID, &e.At, &e.Op,
 			&oldKey, &oldType, &oldDesc, &oldBy, &oldAt, &oldLat, &oldLon,
 			&newKey, &newType, &newDesc, &newBy, &newAt, &newLat, &newLon)
 		if err != nil {
 			log.Println(err)
 		}
 
-		e.Old.Key = strings.TrimSpace(fixupNS(oldKey))
-		e.Old.Type = strings.TrimSpace(fixupNS(oldType))
-		e.Old.Desc = fixupNS(oldDesc)
-		e.Old.By = fixupNS(oldBy)
-		e.Old.At = fixupNS(oldAt)
-		e.Old.Lat = fixupNS(oldLat)
-		e.Old.Lon = fixupNS(oldLon)
+		e.Old.Key = strings.TrimSpace(fixup(oldKey))
+		e.Old.Type = strings.TrimSpace(fixup(oldType))
+		e.Old.Desc = fixup(oldDesc)
+		e.Old.By = fixup(oldBy)
+		e.Old.At = fixup(oldAt)
+		e.Old.Lat = fixup(oldLat)
+		e.Old.Lon = fixup(oldLon)
 
-		e.New.Key = strings.TrimSpace(fixupNS(newKey))
-		e.New.Type = strings.TrimSpace(fixupNS(newType))
-		e.New.Desc = fixupNS(newDesc)
-		e.New.By = fixupNS(newBy)
-		e.New.At = fixupNS(newAt)
-		e.New.Lat = fixupNS(newLat)
-		e.New.Lon = fixupNS(newLon)
+		e.New.Key = strings.TrimSpace(fixup(newKey))
+		e.New.Type = strings.TrimSpace(fixup(newType))
+		e.New.Desc = fixup(newDesc)
+		e.New.By = fixup(newBy)
+		e.New.At = fixup(newAt)
+		e.New.Lat = fixup(newLat)
+		e.New.Lon = fixup(newLon)
 
 		*data = append(*data, e)
 	}
@@ -200,18 +197,11 @@ func dataFromDB(data *history) {
 	fmt.Println(len(*data))
 }
 
-func fixup(s string) string {
-	return s
-	// if s == "null" {
-	// 	return ""
-	// }
-	// return strings.TrimPrefix(strings.TrimSuffix(s, `"`), `"`)
-}
-
-func fixupNS(ns sql.NullString) string {
+func fixup(ns sql.NullString) string {
 	if !ns.Valid {
 		return ""
 	}
+
 	return ns.String
 }
 
@@ -221,11 +211,11 @@ func main() {
 	var err error
 
 	if err = godotenv.Load(envFile); err != nil && !os.IsNotExist(err) {
-		log.Fatal("Error loading %s file: %s", envFile, err)
+		log.Fatalf("Error loading %s file: %s", envFile, err)
 	}
 
 	var trees []Foo
-	err = getJson("https://fruktkartan-api.herokuapp.com/edits", &trees)
+	err = getJSON("https://fruktkartan-api.herokuapp.com/edits", &trees)
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -242,7 +232,7 @@ func main() {
 	} else {
 		fmt.Printf("cache file found\n")
 	}
-	h = LoadCache("./cache")
+	h = loadCache("./cache")
 	fmt.Printf("history has %d\n", len(h))
 
 	for _, e := range h {
@@ -253,49 +243,49 @@ func main() {
 			fmt.Printf(" NEW: key:%s: type:%s: desc:%s: by:%s: at:%s: lat:%s: lon:%s:",
 				e.New.Key, e.New.Type, e.New.Desc, e.New.By, e.New.At, e.New.Lat, e.New.Lon)
 			fmt.Printf("\n")
+
 			break
 		}
 	}
-	return
 
-	//////////////////////
-	t := trees[0]
+	// //
+	// t := trees[0]
 
-	ctx := sm.NewContext()
-	// TODO not gettin carto tiles, just attribution
-	// tile := sm.NewTileProviderCartoLight()
-	// ctx.SetTileProvider(tile)
-	ctx.SetSize(200, 200)
-	marker := sm.NewMarker(s2.LatLngFromDegrees(t.Lat, t.Lon), color.RGBA{0xff, 0, 0, 0xff}, 20.0)
-	marker.Label = strings.TrimSpace(t.Type)
-	marker.SetLabelColor(color.Black)
-	ctx.AddMarker(marker)
+	// ctx := sm.NewContext()
+	// // TODO not gettin carto tiles, just attribution
+	// // tile := sm.NewTileProviderCartoLight()
+	// // ctx.SetTileProvider(tile)
+	// ctx.SetSize(200, 200)
+	// marker := sm.NewMarker(s2.LatLngFromDegrees(t.Lat, t.Lon), color.RGBA{0xff, 0, 0, 0xff}, 20.0)
+	// marker.Label = strings.TrimSpace(t.Type)
+	// marker.SetLabelColor(color.Black)
+	// ctx.AddMarker(marker)
 
-	var overview, zoomin image.Image
+	// var overview, zoomin image.Image
 
-	ctx.SetZoom(10)
-	if overview, err = ctx.Render(); err != nil {
-		panic(err)
-	}
+	// ctx.SetZoom(10)
+	// if overview, err = ctx.Render(); err != nil {
+	// 	panic(err)
+	// }
 
-	ctx.SetZoom(17)
-	if zoomin, err = ctx.Render(); err != nil {
-		panic(err)
-	}
+	// ctx.SetZoom(17)
+	// if zoomin, err = ctx.Render(); err != nil {
+	// 	panic(err)
+	// }
 
-	// starting position of the second image (bottom left)
-	sp2 := image.Point{overview.Bounds().Dx(), 0}
-	// new rectangle for the second image
-	r2 := image.Rectangle{sp2, sp2.Add(zoomin.Bounds().Size())}
-	// rectangle for the big image
-	r := image.Rectangle{image.Point{0, 0}, r2.Max}
-	rgba := image.NewRGBA(r)
-	draw.Draw(rgba, overview.Bounds(), overview, image.Point{0, 0}, draw.Src)
-	draw.Draw(rgba, r2, zoomin, image.Point{0, 0}, draw.Src)
+	// // starting position of the second image (bottom left)
+	// sp2 := image.Point{overview.Bounds().Dx(), 0}
+	// // new rectangle for the second image
+	// r2 := image.Rectangle{sp2, sp2.Add(zoomin.Bounds().Size())}
+	// // rectangle for the big image
+	// r := image.Rectangle{image.Point{0, 0}, r2.Max}
+	// rgba := image.NewRGBA(r)
+	// draw.Draw(rgba, overview.Bounds(), overview, image.Point{0, 0}, draw.Src)
+	// draw.Draw(rgba, r2, zoomin, image.Point{0, 0}, draw.Src)
 
-	if err := gg.SavePNG("a.png", rgba); err != nil {
-		panic(err)
-	}
+	// if err := gg.SavePNG("a.png", rgba); err != nil {
+	// 	panic(err)
+	// }
 }
 
 //https://fruktkartan-api.herokuapp.com/edits
