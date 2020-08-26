@@ -85,7 +85,7 @@ func getJSON(url string, trees *[]Foo) error {
 		if err := dec.Decode(&trees); err == io.EOF {
 			break
 		} else if err != nil {
-			log.Fatal(err)
+			return err
 		}
 	}
 
@@ -143,10 +143,10 @@ func loadCache(cachefile string) history {
 	return cache
 }
 
-func dataFromDB(data *history) {
+func dataFromDB(data *history) error {
 	db, err := sql.Open("postgres", os.Getenv("FRUKTKARTAN_DATABASE_URI"))
 	if err != nil {
-		log.Fatal(err)
+		return err
 	}
 
 	query := `SELECT id, at, op
@@ -159,9 +159,10 @@ func dataFromDB(data *history) {
 
 	rows, err := db.Query(query)
 	if err != nil {
-		log.Fatal(err)
+		return err
 	}
 	defer rows.Close()
+
 	for rows.Next() {
 		e := historyEntry{}
 		var oldKey, oldType, oldDesc, oldBy, oldAt, oldLat, oldLon sql.NullString
@@ -170,7 +171,7 @@ func dataFromDB(data *history) {
 			&oldKey, &oldType, &oldDesc, &oldBy, &oldAt, &oldLat, &oldLon,
 			&newKey, &newType, &newDesc, &newBy, &newAt, &newLat, &newLon)
 		if err != nil {
-			log.Println(err)
+			return err
 		}
 
 		e.Old.Key = strings.TrimSpace(fixup(oldKey))
@@ -192,9 +193,11 @@ func dataFromDB(data *history) {
 		*data = append(*data, e)
 	}
 	if err := rows.Err(); err != nil {
-		log.Fatal(err)
+		return err
 	}
 	fmt.Println(len(*data))
+
+	return nil
 }
 
 func fixup(ns sql.NullString) string {
@@ -227,7 +230,9 @@ func main() {
 
 	if _, err = os.Stat("./cache"); err != nil {
 		fmt.Printf("filling cache file\n")
-		dataFromDB(&h)
+		if err = dataFromDB(&h); err != nil {
+			log.Fatal(err)
+		}
 		h.store("./cache")
 	} else {
 		fmt.Printf("cache file found\n")
