@@ -152,8 +152,15 @@ func dataFromDB(data *history) error {
 	}
 
 	query := `SELECT id, at, op
-                     , old_json->>'ssm_key' AS old_key, old_json->>'type' AS old_type, old_json->>'description' AS old_desc, old_json->>'added_by' AS old_by, old_json->>'added_at' AS old_at, ST_Y(old_point) AS old_lat, ST_X(old_point) AS old_lon
-                     , new_json->>'ssm_key' AS new_key, new_json->>'type' AS new_type, new_json->>'description' AS new_desc, new_json->>'added_by' AS new_by, new_json->>'added_at' AS new_at, ST_Y(new_point) AS new_lat, ST_X(new_point) AS new_lon
+                     , old_json->>'ssm_key' AS old_key, old_json->>'type' AS old_type
+                     , old_json->>'description' AS old_desc
+                     , old_json->>'added_by' AS old_by, old_json->>'added_at' AS old_at
+                     , ST_Y(old_point) AS old_lat, ST_X(old_point) AS old_lon
+
+                     , new_json->>'ssm_key' AS new_key, new_json->>'type' AS new_type
+                     , new_json->>'description' AS new_desc
+                     , new_json->>'added_by' AS new_by, new_json->>'added_at' AS new_at
+                     , ST_Y(new_point) AS new_lat, ST_X(new_point) AS new_lon
                 FROM history
                      , ST_GeomFromWKB(DECODE(old_json->>'point', 'hex')) AS old_point
                      , ST_GeomFromWKB(DECODE(new_json->>'point', 'hex')) AS new_point
