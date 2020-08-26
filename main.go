@@ -257,13 +257,11 @@ func main() {
 		e := h[idx]
 		if e.Op == "DELETE" {
 			fmt.Printf("%s at:%s:", e.Op, e.At)
-			fmt.Printf(" TREE: key:%s: type:%s: desc:%s: by:%s: at:%s: lat:%s: lon:%s:",
+			fmt.Printf(" TREE: key:%s: type:%s: desc:%s: by:%s: at:%s: geo:%s,%s",
 				e.Old.Key, e.Old.Type, e.Old.Desc, e.Old.By, e.Old.At, e.Old.Lat, e.Old.Lon)
-			fmt.Printf(" NEW: key:%s: type:%s: desc:%s: by:%s: at:%s: lat:%s: lon:%s:",
+			fmt.Printf(" NEW: key:%s: type:%s: desc:%s: by:%s: at:%s: geo:%s,%s",
 				e.New.Key, e.New.Type, e.New.Desc, e.New.By, e.New.At, e.New.Lat, e.New.Lon)
 			fmt.Printf("\n")
-
-			break
 		}
 	}
 
