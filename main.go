@@ -53,7 +53,7 @@ func wgs84EarthRadius(lat float64) float64 {
 
 // Bounding box surrounding the point at given coordinates, assuming local
 // approximation of Earth surface as a sphere of radius given by WGS84.
-func boundingBox(latDeg, lonDeg, halfsideKM float64) (a, b, c, d float64) {
+func boundingBox(latDeg, lonDeg, halfsideKM float64) (latMin, lonMin, latMax, lonMax float64) {
 	var lat = deg2rad(latDeg)
 	var lon = deg2rad(lonDeg)
 	var halfSide = 1000 * halfsideKM
@@ -63,12 +63,12 @@ func boundingBox(latDeg, lonDeg, halfsideKM float64) (a, b, c, d float64) {
 	// Radius of the parallel at given latitude
 	var pradius = radius * math.Cos(lat)
 
-	var latMin = lat - halfSide/radius
-	var latMax = lat + halfSide/radius
-	var lonMin = lon - halfSide/pradius
-	var lonMax = lon + halfSide/pradius
+	latMin = rad2deg(lat - halfSide/radius)
+	lonMin = rad2deg(lon - halfSide/pradius)
+	latMax = rad2deg(lat + halfSide/radius)
+	lonMax = rad2deg(lon + halfSide/pradius)
 
-	return rad2deg(latMin), rad2deg(lonMin), rad2deg(latMax), rad2deg(lonMax)
+	return
 }
 
 func getJSON(url string, trees *[]Foo) error {
