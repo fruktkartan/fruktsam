@@ -131,6 +131,7 @@ func loadCache(cachefile string) (history, error) {
 		if !os.IsNotExist(err) {
 			return nil, err
 		}
+
 		return cache, nil
 	}
 	defer f.Close()
