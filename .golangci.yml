@@ -10,6 +10,8 @@ linters:
     - gofumpt
     - gci
 
+    - noctx
+
     # TODO
     - unused
     - deadcode
