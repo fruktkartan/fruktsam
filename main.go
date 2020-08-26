@@ -101,36 +101,37 @@ type tree struct {
 }
 type history []historyEntry
 
-func (c history) store(cachefile string) {
+func (c history) store(cachefile string) error {
 	b := new(bytes.Buffer)
 	enc := gob.NewEncoder(b)
 	err := enc.Encode(c)
 	if err != nil {
-		panic(err)
+		return err
 	}
 
 	f, err := os.OpenFile(cachefile, os.O_CREATE|os.O_WRONLY, 0666)
 	if err != nil {
-		panic(err)
+		return err
 	}
 
 	defer f.Close()
 
 	if _, err = f.Write(b.Bytes()); err != nil {
-		panic(err)
+		return err
 	}
+
+	return nil
 }
 
-func loadCache(cachefile string) history {
+func loadCache(cachefile string) (history, error) {
 	cache := history{}
 
 	f, err := os.Open(cachefile)
 	if err != nil {
 		if !os.IsNotExist(err) {
-			panic(err)
+			return nil, err
 		}
-
-		return cache
+		return cache, nil
 	}
 	defer f.Close()
 
@@ -140,7 +141,7 @@ func loadCache(cachefile string) history {
 		panic(err)
 	}
 
-	return cache
+	return cache, nil
 }
 
 func dataFromDB(data *history) error {
@@ -233,11 +234,15 @@ func main() {
 		if err = dataFromDB(&h); err != nil {
 			log.Fatal(err)
 		}
-		h.store("./cache")
+		if err = h.store("./cache"); err != nil {
+			log.Fatal(err)
+		}
 	} else {
 		fmt.Printf("cache file found\n")
 	}
-	h = loadCache("./cache")
+	if h, err = loadCache("./cache"); err != nil {
+		log.Fatal(err)
+	}
 	fmt.Printf("history has %d\n", len(h))
 
 	for idx := range h {
