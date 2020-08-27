@@ -15,6 +15,7 @@ import (
 
 	"database/sql"
 
+	"github.com/jmoiron/sqlx"
 	"github.com/joho/godotenv"
 
 	_ "github.com/lib/pq"
@@ -92,13 +93,29 @@ func getJSON(url string, trees *[]Foo) error {
 	return nil
 }
 
-type historyEntry struct {
-	ID, At, Op string
-	Old, New   tree
-}
 type tree struct {
 	Key, Type, Desc, By, At, Lat, Lon string
 }
+
+type nullString struct {
+	sql.NullString
+}
+
+func (ns nullString) String() string {
+	if !ns.NullString.Valid {
+		return ""
+	}
+	return ns.NullString.String
+}
+
+type historyEntry struct {
+	ID                                                     int
+	At                                                     string
+	Op                                                     string
+	OldKey, OldType, OldDesc, OldBy, OldAt, OldLat, OldLon nullString
+	NewKey, NewType, NewDesc, NewBy, NewAt, NewLat, NewLon nullString
+}
+
 type history []historyEntry
 
 func (c history) store(cachefile string) error {
@@ -146,75 +163,37 @@ func loadCache(cachefile string) (history, error) {
 }
 
 func dataFromDB(data *history) error {
-	db, err := sql.Open("postgres", os.Getenv("FRUKTKARTAN_DATABASE_URI"))
-	if err != nil {
-		return err
-	}
-
 	query := `SELECT id, at, op
-                     , old_json->>'ssm_key' AS old_key, old_json->>'type' AS old_type
-                     , old_json->>'description' AS old_desc
-                     , old_json->>'added_by' AS old_by, old_json->>'added_at' AS old_at
-                     , ST_Y(old_point) AS old_lat, ST_X(old_point) AS old_lon
-
-                     , new_json->>'ssm_key' AS new_key, new_json->>'type' AS new_type
-                     , new_json->>'description' AS new_desc
-                     , new_json->>'added_by' AS new_by, new_json->>'added_at' AS new_at
-                     , ST_Y(new_point) AS new_lat, ST_X(new_point) AS new_lon
+                     , old_json->>'ssm_key' AS oldkey
+                     , old_json->>'type' AS oldtype
+                     , old_json->>'description' AS olddesc
+                     , old_json->>'added_by' AS oldby
+                     , old_json->>'added_at' AS oldat
+                     , ST_Y(old_point) AS oldlat
+                     , ST_X(old_point) AS oldlon
+                     , new_json->>'ssm_key' AS newkey
+                     , new_json->>'type' AS newtype
+                     , new_json->>'description' AS newdesc
+                     , new_json->>'added_by' AS newby
+                     , new_json->>'added_at' AS newat
+                     , ST_Y(new_point) AS newlat
+                     , ST_X(new_point) AS newlon
                 FROM history
                      , ST_GeomFromWKB(DECODE(old_json->>'point', 'hex')) AS old_point
                      , ST_GeomFromWKB(DECODE(new_json->>'point', 'hex')) AS new_point
                ORDER BY id`
 
-	rows, err := db.Query(query)
+	db, err := sqlx.Connect("postgres", os.Getenv("FRUKTKARTAN_DATABASE_URI"))
 	if err != nil {
 		return err
 	}
-	defer rows.Close()
 
-	for rows.Next() {
-		e := historyEntry{}
-		var oldKey, oldType, oldDesc, oldBy, oldAt, oldLat, oldLon sql.NullString
-		var newKey, newType, newDesc, newBy, newAt, newLat, newLon sql.NullString
-		err := rows.Scan(&e.ID, &e.At, &e.Op,
-			&oldKey, &oldType, &oldDesc, &oldBy, &oldAt, &oldLat, &oldLon,
-			&newKey, &newType, &newDesc, &newBy, &newAt, &newLat, &newLon)
-		if err != nil {
-			return err
-		}
-
-		e.Old.Key = strings.TrimSpace(fixup(oldKey))
-		e.Old.Type = strings.TrimSpace(fixup(oldType))
-		e.Old.Desc = fixup(oldDesc)
-		e.Old.By = fixup(oldBy)
-		e.Old.At = fixup(oldAt)
-		e.Old.Lat = fixup(oldLat)
-		e.Old.Lon = fixup(oldLon)
-
-		e.New.Key = strings.TrimSpace(fixup(newKey))
-		e.New.Type = strings.TrimSpace(fixup(newType))
-		e.New.Desc = fixup(newDesc)
-		e.New.By = fixup(newBy)
-		e.New.At = fixup(newAt)
-		e.New.Lat = fixup(newLat)
-		e.New.Lon = fixup(newLon)
-
-		*data = append(*data, e)
-	}
-	if err := rows.Err(); err != nil {
+	err = db.Select(data, query)
+	if err != nil {
 		return err
 	}
-	fmt.Println(len(*data))
 
 	return nil
-}
-
-func fixup(ns sql.NullString) string {
-	if !ns.Valid {
-		return ""
-	}
-
-	return ns.String
 }
 
 const envFile = ".env"
@@ -225,15 +204,6 @@ func main() {
 	if err = godotenv.Load(envFile); err != nil && !os.IsNotExist(err) {
 		log.Fatalf("Error loading %s file: %s", envFile, err)
 	}
-
-	var trees []Foo
-	err = getJSON("https://fruktkartan-api.herokuapp.com/edits", &trees)
-	if err != nil {
-		log.Fatal(err)
-	}
-	// fmt.Println(trees[0])
-
-	// boundingBox(trees[0].Lat, trees[0].Lon, 100)
 
 	var h history
 
@@ -257,13 +227,25 @@ func main() {
 		e := h[idx]
 		if e.Op == "DELETE" {
 			fmt.Printf("%s at:%s:", e.Op, e.At)
-			fmt.Printf(" TREE: key:%s: type:%s: desc:%s: by:%s: at:%s: geo:%s,%s",
-				e.Old.Key, e.Old.Type, e.Old.Desc, e.Old.By, e.Old.At, e.Old.Lat, e.Old.Lon)
+			fmt.Printf(" OLD: key:%s: type:%s: desc:%s: by:%s: at:%s: geo:%s,%s",
+				strings.TrimSpace(e.OldKey.String()), strings.TrimSpace(e.OldType.String()),
+				e.OldDesc, e.OldBy, e.OldAt, e.OldLat, e.OldLon)
 			fmt.Printf(" NEW: key:%s: type:%s: desc:%s: by:%s: at:%s: geo:%s,%s",
-				e.New.Key, e.New.Type, e.New.Desc, e.New.By, e.New.At, e.New.Lat, e.New.Lon)
+				strings.TrimSpace(e.NewKey.String()), strings.TrimSpace(e.NewType.String()),
+				e.NewDesc, e.NewBy, e.NewAt, e.NewLat, e.NewLon)
 			fmt.Printf("\n")
 		}
 	}
+
+	// //
+	// var trees []Foo
+	// err = getJSON("https://fruktkartan-api.herokuapp.com/edits", &trees)
+	// if err != nil {
+	// 	log.Fatal(err)
+	// }
+	// fmt.Println(trees[0])
+
+	// boundingBox(trees[0].Lat, trees[0].Lon, 100)
 
 	// //
 	// t := trees[0]
