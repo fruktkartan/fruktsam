@@ -19,14 +19,14 @@
 <body>
 
 {{ range .History }}
-{{if eq .ChangeOp "DELETE" }}
+{{ if eq .ChangeOp "DELETE" }}
 <p>
   <span class="op">Borttaget</span> <span class="type">{{ .Type }}</span> {{ .ChangeAt }}<br/>
 beskrivning: {{ .Desc }}<br/>
 redigerat: {{ .At }}
 </p>
-{{end}}
-{{end}}
+{{ end }}
+{{ end }}
 
 </body>
 </html>
