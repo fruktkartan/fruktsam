@@ -213,7 +213,7 @@ func historyFromDB(h *history) error {
                      , ST_GeomFromWKB(DECODE(new_json->>'point', 'hex')) AS new_point
                ORDER BY id DESC`
 
-	db, err := sqlx.Connect("postgres", os.Getenv("FRUKTKARTAN_DATABASE_URI"))
+	db, err := sqlx.Connect("postgres", os.Getenv("FRUKTKARTAN_DBURI"))
 	if err != nil {
 		return err
 	}
