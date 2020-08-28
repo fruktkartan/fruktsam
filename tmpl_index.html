@@ -21,7 +21,7 @@
 {{ range .History }}
 {{if eq .ChangeOp "DELETE" }}
 <p>
-  <span class="op">Borttaget</span> {{ .ChangeAt }}: <span class="type">{{ .Type }}</span><br/>
+  <span class="op">Borttaget</span> <span class="type">{{ .Type }}</span> {{ .ChangeAt }}<br/>
 beskrivning: {{ .Desc }}<br/>
 redigerat: {{ .At }}
 </p>
