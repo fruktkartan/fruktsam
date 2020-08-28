@@ -36,25 +36,25 @@ func main() {
 	}
 
 	type templateData struct {
-		H history
+		History history
 	}
 	var data templateData
 
 	if _, err = os.Stat("./cache"); err != nil {
 		fmt.Printf("filling cache file\n")
-		if err = historyFromDB(&data.H); err != nil {
+		if err = historyFromDB(&data.History); err != nil {
 			log.Fatal(err)
 		}
-		if err = data.H.store("./cache"); err != nil {
+		if err = data.History.store("./cache"); err != nil {
 			log.Fatal(err)
 		}
 	} else {
 		fmt.Printf("cache file found\n")
 	}
-	if data.H, err = loadCache("./cache"); err != nil {
+	if data.History, err = loadCache("./cache"); err != nil {
 		log.Fatal(err)
 	}
-	fmt.Printf("history entries: %d\n", len(data.H))
+	fmt.Printf("history entries: %d\n", len(data.History))
 
 	tmpl, err := template.ParseFiles("tmpl_index.html")
 	if err != nil {

@@ -17,7 +17,7 @@
 </head>
 <body>
 
-{{ range .H }}
+{{ range .History }}
 {{if eq .ChangeOp "DELETE" }}
 <p>
   <span class="op">Borttaget</span> {{ .ChangeAt }}: <span class="type">{{ .Type }}</span><br/>
