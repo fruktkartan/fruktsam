@@ -4,9 +4,9 @@ import (
 	"bytes"
 	"encoding/gob"
 	"fmt"
+	"html/template"
 	"log"
 	"os"
-	"strings"
 
 	"database/sql"
 
@@ -125,35 +125,46 @@ func main() {
 		log.Fatalf("Error loading %s file: %s", envFile, err)
 	}
 
-	var h history
+	type data struct {
+		H history
+	}
+	var d data
 
 	if _, err = os.Stat("./cache"); err != nil {
 		fmt.Printf("filling cache file\n")
-		if err = dataFromDB(&h); err != nil {
+		if err = dataFromDB(&d.H); err != nil {
 			log.Fatal(err)
 		}
-		if err = h.store("./cache"); err != nil {
+		if err = d.H.store("./cache"); err != nil {
 			log.Fatal(err)
 		}
 	} else {
 		fmt.Printf("cache file found\n")
 	}
-	if h, err = loadCache("./cache"); err != nil {
+	if d.H, err = loadCache("./cache"); err != nil {
 		log.Fatal(err)
 	}
-	fmt.Printf("history has %d\n", len(h))
+	fmt.Printf("history has %d\n", len(d.H))
 
-	for idx := range h {
-		e := h[idx]
-		if e.Op == "DELETE" {
-			fmt.Printf("%s at:%s:", e.Op, e.At)
-			fmt.Printf(" OLD: key:%s: type:%s: desc:%s: by:%s: at:%s: geo:%s,%s",
-				strings.TrimSpace(e.OldKey.String()), strings.TrimSpace(e.OldType.String()),
-				e.OldDesc, e.OldBy, e.OldAt, e.OldLat, e.OldLon)
-			fmt.Printf(" NEW: key:%s: type:%s: desc:%s: by:%s: at:%s: geo:%s,%s",
-				strings.TrimSpace(e.NewKey.String()), strings.TrimSpace(e.NewType.String()),
-				e.NewDesc, e.NewBy, e.NewAt, e.NewLat, e.NewLon)
-			fmt.Printf("\n")
-		}
+	tmpl, err := template.ParseFiles("index.html")
+	if err != nil {
+		log.Fatal(err)
 	}
+	if err = tmpl.Execute(os.Stdout, &d); err != nil {
+		log.Fatal(err)
+	}
+
+	// for idx := range h {
+	// 	e := h[idx]
+	// 	if e.Op == "DELETE" {
+	// 		fmt.Printf("%s at:%s:", e.Op, e.At)
+	// 		fmt.Printf(" OLD: key:%s: type:%s: desc:%s: by:%s: at:%s: geo:%s,%s",
+	// 			strings.TrimSpace(e.OldKey.String()), strings.TrimSpace(e.OldType.String()),
+	// 			e.OldDesc, e.OldBy, e.OldAt, e.OldLat, e.OldLon)
+	// 		fmt.Printf(" NEW: key:%s: type:%s: desc:%s: by:%s: at:%s: geo:%s,%s",
+	// 			strings.TrimSpace(e.NewKey.String()), strings.TrimSpace(e.NewType.String()),
+	// 			e.NewDesc, e.NewBy, e.NewAt, e.NewLat, e.NewLon)
+	// 		fmt.Printf("\n")
+	// 	}
+	// }
 }

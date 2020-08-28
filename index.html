@@ -1,0 +1,5 @@
+{{ range .H }}
+  {{- if eq .Op "DELETE" }}
+    DELETE at {{ .At }} of {{ .OldType }}
+  {{- end }}
+{{- end }}
