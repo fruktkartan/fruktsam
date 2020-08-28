@@ -20,16 +20,17 @@ import (
 	_ "github.com/lib/pq"
 )
 
-const envFile = ".env"
+const envfile = ".env"
 const outfile = "dist/index.html"
+const cachefile = "historycache"
 
 var loc *time.Location
 
 func main() {
 	var err error
 
-	if err = godotenv.Load(envFile); err != nil && !os.IsNotExist(err) {
-		log.Fatalf("Error loading %s file: %s", envFile, err)
+	if err = godotenv.Load(envfile); err != nil && !os.IsNotExist(err) {
+		log.Fatalf("Error loading %s file: %s", envfile, err)
 	}
 
 	if loc, err = time.LoadLocation("Europe/Stockholm"); err != nil {
@@ -41,18 +42,18 @@ func main() {
 	}
 	var data templateData
 
-	if _, err = os.Stat("./cache"); err != nil {
+	if _, err = os.Stat(cachefile); err != nil {
 		fmt.Printf("filling cache file\n")
 		if err = historyFromDB(&data.History); err != nil {
 			log.Fatal(err)
 		}
-		if err = data.History.store("./cache"); err != nil {
+		if err = data.History.store(cachefile); err != nil {
 			log.Fatal(err)
 		}
 	} else {
 		fmt.Printf("cache file found\n")
 	}
-	if data.History, err = loadCache("./cache"); err != nil {
+	if data.History, err = loadCache(cachefile); err != nil {
 		log.Fatal(err)
 	}
 	fmt.Printf("history entries: %d\n", len(data.History))
