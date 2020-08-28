@@ -17,6 +17,15 @@
  .smaller {
    font-size: smaller;
  }
+ .delete {
+   color: red;
+ }
+ .insert {
+   color: green;
+ }
+ .update {
+   color: orange;
+ }
 </style>
 </head>
 <body>
@@ -25,7 +34,9 @@
 
 {{ if eq .ChangeOp "DELETE" }}
 <p>
-  <span class="op">Borttaget</span> <span class="type">{{ .Type }}</span> {{ .ChangeAt }} <br/>
+  <span class="op delete">borttaget</span>
+  <span class="type">{{ .Type }}</span> {{ .ChangeAt }}
+  <br/>
   <span class="smaller">
     beskrivning: {{ .Desc }}<br/>
     redigerat: {{ .At }}
@@ -35,7 +46,9 @@
 
 {{ if eq .ChangeOp "INSERT" }}
 <p>
-  <span class="op">Nytt</span> <span class="type"><a href="https://fruktkartan.se/#/t/{{ .NewKey }}" target="_blank" rel="noopener">{{ .NewType }}</a></span> {{ .ChangeAt }} <br/>
+  <span class="op insert">nytt</span>
+  <span class="type"><a href="https://fruktkartan.se/#/t/{{ .NewKey }}" target="_blank" rel="noopener">{{ .NewType }}</a></span> {{ .ChangeAt }}
+  <br/>
   <span class="smaller">
     beskrivning: {{ .NewDesc }}<br/>
   </span>
