@@ -7,6 +7,7 @@ import (
 	"log"
 	"os"
 	"path/filepath"
+	"sort"
 	"strings"
 	"text/template"
 	"time"
@@ -57,6 +58,10 @@ func main() {
 		log.Fatal(err)
 	}
 	fmt.Printf("history entries: %d\n", len(data.History))
+
+	sort.Slice(data.History, func(i, j int) bool {
+		return data.History[i].ChangeID > data.History[j].ChangeID
+	})
 
 	tmpl, err := template.ParseFiles("tmpl_index.html")
 	if err != nil {
@@ -156,8 +161,7 @@ func historyFromDB(h *history) error {
                      , ST_X(new_point) AS newlon
                 FROM history
                      , ST_GeomFromWKB(DECODE(old_json->>'point', 'hex')) AS old_point
-                     , ST_GeomFromWKB(DECODE(new_json->>'point', 'hex')) AS new_point
-               ORDER BY id DESC`
+                     , ST_GeomFromWKB(DECODE(new_json->>'point', 'hex')) AS new_point`
 
 	db, err := sqlx.Connect("postgres", os.Getenv("FRUKTKARTAN_DATABASEURI"))
 	if err != nil {
@@ -204,5 +208,5 @@ func (nt nullTime) String() string {
 }
 
 func prettyTime(t time.Time) string {
-	return monday.Format(t.In(loc), "2 January 2006 kl. 15.04", monday.LocaleSvSE)
+	return monday.Format(t.In(loc), "2 Jan 2006 kl. 15.04", monday.LocaleSvSE)
 }

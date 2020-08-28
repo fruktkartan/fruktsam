@@ -6,13 +6,16 @@
 <title>fruktsam</title>
 <style>
   body {
-  max-width: 32em;
+    max-width: 32em;
   }
   .op {
-  font-weight: bold;
+    font-weight: bold;
   }
   .type {
-  font-style: italic;
+    font-style: italic;
+  }
+  .smaller {
+  font-size: smaller;
   }
 </style>
 </head>
@@ -21,9 +24,11 @@
 {{ range .History }}
 {{ if eq .ChangeOp "DELETE" }}
 <p>
-  <span class="op">Borttaget</span> <span class="type">{{ .Type }}</span> {{ .ChangeAt }}<br/>
-beskrivning: {{ .Desc }}<br/>
-redigerat: {{ .At }}
+  <span class="op">Borttaget</span> <span class="type">{{ .Type }}</span> {{ .ChangeAt }} <br/>
+  <span class="smaller">
+    beskrivning: {{ .Desc }}<br/>
+    redigerat: {{ .At }}
+  </span>
 </p>
 {{ end }}
 {{ end }}
