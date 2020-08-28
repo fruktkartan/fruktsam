@@ -73,20 +73,6 @@ func main() {
 	if err = tmpl.Execute(f, &data); err != nil {
 		log.Fatal(err)
 	}
-
-	// for idx := range h {
-	// 	e := h[idx]
-	// 	if e.Op == "DELETE" {
-	// 		fmt.Printf("%s at:%s:", e.Op, e.At)
-	// 		fmt.Printf(" OLD: key:%s: type:%s: desc:%s: by:%s: at:%s: geo:%s,%s",
-	// 			strings.TrimSpace(e.OldKey.String()), strings.TrimSpace(e.OldType.String()),
-	// 			e.OldDesc, e.OldBy, e.OldAt, e.OldLat, e.OldLon)
-	// 		fmt.Printf(" NEW: key:%s: type:%s: desc:%s: by:%s: at:%s: geo:%s,%s",
-	// 			strings.TrimSpace(e.NewKey.String()), strings.TrimSpace(e.NewType.String()),
-	// 			e.NewDesc, e.NewBy, e.NewAt, e.NewLat, e.NewLon)
-	// 		fmt.Printf("\n")
-	// 	}
-	// }
 }
 
 type historyEntry struct {
