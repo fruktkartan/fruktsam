@@ -35,26 +35,26 @@ func main() {
 		log.Fatal(err)
 	}
 
-	type data struct {
+	type templateData struct {
 		H history
 	}
-	var d data
+	var data templateData
 
 	if _, err = os.Stat("./cache"); err != nil {
 		fmt.Printf("filling cache file\n")
-		if err = dataFromDB(&d.H); err != nil {
+		if err = historyFromDB(&data.H); err != nil {
 			log.Fatal(err)
 		}
-		if err = d.H.store("./cache"); err != nil {
+		if err = data.H.store("./cache"); err != nil {
 			log.Fatal(err)
 		}
 	} else {
 		fmt.Printf("cache file found\n")
 	}
-	if d.H, err = loadCache("./cache"); err != nil {
+	if data.H, err = loadCache("./cache"); err != nil {
 		log.Fatal(err)
 	}
-	fmt.Printf("history entries: %d\n", len(d.H))
+	fmt.Printf("history entries: %d\n", len(data.H))
 
 	tmpl, err := template.ParseFiles("tmpl_index.html")
 	if err != nil {
@@ -68,7 +68,7 @@ func main() {
 	if f, err = os.Create(outfile); err != nil {
 		log.Fatal(err)
 	}
-	if err = tmpl.Execute(f, &d); err != nil {
+	if err = tmpl.Execute(f, &data); err != nil {
 		log.Fatal(err)
 	}
 
@@ -192,7 +192,7 @@ func loadCache(cachefile string) (history, error) {
 	return cache, nil
 }
 
-func dataFromDB(data *history) error {
+func historyFromDB(h *history) error {
 	query := `SELECT id AS changeid, at AS changeat, op AS changeop
                      , old_json->>'ssm_key' AS key
                      , old_json->>'type' AS type
@@ -218,5 +218,5 @@ func dataFromDB(data *history) error {
 		return err
 	}
 
-	return db.Select(data, query)
+	return db.Select(h, query)
 }
