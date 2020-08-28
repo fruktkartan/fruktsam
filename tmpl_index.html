@@ -1,0 +1,31 @@
+<!doctype html>
+<html lang=sv>
+<head>
+<meta charset=utf-8>
+<title>fruktsam</title>
+<style>
+  body {
+  max-width: 32em;
+  }
+  .op {
+  font-weight: bold;
+  }
+  .type {
+  font-style: italic;
+  }
+</style>
+</head>
+<body>
+
+{{ range .H }}
+{{if eq .ChangeOp "DELETE" }}
+<p>
+  <span class="op">Borttaget</span> {{ .ChangeAt }}: <span class="type">{{ .Type }}</span><br/>
+beskrivning: {{ .Desc }}<br/>
+redigerat: {{ .At }}
+</p>
+{{end}}
+{{end}}
+
+</body>
+</html>

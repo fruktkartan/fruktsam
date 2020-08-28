@@ -4,12 +4,16 @@ import (
 	"bytes"
 	"encoding/gob"
 	"fmt"
-	"html/template"
 	"log"
 	"os"
+	"path/filepath"
+	"strings"
+	"text/template"
+	"time"
 
 	"database/sql"
 
+	"github.com/goodsign/monday"
 	"github.com/jmoiron/sqlx"
 	"github.com/joho/godotenv"
 
@@ -28,15 +32,51 @@ func (ns nullString) String() string {
 	return ns.NullString.String
 }
 
+type nullStringTrimmed struct {
+	sql.NullString
+}
+
+func (ns nullStringTrimmed) String() string {
+	if !ns.NullString.Valid {
+		return ""
+	}
+
+	return strings.TrimSpace(ns.NullString.String)
+}
+
+type nullTime struct {
+	sql.NullTime
+}
+
+func (nt nullTime) String() string {
+	if !nt.NullTime.Valid {
+		return ""
+	}
+
+	return prettyTime(nt.NullTime.Time)
+}
+
 type historyEntry struct {
-	ID                                                     int
-	At                                                     string
-	Op                                                     string
-	OldKey, OldType, OldDesc, OldBy, OldAt, OldLat, OldLon nullString
-	NewKey, NewType, NewDesc, NewBy, NewAt, NewLat, NewLon nullString
+	ChangeID int
+	ChangeAt nullTime
+	ChangeOp string
+
+	Key        nullString
+	Type, Desc nullStringTrimmed
+	By         nullString
+	At         nullTime
+	Lat, Lon   nullString
+
+	NewKey           nullString
+	NewType, NewDesc nullStringTrimmed
+	NewBy            nullString
+	NewAt            nullTime
+	NewLat, NewLon   nullString
 }
 
 type history []historyEntry
+
+const outfile = "dist/index.html"
 
 func (c history) store(cachefile string) error {
 	b := new(bytes.Buffer)
@@ -74,55 +114,55 @@ func loadCache(cachefile string) (history, error) {
 	defer f.Close()
 
 	dec := gob.NewDecoder(f)
-	err = dec.Decode(&cache)
-	if err != nil {
-		panic(err)
+	if err := dec.Decode(&cache); err != nil {
+		return nil, err
 	}
 
 	return cache, nil
 }
 
 func dataFromDB(data *history) error {
-	query := `SELECT id, at, op
-                     , old_json->>'ssm_key' AS oldkey
-                     , old_json->>'type' AS oldtype
-                     , old_json->>'description' AS olddesc
-                     , old_json->>'added_by' AS oldby
-                     , old_json->>'added_at' AS oldat
-                     , ST_Y(old_point) AS oldlat
-                     , ST_X(old_point) AS oldlon
+	query := `SELECT id AS changeid, at AS changeat, op AS changeop
+                     , old_json->>'ssm_key' AS key
+                     , old_json->>'type' AS type
+                     , old_json->>'description' AS desc
+                     , old_json->>'added_by' AS by
+                     , (old_json->>'added_at')::timestamp AS at
+                     , ST_Y(old_point) AS lat
+                     , ST_X(old_point) AS lon
                      , new_json->>'ssm_key' AS newkey
                      , new_json->>'type' AS newtype
                      , new_json->>'description' AS newdesc
                      , new_json->>'added_by' AS newby
-                     , new_json->>'added_at' AS newat
+                     , (new_json->>'added_at')::timestamp AS newat
                      , ST_Y(new_point) AS newlat
                      , ST_X(new_point) AS newlon
                 FROM history
                      , ST_GeomFromWKB(DECODE(old_json->>'point', 'hex')) AS old_point
                      , ST_GeomFromWKB(DECODE(new_json->>'point', 'hex')) AS new_point
-               ORDER BY id`
+               ORDER BY id DESC`
 
 	db, err := sqlx.Connect("postgres", os.Getenv("FRUKTKARTAN_DATABASE_URI"))
 	if err != nil {
 		return err
 	}
 
-	err = db.Select(data, query)
-	if err != nil {
-		return err
-	}
-
-	return nil
+	return db.Select(data, query)
 }
 
 const envFile = ".env"
+
+var loc *time.Location
 
 func main() {
 	var err error
 
 	if err = godotenv.Load(envFile); err != nil && !os.IsNotExist(err) {
 		log.Fatalf("Error loading %s file: %s", envFile, err)
+	}
+
+	if loc, err = time.LoadLocation("Europe/Stockholm"); err != nil {
+		log.Fatal(err)
 	}
 
 	type data struct {
@@ -144,13 +184,21 @@ func main() {
 	if d.H, err = loadCache("./cache"); err != nil {
 		log.Fatal(err)
 	}
-	fmt.Printf("history has %d\n", len(d.H))
+	fmt.Printf("history entries: %d\n", len(d.H))
 
-	tmpl, err := template.ParseFiles("index.html")
+	tmpl, err := template.ParseFiles("tmpl_index.html")
 	if err != nil {
 		log.Fatal(err)
 	}
-	if err = tmpl.Execute(os.Stdout, &d); err != nil {
+
+	var f *os.File
+	if err = os.MkdirAll(filepath.Dir(outfile), 0770); err != nil {
+		log.Fatal(err)
+	}
+	if f, err = os.Create(outfile); err != nil {
+		log.Fatal(err)
+	}
+	if err = tmpl.Execute(f, &d); err != nil {
 		log.Fatal(err)
 	}
 
@@ -167,4 +215,8 @@ func main() {
 	// 		fmt.Printf("\n")
 	// 	}
 	// }
+}
+
+func prettyTime(t time.Time) string {
+	return monday.Format(t.In(loc), "2 January 2006 kl. 15.04", monday.LocaleSvSE)
 }
