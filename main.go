@@ -203,10 +203,5 @@ func (nt nullTime) String() string {
 	if !nt.NullTime.Valid {
 		return ""
 	}
-
-	return prettyTime(nt.NullTime.Time)
-}
-
-func prettyTime(t time.Time) string {
-	return monday.Format(t.In(loc), "2 Jan 2006 kl. 15.04", monday.LocaleSvSE)
+	return monday.Format(nt.Time.In(loc), "2 Jan 2006 kl. 15.04", monday.LocaleSvSE)
 }
