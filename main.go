@@ -23,7 +23,7 @@ import (
 
 const envfile = ".env"
 const outfile = "dist/index.html"
-const cachefile = "historycache"
+const historycache = "historycache"
 
 var loc *time.Location
 
@@ -43,18 +43,18 @@ func main() {
 	}
 	var data templateData
 
-	if _, err = os.Stat(cachefile); err != nil {
+	if _, err = os.Stat(historycache); err != nil {
 		fmt.Printf("filling cache file\n")
 		if err = historyFromDB(&data.History); err != nil {
 			log.Fatal(err)
 		}
-		if err = data.History.store(cachefile); err != nil {
+		if err = data.History.store(historycache); err != nil {
 			log.Fatal(err)
 		}
 	} else {
 		fmt.Printf("cache file found\n")
 	}
-	if data.History, err = loadCache(cachefile); err != nil {
+	if data.History, err = loadCache(historycache); err != nil {
 		log.Fatal(err)
 	}
 	fmt.Printf("history entries: %d\n", len(data.History))
@@ -203,5 +203,6 @@ func (nt nullTime) String() string {
 	if !nt.NullTime.Valid {
 		return ""
 	}
+
 	return monday.Format(nt.Time.In(loc), "2 Jan 2006 kl. 15.04", monday.LocaleSvSE)
 }
