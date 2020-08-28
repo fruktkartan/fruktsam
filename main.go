@@ -21,6 +21,7 @@ import (
 )
 
 const envFile = ".env"
+const outfile = "dist/index.html"
 
 var loc *time.Location
 
@@ -87,46 +88,6 @@ func main() {
 	// }
 }
 
-type nullString struct {
-	sql.NullString
-}
-
-func (ns nullString) String() string {
-	if !ns.NullString.Valid {
-		return ""
-	}
-
-	return ns.NullString.String
-}
-
-type nullStringTrimmed struct {
-	sql.NullString
-}
-
-func (ns nullStringTrimmed) String() string {
-	if !ns.NullString.Valid {
-		return ""
-	}
-
-	return strings.TrimSpace(ns.NullString.String)
-}
-
-type nullTime struct {
-	sql.NullTime
-}
-
-func (nt nullTime) String() string {
-	if !nt.NullTime.Valid {
-		return ""
-	}
-
-	return prettyTime(nt.NullTime.Time)
-}
-
-func prettyTime(t time.Time) string {
-	return monday.Format(t.In(loc), "2 January 2006 kl. 15.04", monday.LocaleSvSE)
-}
-
 type historyEntry struct {
 	ChangeID int
 	ChangeAt nullTime
@@ -146,8 +107,6 @@ type historyEntry struct {
 }
 
 type history []historyEntry
-
-const outfile = "dist/index.html"
 
 func (c history) store(cachefile string) error {
 	b := new(bytes.Buffer)
@@ -219,4 +178,44 @@ func historyFromDB(h *history) error {
 	}
 
 	return db.Select(h, query)
+}
+
+type nullString struct {
+	sql.NullString
+}
+
+func (ns nullString) String() string {
+	if !ns.NullString.Valid {
+		return ""
+	}
+
+	return ns.NullString.String
+}
+
+type nullStringTrimmed struct {
+	sql.NullString
+}
+
+func (ns nullStringTrimmed) String() string {
+	if !ns.NullString.Valid {
+		return ""
+	}
+
+	return strings.TrimSpace(ns.NullString.String)
+}
+
+type nullTime struct {
+	sql.NullTime
+}
+
+func (nt nullTime) String() string {
+	if !nt.NullTime.Valid {
+		return ""
+	}
+
+	return prettyTime(nt.NullTime.Time)
+}
+
+func prettyTime(t time.Time) string {
+	return monday.Format(t.In(loc), "2 January 2006 kl. 15.04", monday.LocaleSvSE)
 }
