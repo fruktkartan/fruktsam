@@ -20,6 +20,73 @@ import (
 	_ "github.com/lib/pq"
 )
 
+const envFile = ".env"
+
+var loc *time.Location
+
+func main() {
+	var err error
+
+	if err = godotenv.Load(envFile); err != nil && !os.IsNotExist(err) {
+		log.Fatalf("Error loading %s file: %s", envFile, err)
+	}
+
+	if loc, err = time.LoadLocation("Europe/Stockholm"); err != nil {
+		log.Fatal(err)
+	}
+
+	type data struct {
+		H history
+	}
+	var d data
+
+	if _, err = os.Stat("./cache"); err != nil {
+		fmt.Printf("filling cache file\n")
+		if err = dataFromDB(&d.H); err != nil {
+			log.Fatal(err)
+		}
+		if err = d.H.store("./cache"); err != nil {
+			log.Fatal(err)
+		}
+	} else {
+		fmt.Printf("cache file found\n")
+	}
+	if d.H, err = loadCache("./cache"); err != nil {
+		log.Fatal(err)
+	}
+	fmt.Printf("history entries: %d\n", len(d.H))
+
+	tmpl, err := template.ParseFiles("tmpl_index.html")
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	var f *os.File
+	if err = os.MkdirAll(filepath.Dir(outfile), 0770); err != nil {
+		log.Fatal(err)
+	}
+	if f, err = os.Create(outfile); err != nil {
+		log.Fatal(err)
+	}
+	if err = tmpl.Execute(f, &d); err != nil {
+		log.Fatal(err)
+	}
+
+	// for idx := range h {
+	// 	e := h[idx]
+	// 	if e.Op == "DELETE" {
+	// 		fmt.Printf("%s at:%s:", e.Op, e.At)
+	// 		fmt.Printf(" OLD: key:%s: type:%s: desc:%s: by:%s: at:%s: geo:%s,%s",
+	// 			strings.TrimSpace(e.OldKey.String()), strings.TrimSpace(e.OldType.String()),
+	// 			e.OldDesc, e.OldBy, e.OldAt, e.OldLat, e.OldLon)
+	// 		fmt.Printf(" NEW: key:%s: type:%s: desc:%s: by:%s: at:%s: geo:%s,%s",
+	// 			strings.TrimSpace(e.NewKey.String()), strings.TrimSpace(e.NewType.String()),
+	// 			e.NewDesc, e.NewBy, e.NewAt, e.NewLat, e.NewLon)
+	// 		fmt.Printf("\n")
+	// 	}
+	// }
+}
+
 type nullString struct {
 	sql.NullString
 }
@@ -54,6 +121,10 @@ func (nt nullTime) String() string {
 	}
 
 	return prettyTime(nt.NullTime.Time)
+}
+
+func prettyTime(t time.Time) string {
+	return monday.Format(t.In(loc), "2 January 2006 kl. 15.04", monday.LocaleSvSE)
 }
 
 type historyEntry struct {
@@ -148,75 +219,4 @@ func dataFromDB(data *history) error {
 	}
 
 	return db.Select(data, query)
-}
-
-const envFile = ".env"
-
-var loc *time.Location
-
-func main() {
-	var err error
-
-	if err = godotenv.Load(envFile); err != nil && !os.IsNotExist(err) {
-		log.Fatalf("Error loading %s file: %s", envFile, err)
-	}
-
-	if loc, err = time.LoadLocation("Europe/Stockholm"); err != nil {
-		log.Fatal(err)
-	}
-
-	type data struct {
-		H history
-	}
-	var d data
-
-	if _, err = os.Stat("./cache"); err != nil {
-		fmt.Printf("filling cache file\n")
-		if err = dataFromDB(&d.H); err != nil {
-			log.Fatal(err)
-		}
-		if err = d.H.store("./cache"); err != nil {
-			log.Fatal(err)
-		}
-	} else {
-		fmt.Printf("cache file found\n")
-	}
-	if d.H, err = loadCache("./cache"); err != nil {
-		log.Fatal(err)
-	}
-	fmt.Printf("history entries: %d\n", len(d.H))
-
-	tmpl, err := template.ParseFiles("tmpl_index.html")
-	if err != nil {
-		log.Fatal(err)
-	}
-
-	var f *os.File
-	if err = os.MkdirAll(filepath.Dir(outfile), 0770); err != nil {
-		log.Fatal(err)
-	}
-	if f, err = os.Create(outfile); err != nil {
-		log.Fatal(err)
-	}
-	if err = tmpl.Execute(f, &d); err != nil {
-		log.Fatal(err)
-	}
-
-	// for idx := range h {
-	// 	e := h[idx]
-	// 	if e.Op == "DELETE" {
-	// 		fmt.Printf("%s at:%s:", e.Op, e.At)
-	// 		fmt.Printf(" OLD: key:%s: type:%s: desc:%s: by:%s: at:%s: geo:%s,%s",
-	// 			strings.TrimSpace(e.OldKey.String()), strings.TrimSpace(e.OldType.String()),
-	// 			e.OldDesc, e.OldBy, e.OldAt, e.OldLat, e.OldLon)
-	// 		fmt.Printf(" NEW: key:%s: type:%s: desc:%s: by:%s: at:%s: geo:%s,%s",
-	// 			strings.TrimSpace(e.NewKey.String()), strings.TrimSpace(e.NewType.String()),
-	// 			e.NewDesc, e.NewBy, e.NewAt, e.NewLat, e.NewLon)
-	// 		fmt.Printf("\n")
-	// 	}
-	// }
-}
-
-func prettyTime(t time.Time) string {
-	return monday.Format(t.In(loc), "2 January 2006 kl. 15.04", monday.LocaleSvSE)
 }
