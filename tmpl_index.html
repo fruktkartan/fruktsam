@@ -22,6 +22,7 @@
 <body>
 
 {{ range .History }}
+
 {{ if eq .ChangeOp "DELETE" }}
 <p>
   <span class="op">Borttaget</span> <span class="type">{{ .Type }}</span> {{ .ChangeAt }} <br/>
@@ -31,6 +32,16 @@
   </span>
 </p>
 {{ end }}
+
+{{ if eq .ChangeOp "INSERT" }}
+<p>
+  <span class="op">Nytt</span> <span class="type"><a href="https://fruktkartan.se/#/t/{{ .NewKey }}" target="_blank" rel="noopener">{{ .NewType }}</a></span> {{ .ChangeAt }} <br/>
+  <span class="smaller">
+    beskrivning: {{ .NewDesc }}<br/>
+  </span>
+</p>
+{{ end }}
+
 {{ end }}
 
 </body>
