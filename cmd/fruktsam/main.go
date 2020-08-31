@@ -9,6 +9,7 @@ import (
 	"text/template"
 	"time"
 
+	"github.com/alecthomas/kingpin"
 	"github.com/fruktkartan/fruktsam/geo"
 	"github.com/fruktkartan/fruktsam/history"
 	"github.com/joho/godotenv"
@@ -24,21 +25,32 @@ const outfile = "dist/index.html"
 // const historycache = "historycache"
 const reversecache = "reversecache"
 
+const defaultSinceDays = 60
+
 func main() {
+	var sinceFlag = defaultSinceDays
 	var err error
+
+	app := kingpin.New("fruktsam", "Generate html from Fruktkartan edit history")
+	app.Flag("since", fmt.Sprintf("How many days back, default: %d", defaultSinceDays)).
+		PlaceHolder("DAYS").IntVar(&sinceFlag)
+	app.HelpFlag.Short('h')
+	kingpin.MustParse(app.Parse(os.Args[1:]))
 
 	if err = godotenv.Load(envfile); err != nil && !os.IsNotExist(err) {
 		log.Fatalf("Error loading %s file: %s", envfile, err)
 	}
 
 	type templateData struct {
-		History history.History
+		SinceDays int
+		History   history.History
 	}
 	var data templateData
 
-	if err = history.FromDB(&data.History); err != nil {
+	if err = history.FromDB(&data.History, sinceFlag); err != nil {
 		log.Fatal(err)
 	}
+	data.SinceDays = sinceFlag
 
 	// if _, err = os.Stat(historycache); err != nil {
 	// 	fmt.Printf("filling cache file\n")

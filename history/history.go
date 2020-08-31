@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"database/sql"
 	"encoding/gob"
+	"fmt"
 	"log"
 	"os"
 	"strings"
@@ -90,7 +91,7 @@ func LoadCache(cachefile string) ([]Entry, error) {
 	return cache, nil
 }
 
-func FromDB(h *History) error {
+func FromDB(h *History, sinceDays int) error {
 	query := `SELECT id AS changeid, at AS changeat, op AS changeop
                      , old_json->>'ssm_key' AS key
                      , old_json->>'type' AS type
@@ -109,6 +110,9 @@ func FromDB(h *History) error {
                 FROM history
                      , ST_GeomFromWKB(DECODE(old_json->>'point', 'hex')) AS old_point
                      , ST_GeomFromWKB(DECODE(new_json->>'point', 'hex')) AS new_point`
+	if sinceDays > 0 {
+		query += fmt.Sprintf(" WHERE at > (CURRENT_DATE - INTERVAL '%d days')", sinceDays)
+	}
 
 	db, err := sqlx.Connect("postgres", os.Getenv("FRUKTKARTAN_DATABASEURI"))
 	if err != nil {
