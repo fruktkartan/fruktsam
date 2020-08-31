@@ -17,6 +17,7 @@ linters:
     # TODO
     - unused
     - deadcode
+    - goerr113
 
 linters-settings:
   # too see which are enabled: GL_DEBUG=gocritic golangci-lint run
