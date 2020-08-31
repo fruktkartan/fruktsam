@@ -78,18 +78,24 @@ func main() {
 	}
 
 	for idx := range data.History {
-		fmt.Println(len(data.History) - idx)
-
 		he := &data.History[idx]
 
 		if he.Lat.Valid {
 			p := geo.Pos{Lat: he.Lat.Float64, Lon: he.Lon.Float64}
-			revcache.Add(p)
+			if !revcache.Has(p) {
+				fmt.Println(len(data.History) - idx)
+				revcache.Add(p)
+				time.Sleep(1 * time.Second)
+			}
 			he.Address = revcache.FormatAddress(p)
 		}
 		if he.NewLat.Valid {
 			p := geo.Pos{Lat: he.NewLat.Float64, Lon: he.NewLon.Float64}
-			revcache.Add(p)
+			if !revcache.Has(p) {
+				fmt.Println(len(data.History) - idx)
+				revcache.Add(p)
+				time.Sleep(1 * time.Second)
+			}
 			he.NewAddress = revcache.FormatAddress(p)
 		}
 	}

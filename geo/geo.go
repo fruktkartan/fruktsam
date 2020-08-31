@@ -88,9 +88,13 @@ func (r ReverseCache) Load(cachefile string) error {
 	return nil
 }
 
+func (r ReverseCache) Has(p Pos) bool {
+	_, ok := r[p]
+	return ok
+}
+
 func (r ReverseCache) Add(p Pos) {
 	if _, ok := r[p]; !ok {
-		time.Sleep(time.Second * 1)
 		jsonbytes, err := reverse(p)
 		if err != nil {
 			fmt.Printf("%v: %s\n", p, err)
