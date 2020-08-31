@@ -12,6 +12,8 @@ linters:
 
     - noctx
 
+    - nlreturn
+
     # TODO
     - unused
     - deadcode

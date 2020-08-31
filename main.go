@@ -14,6 +14,7 @@ import (
 
 	"database/sql"
 
+	"github.com/fruktkartan/fruktsam/geo"
 	"github.com/goodsign/monday"
 	"github.com/jmoiron/sqlx"
 	"github.com/joho/godotenv"
@@ -21,9 +22,16 @@ import (
 	_ "github.com/lib/pq"
 )
 
+// TODO maybe don't do historycache for now? I removed lots of early
+// import-edits from the history. I would be easier to move forward without it,
+// I think. Just batch runs to generate page every night or so.
+
+// TODO consider puring history that contains old-style ssm_keys?
+
 const envfile = ".env"
 const outfile = "dist/index.html"
 const historycache = "historycache"
+const reversecache = "reversecache"
 
 var loc *time.Location
 
@@ -63,6 +71,33 @@ func main() {
 		return data.History[i].ChangeID > data.History[j].ChangeID
 	})
 
+	revcache := geo.ReverseCache{}
+
+	if err = revcache.Load(reversecache); err != nil {
+		log.Fatal(err)
+	}
+
+	for idx := range data.History {
+		fmt.Println(len(data.History) - idx)
+
+		he := &data.History[idx]
+
+		if he.Lat.Valid {
+			p := geo.Pos{Lat: he.Lat.Float64, Lon: he.Lon.Float64}
+			revcache.Add(p)
+			he.Address = revcache.FormatAddress(p)
+		}
+		if he.NewLat.Valid {
+			p := geo.Pos{Lat: he.NewLat.Float64, Lon: he.NewLon.Float64}
+			revcache.Add(p)
+			he.NewAddress = revcache.FormatAddress(p)
+		}
+	}
+
+	if err = revcache.Store(reversecache); err != nil {
+		fmt.Println(err)
+	}
+
 	tmpl, err := template.ParseFiles("tmpl_index.html")
 	if err != nil {
 		log.Fatal(err)
@@ -89,13 +124,17 @@ type historyEntry struct {
 	Type, Desc nullStringTrimmed
 	By         nullString
 	At         nullTime
-	Lat, Lon   nullString
+	Lat, Lon   sql.NullFloat64
 
 	NewKey           nullString
 	NewType, NewDesc nullStringTrimmed
 	NewBy            nullString
 	NewAt            nullTime
-	NewLat, NewLon   nullString
+	NewLat, NewLon   sql.NullFloat64
+
+	// TODO should perhaps not serialize these, but they do need to be exported
+	// (capitalized) for exposing to template
+	Address, NewAddress string
 }
 
 type history []historyEntry
@@ -112,13 +151,11 @@ func (c history) store(cachefile string) error {
 	if err != nil {
 		return err
 	}
-
 	defer f.Close()
 
 	if _, err = f.Write(b.Bytes()); err != nil {
 		return err
 	}
-
 	return nil
 }
 
@@ -130,7 +167,6 @@ func loadCache(cachefile string) (history, error) {
 		if !os.IsNotExist(err) {
 			return nil, err
 		}
-
 		return cache, nil
 	}
 	defer f.Close()
@@ -167,7 +203,6 @@ func historyFromDB(h *history) error {
 	if err != nil {
 		return err
 	}
-
 	return db.Select(h, query)
 }
 
@@ -179,7 +214,6 @@ func (ns nullString) String() string {
 	if !ns.NullString.Valid {
 		return ""
 	}
-
 	return ns.NullString.String
 }
 
@@ -191,7 +225,6 @@ func (ns nullStringTrimmed) String() string {
 	if !ns.NullString.Valid {
 		return ""
 	}
-
 	return strings.TrimSpace(ns.NullString.String)
 }
 
@@ -203,6 +236,5 @@ func (nt nullTime) String() string {
 	if !nt.NullTime.Valid {
 		return ""
 	}
-
 	return monday.Format(nt.Time.In(loc), "2 Jan 2006 kl. 15.04", monday.LocaleSvSE)
 }

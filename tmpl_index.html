@@ -5,18 +5,19 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>fruktsam</title>
 <style>
- body {
-   max-width: 32em;
- }
  .op {
    font-weight: bold;
  }
  .type {
    font-style: italic;
  }
- .smaller {
+
+ .bread {
+   display: inline-block; /* to set max-width */
    font-size: smaller;
+   max-width: 32em;
  }
+
  .delete {
    color: red;
  }
@@ -26,6 +27,10 @@
  .update {
    color: orange;
  }
+
+ .old {
+   text-decoration: line-through;
+ }
 </style>
 </head>
 <body>
@@ -34,23 +39,51 @@
 
 {{ if eq .ChangeOp "DELETE" }}
 <p>
+  <span class="">{{ .ChangeID }}</span>
   <span class="op delete">borttaget</span>
-  <span class="type">{{ .Type }}</span> {{ .ChangeAt }}
+  <span class="type">{{ .Type }}</span>
+  {{ .ChangeAt }}
+  <span class="address">nära {{ .Address }}</span>
   <br/>
-  <span class="smaller">
+  <span class="bread">
     beskrivning: {{ .Desc }}<br/>
     redigerat: {{ .At }}
+    <!-- <a href="geo:{{ .Lat.Value }},{{ .Lon.Value }}">geo:{{ .Lat.Value }},{{ .Lon.Value }}</a> -->
   </span>
 </p>
 {{ end }}
 
 {{ if eq .ChangeOp "INSERT" }}
 <p>
+  <span class="">{{ .ChangeID }}</span>
   <span class="op insert">nytt</span>
-  <span class="type"><a href="https://fruktkartan.se/#/t/{{ .NewKey }}" target="_blank" rel="noopener">{{ .NewType }}</a></span> {{ .ChangeAt }}
+  <span class="type"><a href="https://fruktkartan.se/#/t/{{ .NewKey }}" target="_blank" rel="noopener">{{ .NewType }}</a></span>
+  {{ .ChangeAt }}
+  <span class="address">nära {{ .NewAddress }}</span>
   <br/>
-  <span class="smaller">
+  <span class="bread">
     beskrivning: {{ .NewDesc }}<br/>
+    <!-- <a href="geo:{{ .NewLat.Value }},{{ .NewLon.Value }}">geo:{{ .NewLat.Value }},{{ .NewLon.Value }}</a> -->
+  </span>
+</p>
+{{ end }}
+
+<!-- TODO change pos? -->
+<!-- TODO the image? -->
+{{ if eq .ChangeOp "UPDATE" }}
+<p>
+  <span class="">{{ .ChangeID }}</span>
+  <span class="op update">redigerat</span>
+  <span class="type"><a href="https://fruktkartan.se/#/t/{{ .NewKey }}" target="_blank" rel="noopener">{{ .NewType }}</a></span>
+  {{ if ne .Type .NewType }}<span class="old">typ:{{ .Type }}</span>{{ end }}
+  {{ .ChangeAt }}
+  <span class="address">nära {{ .NewAddress }}</span>
+  <br/>
+  <span class="bread">
+    beskrivning: {{ .NewDesc }}<br/>
+    <span class="old">beskrivning: {{ .Desc }}</span><br/>
+    <span class="old">redigerat: {{ .At }}</span><br/>
+      <!-- <a href="geo:{{ .NewLat.Value }},{{ .NewLon.Value }}">geo:{{ .NewLat.Value }},{{ .NewLon.Value }}</a> -->
   </span>
 </p>
 {{ end }}
