@@ -13,8 +13,6 @@ import (
 	"github.com/fruktkartan/fruktsam/history"
 	"github.com/joho/godotenv"
 	"github.com/sergi/go-diff/diffmatchpatch"
-
-	_ "github.com/lib/pq"
 )
 
 // TODO consider puring history entries that contains old-style ssm_keys?

@@ -11,6 +11,7 @@ import (
 
 	"github.com/goodsign/monday"
 	"github.com/jmoiron/sqlx"
+	_ "github.com/lib/pq"
 )
 
 var loc *time.Location
