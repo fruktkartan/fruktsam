@@ -39,10 +39,9 @@
 
 {{ if eq .ChangeOp "DELETE" }}
 <p>
-  <span class="">{{ .ChangeID }}</span>
+  {{ .ChangeAt }}
   <span class="op delete">borttaget</span>
   <span class="type">{{ .Type }}</span>
-  {{ .ChangeAt }}
   <a href="{{ .GeoURL }}" target="_blank" rel="noopener">nära</a>
   <span class="address">{{ .Address }}</span>
   <br/>
@@ -55,10 +54,9 @@
 
 {{ if eq .ChangeOp "INSERT" }}
 <p>
-  <span class="">{{ .ChangeID }}</span>
+  {{ .ChangeAt }}
   <span class="op insert">nytt</span>
   <span class="type"><a href="https://fruktkartan.se/#/t/{{ .NewKey }}" target="_blank" rel="noopener">{{ .NewType }}</a></span>
-  {{ .ChangeAt }}
   <a href="{{ .NewGeoURL }}" target="_blank" rel="noopener">nära</a>
   <span class="address">{{ .NewAddress }}</span>
   <br/>
@@ -72,11 +70,10 @@
 <!-- TODO the image? -->
 {{ if eq .ChangeOp "UPDATE" }}
 <p>
-  <span class="">{{ .ChangeID }}</span>
+  {{ .ChangeAt }}
   <span class="op update">redigerat</span>
   <span class="type"><a href="https://fruktkartan.se/#/t/{{ .NewKey }}" target="_blank" rel="noopener">{{ .NewType }}</a></span>
   {{ if ne .Type .NewType }}<span class="old">typ:{{ .Type }}</span>{{ end }}
-  {{ .ChangeAt }}
   <a href="{{ .NewGeoURL }}" target="_blank" rel="noopener">nära</a>
   <span class="address">{{ .NewAddress }}</span>
   <br/>

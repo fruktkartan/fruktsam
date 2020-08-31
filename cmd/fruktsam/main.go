@@ -38,7 +38,7 @@ func main() {
 	}
 	var data templateData
 
-	if err = history.HistoryFromDB(&data.History); err != nil {
+	if err = history.FromDB(&data.History); err != nil {
 		log.Fatal(err)
 	}
 
