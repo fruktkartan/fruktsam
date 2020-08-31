@@ -1,22 +1,16 @@
 package main
 
 import (
-	"bytes"
-	"encoding/gob"
 	"fmt"
 	"log"
 	"os"
 	"path/filepath"
 	"sort"
-	"strings"
 	"text/template"
 	"time"
 
-	"database/sql"
-
 	"github.com/fruktkartan/fruktsam/geo"
-	"github.com/goodsign/monday"
-	"github.com/jmoiron/sqlx"
+	"github.com/fruktkartan/fruktsam/history"
 	"github.com/joho/godotenv"
 	"github.com/sergi/go-diff/diffmatchpatch"
 
@@ -34,8 +28,6 @@ const outfile = "dist/index.html"
 const historycache = "historycache"
 const reversecache = "reversecache"
 
-var loc *time.Location
-
 func main() {
 	var err error
 
@@ -43,27 +35,23 @@ func main() {
 		log.Fatalf("Error loading %s file: %s", envfile, err)
 	}
 
-	if loc, err = time.LoadLocation("Europe/Stockholm"); err != nil {
-		log.Fatal(err)
-	}
-
 	type templateData struct {
-		History history
+		History history.History
 	}
 	var data templateData
 
 	if _, err = os.Stat(historycache); err != nil {
 		fmt.Printf("filling cache file\n")
-		if err = historyFromDB(&data.History); err != nil {
+		if err = history.HistoryFromDB(&data.History); err != nil {
 			log.Fatal(err)
 		}
-		if err = data.History.store(historycache); err != nil {
+		if err = data.History.Store(historycache); err != nil {
 			log.Fatal(err)
 		}
 	} else {
 		fmt.Printf("cache file found\n")
 	}
-	if data.History, err = loadCache(historycache); err != nil {
+	if data.History, err = history.LoadCache(historycache); err != nil {
 		log.Fatal(err)
 	}
 	fmt.Printf("history entries: %d\n", len(data.History))
@@ -128,131 +116,4 @@ func main() {
 	if err = tmpl.Execute(f, &data); err != nil {
 		log.Fatal(err)
 	}
-}
-
-type historyEntry struct {
-	ChangeID int
-	ChangeAt nullTime
-	ChangeOp string
-
-	Key        nullString
-	Type, Desc nullStringTrimmed
-	By         nullString
-	At         nullTime
-	Lat, Lon   sql.NullFloat64
-
-	NewKey           nullString
-	NewType, NewDesc nullStringTrimmed
-	NewBy            nullString
-	NewAt            nullTime
-	NewLat, NewLon   sql.NullFloat64
-
-	// TODO should perhaps not serialize these, but they do need to be exported
-	// (capitalized) for exposing to template
-	// Maybe they can be setter/getter functions?
-	Address, NewAddress string
-	GeoURL, NewGeoURL   string
-	DescDiff            string
-}
-
-type history []historyEntry
-
-func (c history) store(cachefile string) error {
-	b := new(bytes.Buffer)
-	enc := gob.NewEncoder(b)
-	err := enc.Encode(c)
-	if err != nil {
-		return err
-	}
-
-	f, err := os.OpenFile(cachefile, os.O_CREATE|os.O_WRONLY, 0666)
-	if err != nil {
-		return err
-	}
-	defer f.Close()
-
-	if _, err = f.Write(b.Bytes()); err != nil {
-		return err
-	}
-	return nil
-}
-
-func loadCache(cachefile string) (history, error) {
-	cache := history{}
-
-	f, err := os.Open(cachefile)
-	if err != nil {
-		if !os.IsNotExist(err) {
-			return nil, err
-		}
-		return cache, nil
-	}
-	defer f.Close()
-
-	dec := gob.NewDecoder(f)
-	if err := dec.Decode(&cache); err != nil {
-		return nil, err
-	}
-
-	return cache, nil
-}
-
-func historyFromDB(h *history) error {
-	query := `SELECT id AS changeid, at AS changeat, op AS changeop
-                     , old_json->>'ssm_key' AS key
-                     , old_json->>'type' AS type
-                     , old_json->>'description' AS desc
-                     , old_json->>'added_by' AS by
-                     , (old_json->>'added_at')::timestamp AS at
-                     , ST_Y(old_point) AS lat
-                     , ST_X(old_point) AS lon
-                     , new_json->>'ssm_key' AS newkey
-                     , new_json->>'type' AS newtype
-                     , new_json->>'description' AS newdesc
-                     , new_json->>'added_by' AS newby
-                     , (new_json->>'added_at')::timestamp AS newat
-                     , ST_Y(new_point) AS newlat
-                     , ST_X(new_point) AS newlon
-                FROM history
-                     , ST_GeomFromWKB(DECODE(old_json->>'point', 'hex')) AS old_point
-                     , ST_GeomFromWKB(DECODE(new_json->>'point', 'hex')) AS new_point`
-
-	db, err := sqlx.Connect("postgres", os.Getenv("FRUKTKARTAN_DATABASEURI"))
-	if err != nil {
-		return err
-	}
-	return db.Select(h, query)
-}
-
-type nullString struct {
-	sql.NullString
-}
-
-func (ns nullString) String() string {
-	if !ns.NullString.Valid {
-		return ""
-	}
-	return ns.NullString.String
-}
-
-type nullStringTrimmed struct {
-	sql.NullString
-}
-
-func (ns nullStringTrimmed) String() string {
-	if !ns.NullString.Valid {
-		return ""
-	}
-	return strings.TrimSpace(ns.NullString.String)
-}
-
-type nullTime struct {
-	sql.NullTime
-}
-
-func (nt nullTime) String() string {
-	if !nt.NullTime.Valid {
-		return ""
-	}
-	return monday.Format(nt.Time.In(loc), "2 Jan 2006 kl. 15.04", monday.LocaleSvSE)
 }
