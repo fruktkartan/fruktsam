@@ -18,6 +18,10 @@ type Pos struct {
 	Lat, Lon float64
 }
 
+func (p *Pos) GeohackURL() string {
+	return fmt.Sprintf("https://geohack.toolforge.org/geohack.php?params=%g_N_%g_E",
+		p.Lat, p.Lon)
+}
 func reverse(p Pos) ([]byte, error) {
 	req, _ := http.NewRequest("GET", "https://nominatim.openstreetmap.org/reverse", nil)
 	req.Header.Add("Accept", "application/json")
@@ -242,6 +246,7 @@ func (a *address) locality() string {
 	}
 	return locality
 }
+
 func (a *address) street() string {
 	var street string
 	switch {

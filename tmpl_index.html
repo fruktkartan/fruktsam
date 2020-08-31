@@ -43,12 +43,12 @@
   <span class="op delete">borttaget</span>
   <span class="type">{{ .Type }}</span>
   {{ .ChangeAt }}
-  <span class="address">nära {{ .Address }}</span>
+  <a href="{{ .GeoURL }}" target="_blank" rel="noopener">nära</a>
+  <span class="address">{{ .Address }}</span>
   <br/>
   <span class="bread old">
     beskrivning: {{ .Desc }}<br/>
     redigerat: {{ .At }}
-    <!-- <a href="geo:{{ .Lat.Value }},{{ .Lon.Value }}">geo:{{ .Lat.Value }},{{ .Lon.Value }}</a> -->
   </span>
 </p>
 {{ end }}
@@ -59,16 +59,16 @@
   <span class="op insert">nytt</span>
   <span class="type"><a href="https://fruktkartan.se/#/t/{{ .NewKey }}" target="_blank" rel="noopener">{{ .NewType }}</a></span>
   {{ .ChangeAt }}
-  <span class="address">nära {{ .NewAddress }}</span>
+  <a href="{{ .NewGeoURL }}" target="_blank" rel="noopener">nära</a>
+  <span class="address">{{ .NewAddress }}</span>
   <br/>
   <span class="bread">
     beskrivning: {{ .NewDesc }}<br/>
-    <!-- <a href="geo:{{ .NewLat.Value }},{{ .NewLon.Value }}">geo:{{ .NewLat.Value }},{{ .NewLon.Value }}</a> -->
   </span>
 </p>
 {{ end }}
 
-<!-- TODO change pos? -->
+<!-- TODO moved tree (but user currently can't do that)? -->
 <!-- TODO the image? -->
 {{ if eq .ChangeOp "UPDATE" }}
 <p>
@@ -77,12 +77,12 @@
   <span class="type"><a href="https://fruktkartan.se/#/t/{{ .NewKey }}" target="_blank" rel="noopener">{{ .NewType }}</a></span>
   {{ if ne .Type .NewType }}<span class="old">typ:{{ .Type }}</span>{{ end }}
   {{ .ChangeAt }}
-  <span class="address">nära {{ .NewAddress }}</span>
+  <a href="{{ .NewGeoURL }}" target="_blank" rel="noopener">nära</a>
+  <span class="address">{{ .NewAddress }}</span>
   <br/>
   <span class="bread">
     beskrivning: {{ .DescDiff }}<br />
     <span class="old">redigerat: {{ .At }}</span><br/>
-      <!-- <a href="geo:{{ .NewLat.Value }},{{ .NewLon.Value }}">geo:{{ .NewLat.Value }},{{ .NewLon.Value }}</a> -->
   </span>
 </p>
 {{ end }}

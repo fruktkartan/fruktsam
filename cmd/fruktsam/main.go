@@ -90,6 +90,7 @@ func main() {
 				time.Sleep(1 * time.Second)
 			}
 			he.Address = revcache.FormatAddress(p)
+			he.GeoURL = p.GeohackURL()
 		}
 		if he.NewLat.Valid {
 			p := geo.Pos{Lat: he.NewLat.Float64, Lon: he.NewLon.Float64}
@@ -99,6 +100,7 @@ func main() {
 				time.Sleep(1 * time.Second)
 			}
 			he.NewAddress = revcache.FormatAddress(p)
+			he.NewGeoURL = p.GeohackURL()
 		}
 
 		if he.ChangeOp == "UPDATE" {
@@ -147,7 +149,9 @@ type historyEntry struct {
 
 	// TODO should perhaps not serialize these, but they do need to be exported
 	// (capitalized) for exposing to template
+	// Maybe they can be setter/getter functions?
 	Address, NewAddress string
+	GeoURL, NewGeoURL   string
 	DescDiff            string
 }
 
