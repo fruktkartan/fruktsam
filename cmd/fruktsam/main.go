@@ -17,15 +17,13 @@ import (
 	_ "github.com/lib/pq"
 )
 
-// TODO maybe don't do historycache for now? I removed lots of early
-// import-edits from the history. I would be easier to move forward without it,
-// I think. Just batch runs to generate page every night or so.
-
-// TODO consider puring history that contains old-style ssm_keys?
+// TODO consider puring history entries that contains old-style ssm_keys?
 
 const envfile = ".env"
 const outfile = "dist/index.html"
-const historycache = "historycache"
+
+// TODO disabled for now
+// const historycache = "historycache"
 const reversecache = "reversecache"
 
 func main() {
@@ -40,20 +38,24 @@ func main() {
 	}
 	var data templateData
 
-	if _, err = os.Stat(historycache); err != nil {
-		fmt.Printf("filling cache file\n")
-		if err = history.HistoryFromDB(&data.History); err != nil {
-			log.Fatal(err)
-		}
-		if err = data.History.Store(historycache); err != nil {
-			log.Fatal(err)
-		}
-	} else {
-		fmt.Printf("cache file found\n")
-	}
-	if data.History, err = history.LoadCache(historycache); err != nil {
+	if err = history.HistoryFromDB(&data.History); err != nil {
 		log.Fatal(err)
 	}
+
+	// if _, err = os.Stat(historycache); err != nil {
+	// 	fmt.Printf("filling cache file\n")
+	// 	if err = history.HistoryFromDB(&data.History); err != nil {
+	// 		log.Fatal(err)
+	// 	}
+	// 	if err = data.History.Store(historycache); err != nil {
+	// 		log.Fatal(err)
+	// 	}
+	// } else {
+	// 	fmt.Printf("cache file found\n")
+	// }
+	// if data.History, err = history.LoadCache(historycache); err != nil {
+	// 	log.Fatal(err)
+	// }
 	fmt.Printf("history entries: %d\n", len(data.History))
 
 	sort.Slice(data.History, func(i, j int) bool {
@@ -73,7 +75,7 @@ func main() {
 		if he.Lat.Valid {
 			p := geo.Pos{Lat: he.Lat.Float64, Lon: he.Lon.Float64}
 			if !revcache.Has(p) {
-				fmt.Println(len(data.History) - idx)
+				fmt.Printf("get reverse address for entry %d\n", he.ChangeID)
 				revcache.Add(p)
 				time.Sleep(1 * time.Second)
 			}
@@ -83,7 +85,7 @@ func main() {
 		if he.NewLat.Valid {
 			p := geo.Pos{Lat: he.NewLat.Float64, Lon: he.NewLon.Float64}
 			if !revcache.Has(p) {
-				fmt.Println(len(data.History) - idx)
+				fmt.Printf("get reverse address for entry %d\n", he.ChangeID)
 				revcache.Add(p)
 				time.Sleep(1 * time.Second)
 			}
