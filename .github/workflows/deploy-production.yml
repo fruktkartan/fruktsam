@@ -27,7 +27,7 @@ jobs:
           FRUKTKARTAN_DATABASEURI: ${{ secrets.FRUKTKARTAN_DATABASEURI }}
 
       - name: Deploy
-        uses: peaceiris/actions-gh-pages@v3
+        uses: peaceiris/actions-gh-pages@v3.7.0-8
         with:
           deploy_key: ${{ secrets.PAGES_DEPLOY_KEY }}
           external_repository: fruktkartan/fruktkartan.github.io
