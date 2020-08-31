@@ -25,3 +25,5 @@ jobs:
         run: |
           make build
           ./fruktsam
+        env:
+          FRUKTKARTAN_DATABASEURI: ${{ secrets.DATABASE_URL }}
