@@ -18,6 +18,7 @@ import (
 	"github.com/goodsign/monday"
 	"github.com/jmoiron/sqlx"
 	"github.com/joho/godotenv"
+	"github.com/sergi/go-diff/diffmatchpatch"
 
 	_ "github.com/lib/pq"
 )
@@ -77,6 +78,7 @@ func main() {
 		log.Fatal(err)
 	}
 
+	dmp := diffmatchpatch.New()
 	for idx := range data.History {
 		he := &data.History[idx]
 
@@ -97,6 +99,11 @@ func main() {
 				time.Sleep(1 * time.Second)
 			}
 			he.NewAddress = revcache.FormatAddress(p)
+		}
+
+		if he.ChangeOp == "UPDATE" {
+			diffs := dmp.DiffMain(he.Desc.String(), he.NewDesc.String(), false)
+			he.DescDiff = dmp.DiffPrettyHtml(diffs)
 		}
 	}
 
@@ -141,6 +148,7 @@ type historyEntry struct {
 	// TODO should perhaps not serialize these, but they do need to be exported
 	// (capitalized) for exposing to template
 	Address, NewAddress string
+	DescDiff            string
 }
 
 type history []historyEntry

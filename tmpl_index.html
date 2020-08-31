@@ -45,7 +45,7 @@
   {{ .ChangeAt }}
   <span class="address">nära {{ .Address }}</span>
   <br/>
-  <span class="bread">
+  <span class="bread old">
     beskrivning: {{ .Desc }}<br/>
     redigerat: {{ .At }}
     <!-- <a href="geo:{{ .Lat.Value }},{{ .Lon.Value }}">geo:{{ .Lat.Value }},{{ .Lon.Value }}</a> -->
@@ -80,8 +80,7 @@
   <span class="address">nära {{ .NewAddress }}</span>
   <br/>
   <span class="bread">
-    beskrivning: {{ .NewDesc }}<br/>
-    <span class="old">beskrivning: {{ .Desc }}</span><br/>
+    beskrivning: {{ .DescDiff }}<br />
     <span class="old">redigerat: {{ .At }}</span><br/>
       <!-- <a href="geo:{{ .NewLat.Value }},{{ .NewLon.Value }}">geo:{{ .NewLat.Value }},{{ .NewLon.Value }}</a> -->
   </span>
