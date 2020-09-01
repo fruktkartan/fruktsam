@@ -4,7 +4,7 @@ on:
   push:
     branches:
       master
-  # run a minute past midnight, every day
+  # run a minute past midnight (UTC), every day
   schedule:
     - cron: '01 00 * * *'
   workflow_dispatch:
