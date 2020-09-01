@@ -1,13 +1,16 @@
-name: Deploy
+name: Build (and deploy)
 
 on:
   push:
     branches:
-      - production
+      master
+  # run a minute past midnight, every day
+  schedule:
+    - cron: '01 00 * * *'
   workflow_dispatch:
 
 jobs:
-  production:
+  build:
     runs-on: ubuntu-20.04
     steps:
       - name: Checkout
@@ -18,7 +21,6 @@ jobs:
         uses: actions/setup-go@v2
         with:
           go-version: '^1.15'
-
       - name: Build
         run: |
           make build
@@ -29,6 +31,19 @@ jobs:
         env:
           FRUKTKARTAN_DATABASEURI: ${{ secrets.FRUKTKARTAN_DATABASEURI }}
 
+  deploy:
+    runs-on: ubuntu-20.04
+    if: github.event_name == 'schedule'
+    needs: build
+    steps:
+      - name: Cache
+        uses: stefanzweifel/git-auto-commit-action@v4
+        with:
+          commit_message: "Update reversecache"
+          branch: master
+          file_pattern: reversecache
+          commit_user_name: 'fruktrobot'
+          commit_user_email: '<>'
       - name: Deploy
         uses: peaceiris/actions-gh-pages@v3
         with:
