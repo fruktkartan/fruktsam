@@ -39,7 +39,7 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v2
         with:
-          persist-credentials: false
+          persist-credentials: true
       - name: Setup go
         uses: actions/setup-go@v2
         with:
