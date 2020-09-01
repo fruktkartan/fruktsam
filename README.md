@@ -1,7 +1,7 @@
 
-Build on push: ![](https://github.com/fruktkartan/fruktsam/workflows/Build%20(and%20deploy)/badge.svg?branch=master&event=push) 
-Manual deploy: ![](https://github.com/fruktkartan/fruktsam/workflows/Build%20(and%20deploy)/badge.svg?branch=master&event=workflow_dispatch) 
-Scheduled deploy: ![](https://github.com/fruktkartan/fruktsam/workflows/Build%20(and%20deploy)/badge.svg?branch=master&event=schedule) 
+Build on push: ![](https://github.com/fruktkartan/fruktsam/workflows/Build%20(and%20deploy)/badge.svg?branch=master&event=push)  
+Manual deploy: ![](https://github.com/fruktkartan/fruktsam/workflows/Build%20(and%20deploy)/badge.svg?branch=master&event=workflow_dispatch)  
+Scheduled deploy: ![](https://github.com/fruktkartan/fruktsam/workflows/Build%20(and%20deploy)/badge.svg?branch=master&event=schedule)  
 
 Builds automatically upon push to `master`.
 
