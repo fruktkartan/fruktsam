@@ -5,24 +5,13 @@ import (
 	"database/sql"
 	"encoding/gob"
 	"fmt"
-	"log"
 	"os"
 	"strings"
-	"time"
 
-	"github.com/goodsign/monday"
+	"github.com/fruktkartan/fruktsam/util"
 	"github.com/jmoiron/sqlx"
 	_ "github.com/lib/pq"
 )
-
-var loc *time.Location
-
-func init() {
-	var err error
-	if loc, err = time.LoadLocation("Europe/Stockholm"); err != nil {
-		log.Fatal(err)
-	}
-}
 
 type History []Entry
 
@@ -151,5 +140,5 @@ func (nt nullTime) String() string {
 	if !nt.NullTime.Valid {
 		return ""
 	}
-	return monday.Format(nt.Time.In(loc), "2006-01-02 15.04", monday.LocaleSvSE)
+	return util.FormatDate(nt.Time)
 }

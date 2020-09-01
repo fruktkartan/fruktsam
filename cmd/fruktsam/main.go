@@ -12,6 +12,7 @@ import (
 	"github.com/alecthomas/kingpin"
 	"github.com/fruktkartan/fruktsam/geo"
 	"github.com/fruktkartan/fruktsam/history"
+	"github.com/fruktkartan/fruktsam/util"
 	"github.com/joho/godotenv"
 	"github.com/sergi/go-diff/diffmatchpatch"
 )
@@ -44,6 +45,7 @@ func main() {
 	type templateData struct {
 		SinceDays int
 		History   history.History
+		Now       string
 	}
 	var data templateData
 
@@ -51,6 +53,7 @@ func main() {
 		log.Fatal(err)
 	}
 	data.SinceDays = sinceFlag
+	data.Now = util.FormatDate(time.Now())
 
 	// if _, err = os.Stat(historycache); err != nil {
 	// 	fmt.Printf("filling cache file\n")
