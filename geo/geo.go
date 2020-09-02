@@ -88,7 +88,7 @@ func (r ReverseCache) Save(cachefile string) error {
 
 func (r ReverseCache) Load(cachefile string) error {
 	if len(r.Table) > 0 {
-		return fmt.Errorf("Reversecache not empty, refusing to load from file\n")
+		return fmt.Errorf("reversecache not empty, refusing to load from file")
 	}
 
 	f, err := os.Open(cachefile)
