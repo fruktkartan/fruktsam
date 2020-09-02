@@ -63,7 +63,7 @@ func NewReverseCache() *ReverseCache {
 }
 
 func (r ReverseCache) Save(cachefile string) error {
-	if r.dirty == false {
+	if !r.dirty {
 		fmt.Printf("Reversecache not modified, not saving\n")
 		return nil
 	}
