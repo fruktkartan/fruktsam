@@ -40,10 +40,10 @@ type Entry struct {
 	DescDiff            string
 }
 
-func (c *History) Store(cachefile string) error {
+func (h *History) Store(cachefile string) error {
 	b := new(bytes.Buffer)
 	enc := gob.NewEncoder(b)
-	err := enc.Encode(c)
+	err := enc.Encode(h)
 	if err != nil {
 		return err
 	}
