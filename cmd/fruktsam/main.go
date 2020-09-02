@@ -26,7 +26,7 @@ const outfile = "dist/index.html"
 // const historycache = "historycache"
 const reversecache = "reversecache"
 
-const defaultSinceDays = 60
+const defaultSinceDays = 90
 
 type templateData struct {
 	SinceDays int
