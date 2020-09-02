@@ -84,13 +84,13 @@ func main() {
 	// if data.History, err = history.LoadCache(historycache); err != nil {
 	// 	log.Fatal(err)
 	// }
-	fmt.Printf("history entries: %d\n", len(data.History))
+	fmt.Printf("History entries during past %d days: %d\n", sinceFlag, len(data.History))
 
 	sort.Slice(data.History, func(i, j int) bool {
 		return data.History[i].ChangeID > data.History[j].ChangeID
 	})
 
-	revcache := geo.ReverseCache{}
+	revcache := geo.NewReverseCache()
 
 	if err = revcache.Load(reversecache); err != nil {
 		log.Fatal(err)
@@ -136,7 +136,7 @@ func main() {
 		}
 	}
 
-	if err = revcache.Store(reversecache); err != nil {
+	if err = revcache.Save(reversecache); err != nil {
 		fmt.Println(err)
 	}
 

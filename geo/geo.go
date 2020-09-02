@@ -49,9 +49,24 @@ func reverse(p Pos) ([]byte, error) {
 	return body, nil
 }
 
-type ReverseCache map[Pos][]byte
+type ReverseCache struct {
+	Table table
+	dirty bool
+}
 
-func (r ReverseCache) Store(cachefile string) error {
+type table map[Pos][]byte
+
+func NewReverseCache() *ReverseCache {
+	r := ReverseCache{}
+	r.Table = make(table)
+	return &r
+}
+
+func (r ReverseCache) Save(cachefile string) error {
+	if r.dirty == false {
+		fmt.Printf("Reversecache not modified, not saving\n")
+		return nil
+	}
 	b := new(bytes.Buffer)
 	enc := gob.NewEncoder(b)
 	err := enc.Encode(r)
@@ -72,8 +87,8 @@ func (r ReverseCache) Store(cachefile string) error {
 }
 
 func (r ReverseCache) Load(cachefile string) error {
-	if len(r) > 0 {
-		return fmt.Errorf("map not empty, refusing to load from cache")
+	if len(r.Table) > 0 {
+		return fmt.Errorf("Reversecache not empty, refusing to load from file\n")
 	}
 
 	f, err := os.Open(cachefile)
@@ -89,35 +104,35 @@ func (r ReverseCache) Load(cachefile string) error {
 	if err := dec.Decode(&r); err != nil {
 		return err
 	}
+	fmt.Printf("Reversecache loaded with %d entries from file\n", len(r.Table))
 	return nil
 }
 
 func (r ReverseCache) Has(p Pos) bool {
-	_, ok := r[p]
+	_, ok := r.Table[p]
 	return ok
 }
 
 func (r ReverseCache) Add(p Pos) {
-	if _, ok := r[p]; !ok {
+	if !r.Has(p) {
 		jsonbytes, err := reverse(p)
 		if err != nil {
 			fmt.Printf("%v: %s\n", p, err)
-			r[p] = nil
+			r.Table[p] = nil
 		} else {
-			r[p] = jsonbytes
+			r.Table[p] = jsonbytes
 		}
+		r.dirty = true
 	}
 }
 
 func (r ReverseCache) FormatAddress(p Pos) string {
-	var jsonData []byte
-	var ok bool
-	if jsonData, ok = r[p]; !ok {
+	if !r.Has(p) {
 		return "????"
 	}
 
 	root := osm{}
-	err := json.Unmarshal(jsonData, &root)
+	err := json.Unmarshal(r.Table[p], &root)
 	if err != nil {
 		log.Printf("%v: %s\n", p, err)
 		return "???"
