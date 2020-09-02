@@ -12,6 +12,9 @@
    font-style: italic;
  }
 
+ .readable {
+   max-width: 32em;
+ }
  .bread {
    display: inline-block; /* to set max-width */
    font-size: smaller;
@@ -31,11 +34,21 @@
  .old {
    text-decoration: line-through;
  }
+/* fruktfärger */
 </style>
 </head>
 <body>
 
-Senaste {{ .SinceDays }} dagarnas ändringar (genererad {{ .Now }})
+<p class="readable">
+  Senaste {{ .SinceDays }} dagarnas ändringar
+  på <a href="https://fruktkartan.se/">fruktkartan.se</a>, genererad {{ .Now }}.
+</p>
+
+<p class="readable">
+  Under perioden lades {{ .Stats.Inserts }} träd till och {{ .Stats.Deletes }} togs bort
+  (netto {{ .Stats.Net }}). {{ .Stats.Updates }} träd redigerades.
+</p>
+
 
 {{ range .History }}
 

@@ -28,6 +28,26 @@ const reversecache = "reversecache"
 
 const defaultSinceDays = 60
 
+type templateData struct {
+	SinceDays int
+	History   history.History
+	Now       string
+	Stats     stats
+}
+
+type stats struct {
+	Deletes, Inserts, Updates int
+}
+
+func (s *stats) Net() string {
+	net := s.Inserts - s.Deletes
+	plus := ""
+	if net > 0 {
+		plus = "+"
+	}
+	return fmt.Sprintf("%s%d", plus, net)
+}
+
 func main() {
 	var sinceFlag = defaultSinceDays
 	var err error
@@ -42,11 +62,6 @@ func main() {
 		log.Fatalf("Error loading %s file: %s", envfile, err)
 	}
 
-	type templateData struct {
-		SinceDays int
-		History   history.History
-		Now       string
-	}
 	var data templateData
 
 	if err = history.FromDB(&data.History, sinceFlag); err != nil {
@@ -107,8 +122,17 @@ func main() {
 		}
 
 		if he.ChangeOp == "UPDATE" {
-			diffs := dmp.DiffMain(he.Desc.String(), he.NewDesc.String(), false)
-			he.DescDiff = dmp.DiffPrettyHtml(diffs)
+			he.DescDiff = dmp.DiffPrettyHtml(
+				dmp.DiffMain(he.Desc.String(), he.NewDesc.String(), false))
+		}
+
+		switch he.ChangeOp {
+		case "DELETE":
+			data.Stats.Deletes++
+		case "INSERT":
+			data.Stats.Inserts++
+		case "UPDATE":
+			data.Stats.Updates++
 		}
 	}
 
