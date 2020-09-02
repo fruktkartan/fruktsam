@@ -1,8 +1,8 @@
-lint:
-	golangci-lint run
-
 build:
 	go build ./cmd/fruktsam
+
+lint:
+	golangci-lint run
 
 deploy: build
 	./fruktsam
