@@ -62,7 +62,7 @@ func NewReverseCache() *ReverseCache {
 	return &r
 }
 
-func (r ReverseCache) Save(cachefile string) error {
+func (r *ReverseCache) Save(cachefile string) error {
 	if !r.dirty {
 		fmt.Printf("Reversecache not modified, not saving\n")
 		return nil
@@ -86,7 +86,7 @@ func (r ReverseCache) Save(cachefile string) error {
 	return nil
 }
 
-func (r ReverseCache) Load(cachefile string) error {
+func (r *ReverseCache) Load(cachefile string) error {
 	if len(r.Table) > 0 {
 		return fmt.Errorf("reversecache not empty, refusing to load from file")
 	}
@@ -108,12 +108,12 @@ func (r ReverseCache) Load(cachefile string) error {
 	return nil
 }
 
-func (r ReverseCache) Has(p Pos) bool {
+func (r *ReverseCache) Has(p Pos) bool {
 	_, ok := r.Table[p]
 	return ok
 }
 
-func (r ReverseCache) Add(p Pos) {
+func (r *ReverseCache) Add(p Pos) {
 	if !r.Has(p) {
 		jsonbytes, err := reverse(p)
 		if err != nil {
@@ -126,7 +126,7 @@ func (r ReverseCache) Add(p Pos) {
 	}
 }
 
-func (r ReverseCache) FormatAddress(p Pos) string {
+func (r *ReverseCache) FormatAddress(p Pos) string {
 	if !r.Has(p) {
 		return "????"
 	}
