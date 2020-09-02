@@ -7,6 +7,4 @@ The build is deployed to https://fruktkartan.se/historik/ every night at 00:01
 UTC (and on [manual workflow run](https://github.com/fruktkartan/fruktsam/actions?query=workflow%3A%22Build+%28and+deploy%29%22)).
 The cache of reverse-geocoded addresses is also commited back to the repo.
 
-Needs `FRUKTKARTAN_DATABASEURI` environment variable, or in `.env`.
-
-TODO: could move the databaseuri deploy secret to organization level (same for fruktkartan-api)
+Needs `DATABASE_URL` environment variable, or in `.env`.

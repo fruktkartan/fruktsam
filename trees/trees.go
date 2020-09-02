@@ -8,7 +8,7 @@ import (
 )
 
 func Count() (int, error) {
-	db, err := sqlx.Connect("postgres", os.Getenv("FRUKTKARTAN_DATABASEURI"))
+	db, err := sqlx.Connect("postgres", os.Getenv("DATABASE_URL"))
 	if err != nil {
 		return 0, err
 	}

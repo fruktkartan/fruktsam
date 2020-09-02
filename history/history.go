@@ -103,7 +103,7 @@ func FromDB(h *History, sinceDays int) error {
 		query += fmt.Sprintf(" WHERE at > (CURRENT_DATE - INTERVAL '%d days')", sinceDays)
 	}
 
-	db, err := sqlx.Connect("postgres", os.Getenv("FRUKTKARTAN_DATABASEURI"))
+	db, err := sqlx.Connect("postgres", os.Getenv("DATABASE_URL"))
 	if err != nil {
 		return err
 	}

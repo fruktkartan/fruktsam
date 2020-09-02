@@ -30,7 +30,7 @@ jobs:
           mkdir dist
           mv dist_ dist/historik
         env:
-          FRUKTKARTAN_DATABASEURI: ${{ secrets.FRUKTKARTAN_DATABASEURI }}
+          DATABASE_URL: ${{ secrets.DATABASE_URL }}
 
   deploy:
     runs-on: ubuntu-20.04
@@ -52,7 +52,7 @@ jobs:
           mkdir dist
           mv dist_ dist/historik
         env:
-          FRUKTKARTAN_DATABASEURI: ${{ secrets.FRUKTKARTAN_DATABASEURI }}
+          DATABASE_URL: ${{ secrets.DATABASE_URL }}
 
       - name: Cache
         uses: stefanzweifel/git-auto-commit-action@v4
