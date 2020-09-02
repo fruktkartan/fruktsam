@@ -15,6 +15,7 @@
  .readable {
    max-width: 32em;
  }
+
  .bread {
    display: inline-block; /* to set max-width */
    font-size: smaller;
@@ -34,7 +35,6 @@
  .old {
    text-decoration: line-through;
  }
-/* fruktfärger */
 </style>
 </head>
 <body>
@@ -53,52 +53,44 @@
 
 {{ range .History }}
 
-{{ if eq .ChangeOp "DELETE" }}
 <p>
   {{ .ChangeAt }}
+
+  {{ if eq .ChangeOp "DELETE" }}
   <span class="op delete">borttaget</span>
   <span class="type">{{ .Type }}</span>
   <a href="{{ .GeoURL }}" target="_blank" rel="noopener">nära</a>
   <span class="address">{{ .Address }}</span>
   <br/>
-  <span class="bread old">
-    beskrivning: {{ .Desc }}<br/>
-    redigerat: {{ .At }}
-  </span>
-</p>
-{{ end }}
+  <span class="bread old">beskrivning: {{ .Desc }}</span>
+  <br/>
+  <span class="bread old">redigerat: {{ .At }}</span>
+  {{ end }}
 
-{{ if eq .ChangeOp "INSERT" }}
-<p>
-  {{ .ChangeAt }}
+  {{ if eq .ChangeOp "INSERT" }}
   <span class="op insert">nytt</span>
   <span class="type"><a href="https://fruktkartan.se/#/t/{{ .NewKey }}" target="_blank" rel="noopener">{{ .NewType }}</a></span>
   <a href="{{ .NewGeoURL }}" target="_blank" rel="noopener">nära</a>
   <span class="address">{{ .NewAddress }}</span>
   <br/>
-  <span class="bread">
-    beskrivning: {{ .NewDesc }}<br/>
-  </span>
-</p>
-{{ end }}
+  <span class="bread">beskrivning: {{ .NewDesc }}</span>
+  {{ end }}
 
-<!-- TODO moved tree (but user currently can't do that)? -->
-<!-- TODO the image? -->
-{{ if eq .ChangeOp "UPDATE" }}
-<p>
-  {{ .ChangeAt }}
+  <!-- TODO moved tree (but user currently can't do that)? -->
+  <!-- TODO the image? -->
+
+  {{ if eq .ChangeOp "UPDATE" }}
   <span class="op update">redigerat</span>
   <span class="type"><a href="https://fruktkartan.se/#/t/{{ .NewKey }}" target="_blank" rel="noopener">{{ .NewType }}</a></span>
   {{ if ne .Type .NewType }}<span class="old">typ:{{ .Type }}</span>{{ end }}
   <a href="{{ .NewGeoURL }}" target="_blank" rel="noopener">nära</a>
   <span class="address">{{ .NewAddress }}</span>
   <br/>
-  <span class="bread">
-    beskrivning: {{ .DescDiff }}<br />
-    <span class="old">redigerat: {{ .At }}</span><br/>
-  </span>
+  <span class="bread">beskrivning: {{ .DescDiff }}</span>
+  <br/>
+  <span class="bread old">redigerat: {{ .At }}</span>
+  {{ end }}
 </p>
-{{ end }}
 
 {{ end }}
 
