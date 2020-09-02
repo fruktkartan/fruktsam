@@ -6,12 +6,14 @@ import (
 	"os"
 	"path/filepath"
 	"sort"
+	"strconv"
 	"text/template"
 	"time"
 
 	"github.com/alecthomas/kingpin"
 	"github.com/fruktkartan/fruktsam/geo"
 	"github.com/fruktkartan/fruktsam/history"
+	"github.com/fruktkartan/fruktsam/trees"
 	"github.com/fruktkartan/fruktsam/util"
 	"github.com/joho/godotenv"
 	"github.com/sergi/go-diff/diffmatchpatch"
@@ -37,6 +39,7 @@ type templateData struct {
 
 type stats struct {
 	Deletes, Inserts, Updates int
+	treeCount                 int
 }
 
 func (s *stats) Net() string {
@@ -46,6 +49,21 @@ func (s *stats) Net() string {
 		plus = "+"
 	}
 	return fmt.Sprintf("%s%d", plus, net)
+}
+
+func (s *stats) TreeCount() string {
+	if s.treeCount == 0 {
+		var err error
+		s.treeCount, err = trees.Count()
+		if err != nil {
+			log.Printf("trees.Count: " + err.Error())
+			s.treeCount = -1
+		}
+	}
+	if s.treeCount < 0 {
+		return "?"
+	}
+	return strconv.Itoa(s.treeCount)
 }
 
 func main() {

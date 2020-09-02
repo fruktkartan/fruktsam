@@ -40,15 +40,16 @@
 <body>
 
 <p class="readable">
-  Senaste {{ .SinceDays }} dagarnas ändringar
-  på <a href="https://fruktkartan.se/">fruktkartan.se</a>, genererad {{ .Now }}.
+  Det finns {{ .Stats.TreeCount }} träd på <a href="https://fruktkartan.se/">fruktkartan.se</a> ({{ .Now }}).
 </p>
 
 <p class="readable">
-  Under perioden lades {{ .Stats.Inserts }} träd till och {{ .Stats.Deletes }} togs bort
+  Nedan följer senaste {{ .SinceDays }} dagarnas ändringar. Under perioden
+  lades {{ .Stats.Inserts }} träd till och {{ .Stats.Deletes }} togs bort
   (netto {{ .Stats.Net }}). {{ .Stats.Updates }} träd redigerades.
 </p>
 
+<hr/>
 
 {{ range .History }}
 
