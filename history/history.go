@@ -20,13 +20,13 @@ type Entry struct {
 	ChangeAt nullTime
 	ChangeOp string
 
-	Key        nullString
+	Key        nullStringTrimmed
 	Type, Desc nullStringTrimmed
 	By         nullString
 	At         nullTime
 	Lat, Lon   sql.NullFloat64
 
-	NewKey           nullString
+	NewKey           nullStringTrimmed
 	NewType, NewDesc nullStringTrimmed
 	NewBy            nullString
 	NewAt            nullTime
