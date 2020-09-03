@@ -114,7 +114,7 @@ type nullString struct {
 	sql.NullString
 }
 
-func (ns nullString) String() string {
+func (ns *nullString) String() string {
 	if !ns.NullString.Valid {
 		return ""
 	}
@@ -125,7 +125,7 @@ type nullStringTrimmed struct {
 	sql.NullString
 }
 
-func (ns nullStringTrimmed) String() string {
+func (ns *nullStringTrimmed) String() string {
 	if !ns.NullString.Valid {
 		return ""
 	}
@@ -136,7 +136,7 @@ type nullTime struct {
 	sql.NullTime
 }
 
-func (nt nullTime) String() string {
+func (nt *nullTime) String() string {
 	if !nt.NullTime.Valid {
 		return ""
 	}
