@@ -19,8 +19,6 @@ import (
 	"github.com/sergi/go-diff/diffmatchpatch"
 )
 
-// TODO consider puring history entries that contains old-style ssm_keys?
-
 const envfile = ".env"
 const outfile = "dist/index.html"
 
