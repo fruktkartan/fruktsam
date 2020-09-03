@@ -16,6 +16,10 @@
    max-width: 32em;
  }
 
+ p.change {
+   border-top: 1px solid lightgrey;
+ }
+
  .bread {
    display: inline-block; /* to set max-width */
    font-size: smaller;
@@ -49,11 +53,9 @@
   (netto {{ .Stats.Net }}). {{ .Stats.Updates }} träd redigerades.
 </p>
 
-<hr/>
-
 {{ range .History }}
 
-<p>
+<p class="change">
   {{ .ChangeAt }}
 
   {{ if eq .ChangeOp "DELETE" }}
