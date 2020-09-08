@@ -84,7 +84,7 @@ func main() {
 		log.Fatal(err)
 	}
 	data.SinceDays = sinceFlag
-	data.Now = util.FormatDate(time.Now())
+	data.Now = util.FormatDateTime(time.Now())
 
 	// if _, err = os.Stat(historycache); err != nil {
 	// 	fmt.Printf("filling cache file\n")

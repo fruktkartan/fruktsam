@@ -140,5 +140,5 @@ func (nt *nullTime) String() string {
 	if !nt.NullTime.Valid {
 		return ""
 	}
-	return util.FormatDate(nt.Time)
+	return util.FormatDateTime(nt.Time)
 }

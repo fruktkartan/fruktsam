@@ -11,10 +11,18 @@ var location *time.Location
 
 const (
 	mondayLocale = monday.LocaleSvSE
-	dateTimeFmt  = "2006-01-02 15.04"
+	dateFmt      = "2006-01-02"
+	dateTimeFmt  = dateFmt + " 15.04"
 )
 
 func FormatDate(t time.Time) string {
+	if location == nil {
+		initLocation()
+	}
+	return monday.Format(t.In(location), dateFmt, mondayLocale)
+}
+
+func FormatDateTime(t time.Time) string {
 	if location == nil {
 		initLocation()
 	}
