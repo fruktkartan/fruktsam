@@ -16,8 +16,8 @@
    max-width: 32em;
  }
 
- p.change {
-   border-top: 1px solid lightgrey;
+ p.date {
+   border-top: 1px solid grey;
  }
 
  .bread {
@@ -53,14 +53,20 @@
   (netto {{ .Stats.Net }}). {{ .Stats.Updates }} redigeringar gjordes.
 </p>
 
+{{ $lastDate := "" }}
+
 {{ range .History }}
 
-<p class="change">
-  {{ .ChangeAt }}
+{{ if ne $lastDate .ChangeAt.Date }}
+  <p class="date readable">{{ .ChangeAt.Date }}</p>
+  {{ $lastDate = .ChangeAt.Date }}
+{{ end }}
 
+<p>
   {{ if eq .ChangeOp "DELETE" }}
   <span class="op delete">borttaget</span>
   <span class="type">{{ .Type }}</span>
+  {{ .ChangeAt.TimeStr }}
   <a href="{{ .GeoURL }}" target="_blank" rel="noopener">nära</a>
   <span class="address">{{ .Address }}</span>
   <br/>
@@ -72,6 +78,7 @@
   {{ if eq .ChangeOp "INSERT" }}
   <span class="op insert">nytt</span>
   <span class="type"><a href="https://fruktkartan.se/#/t/{{ .NewKey }}" target="_blank" rel="noopener">{{ .NewType }}</a></span>
+  {{ .ChangeAt.TimeStr }}
   <a href="{{ .NewGeoURL }}" target="_blank" rel="noopener">nära</a>
   <span class="address">{{ .NewAddress }}</span>
   <br/>
@@ -85,6 +92,7 @@
   <span class="op update">redigerat</span>
   <span class="type"><a href="https://fruktkartan.se/#/t/{{ .NewKey }}" target="_blank" rel="noopener">{{ .NewType }}</a></span>
   {{ if ne .Type .NewType }}<span class="old">typ:{{ .Type }}</span>{{ end }}
+  {{ .ChangeAt.TimeStr }}
   <a href="{{ .NewGeoURL }}" target="_blank" rel="noopener">nära</a>
   <span class="address">{{ .NewAddress }}</span>
   <br/>

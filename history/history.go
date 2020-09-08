@@ -142,3 +142,17 @@ func (nt *nullTime) String() string {
 	}
 	return util.FormatDateTime(nt.Time)
 }
+
+func (nt *nullTime) Date() string {
+	if !nt.NullTime.Valid {
+		return ""
+	}
+	return util.FormatDate(nt.Time)
+}
+
+func (nt *nullTime) TimeStr() string {
+	if !nt.NullTime.Valid {
+		return ""
+	}
+	return util.FormatTime(nt.Time)
+}
