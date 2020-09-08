@@ -7,14 +7,23 @@ import (
 	"github.com/goodsign/monday"
 )
 
-var loc *time.Location
+var location *time.Location
+
+const (
+	mondayLocale = monday.LocaleSvSE
+	dateTimeFmt  = "2006-01-02 15.04"
+)
 
 func FormatDate(t time.Time) string {
-	if loc == nil {
-		var err error
-		if loc, err = time.LoadLocation("Europe/Stockholm"); err != nil {
-			log.Fatal(err)
-		}
+	if location == nil {
+		initLocation()
 	}
-	return monday.Format(t.In(loc), "2006-01-02 15.04", monday.LocaleSvSE)
+	return monday.Format(t.In(location), dateTimeFmt, mondayLocale)
+}
+
+func initLocation() {
+	var err error
+	if location, err = time.LoadLocation("Europe/Stockholm"); err != nil {
+		log.Fatal(err)
+	}
 }
