@@ -4,6 +4,8 @@ build:
 lint:
 	golangci-lint run
 
-deploy: build
+deploy-dev: build
+	curl -o reversecache "https://raw.githubusercontent.com/fruktkartan/fruktsam/master/reversecache"
 	./fruktsam
 	rsync -aP --chmod=ugo=rX dist/ steglits:web/fruktsam/
+	git restore reversecache
