@@ -22,8 +22,6 @@ import (
 const envfile = ".env"
 const outfile = "dist/index.html"
 
-// TODO disabled for now
-// const historyfile = "historycache"
 const reversefile = "reversecache"
 
 const defaultSinceDays = 90
@@ -85,22 +83,6 @@ func main() {
 	}
 	data.SinceDays = sinceFlag
 	data.Now = util.FormatDateTime(time.Now())
-
-	// if _, err = os.Stat(historyfile); err != nil {
-	// 	fmt.Printf("filling history from db\n")
-	// 	if err = data.History.FromDB(sinceFlag); err != nil {
-	// 		log.Fatal(err)
-	// 	}
-	// 	fmt.Printf("saving history to file\n")
-	// 	if err = data.History.Save(historyfile); err != nil {
-	// 		log.Fatal(err)
-	// 	}
-	// } else {
-	// 	fmt.Printf("history file found\n")
-	// }
-	// if err = data.History.Load(historyfile); err != nil {
-	// 	log.Fatal(err)
-	// }
 
 	fmt.Printf("History entries during past %d days: %d\n", sinceFlag, len(data.History))
 
