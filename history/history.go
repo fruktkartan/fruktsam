@@ -35,14 +35,14 @@ type Entry struct {
 	At         nullTime
 	Lat, Lon   sql.NullFloat64
 
-	NewKey           nullStringTrimmed
-	NewType, NewDesc nullStringTrimmed
-	NewBy            nullString
-	NewAt            nullTime
-	NewLat, NewLon   sql.NullFloat64
+	KeyNew           nullStringTrimmed
+	TypeNew, DescNew nullStringTrimmed
+	ByNew            nullString
+	AtNew            nullTime
+	LatNew, LonNew   sql.NullFloat64
 
-	Address, NewAddress string
-	GeoURL, NewGeoURL   string
+	Address, AddressNew string
+	GeoURL, GeoURLNew   string
 	DescDiff            string
 }
 
@@ -93,13 +93,13 @@ func (h *History) FromDB(sinceDays int) error {
                      , (old_json->>'added_at')::timestamp AS at
                      , ST_Y(old_point) AS lat
                      , ST_X(old_point) AS lon
-                     , new_json->>'ssm_key' AS newkey
-                     , new_json->>'type' AS newtype
-                     , new_json->>'description' AS newdesc
-                     , new_json->>'added_by' AS newby
-                     , (new_json->>'added_at')::timestamp AS newat
-                     , ST_Y(new_point) AS newlat
-                     , ST_X(new_point) AS newlon
+                     , new_json->>'ssm_key' AS keynew
+                     , new_json->>'type' AS typenew
+                     , new_json->>'description' AS descnew
+                     , new_json->>'added_by' AS bynew
+                     , (new_json->>'added_at')::timestamp AS atnew
+                     , ST_Y(new_point) AS latnew
+                     , ST_X(new_point) AS lonnew
                 FROM history
                      , ST_GeomFromWKB(DECODE(old_json->>'point', 'hex')) AS old_point
                      , ST_GeomFromWKB(DECODE(new_json->>'point', 'hex')) AS new_point`
@@ -236,20 +236,20 @@ func (h *History) prepare() {
 			he.Address = revcache.FormatAddress(p)
 			he.GeoURL = p.GeohackURL()
 		}
-		if he.NewLat.Valid {
-			p := geo.Pos{Lat: he.NewLat.Float64, Lon: he.NewLon.Float64}
+		if he.LatNew.Valid {
+			p := geo.Pos{Lat: he.LatNew.Float64, Lon: he.LonNew.Float64}
 			if !revcache.Has(p) {
 				fmt.Printf("get reverse address for entry %d\n", he.ChangeID)
 				revcache.Add(p)
 				time.Sleep(1 * time.Second)
 			}
-			he.NewAddress = revcache.FormatAddress(p)
-			he.NewGeoURL = p.GeohackURL()
+			he.AddressNew = revcache.FormatAddress(p)
+			he.GeoURLNew = p.GeohackURL()
 		}
 
 		if he.ChangeOp == "UPDATE" {
 			he.DescDiff = dmp.DiffPrettyHtml(
-				dmp.DiffMain(he.Desc.String(), he.NewDesc.String(), false))
+				dmp.DiffMain(he.Desc.String(), he.DescNew.String(), false))
 		}
 
 		switch he.ChangeOp {

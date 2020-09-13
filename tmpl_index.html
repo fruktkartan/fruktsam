@@ -77,12 +77,12 @@
 
   {{ if eq .ChangeOp "INSERT" }}
   <span class="op insert">nytt</span>
-  <span class="type"><a href="https://fruktkartan.se/#/t/{{ .NewKey }}" target="_blank" rel="noopener">{{ .NewType }}</a></span>
+  <span class="type"><a href="https://fruktkartan.se/#/t/{{ .KeyNew }}" target="_blank" rel="noopener">{{ .TypeNew }}</a></span>
   {{ .ChangeAt.TimeStr }}
-  <a href="{{ .NewGeoURL }}" target="_blank" rel="noopener">nära</a>
-  <span class="address">{{ .NewAddress }}</span>
+  <a href="{{ .GeoURLNew }}" target="_blank" rel="noopener">nära</a>
+  <span class="address">{{ .AddressNew }}</span>
   <br/>
-  <span class="bread">beskrivning: {{ .NewDesc }}</span>
+  <span class="bread">beskrivning: {{ .DescNew }}</span>
   {{ end }}
 
   <!-- TODO moved tree (but user currently can't do that)? -->
@@ -90,11 +90,11 @@
 
   {{ if eq .ChangeOp "UPDATE" }}
   <span class="op update">redigerat</span>
-  <span class="type"><a href="https://fruktkartan.se/#/t/{{ .NewKey }}" target="_blank" rel="noopener">{{ .NewType }}</a></span>
-  {{ if ne .Type .NewType }}<span class="old">typ:{{ .Type }}</span>{{ end }}
+  <span class="type"><a href="https://fruktkartan.se/#/t/{{ .KeyNew }}" target="_blank" rel="noopener">{{ .TypeNew }}</a></span>
+  {{ if ne .Type .TypeNew }}<span class="old">typ:{{ .Type }}</span>{{ end }}
   {{ .ChangeAt.TimeStr }}
-  <a href="{{ .NewGeoURL }}" target="_blank" rel="noopener">nära</a>
-  <span class="address">{{ .NewAddress }}</span>
+  <a href="{{ .GeoURLNew }}" target="_blank" rel="noopener">nära</a>
+  <span class="address">{{ .AddressNew }}</span>
   <br/>
   <span class="bread">beskrivning: {{ .DescDiff }}</span>
   <br/>
