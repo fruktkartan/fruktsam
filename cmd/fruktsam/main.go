@@ -5,7 +5,6 @@ import (
 	"log"
 	"os"
 	"path/filepath"
-	"strconv"
 	"text/template"
 	"time"
 
@@ -24,26 +23,7 @@ const defaultSinceDays = 90
 type templateData struct {
 	History history.History
 	Now     string
-	Stats   stats
-}
-
-type stats struct {
-	treeCount int
-}
-
-func (s *stats) TreeCount() string {
-	if s.treeCount == 0 {
-		var err error
-		s.treeCount, err = trees.Count()
-		if err != nil {
-			log.Printf("trees.Count: " + err.Error())
-			s.treeCount = -1
-		}
-	}
-	if s.treeCount < 0 {
-		return "?"
-	}
-	return strconv.Itoa(s.treeCount)
+	Trees   trees.Trees
 }
 
 func main() {
