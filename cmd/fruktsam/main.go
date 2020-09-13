@@ -23,8 +23,8 @@ const envfile = ".env"
 const outfile = "dist/index.html"
 
 // TODO disabled for now
-// const historycache = "historycache"
-const reversecache = "reversecache"
+// const historyfile = "historycache"
+const reversefile = "reversecache"
 
 const defaultSinceDays = 90
 
@@ -86,18 +86,18 @@ func main() {
 	data.SinceDays = sinceFlag
 	data.Now = util.FormatDateTime(time.Now())
 
-	// if _, err = os.Stat(historycache); err != nil {
+	// if _, err = os.Stat(historyfile); err != nil {
 	// 	fmt.Printf("filling cache file\n")
 	// 	if err = history.HistoryFromDB(&data.History); err != nil {
 	// 		log.Fatal(err)
 	// 	}
-	// 	if err = data.History.Store(historycache); err != nil {
+	// 	if err = data.History.Store(historyfile); err != nil {
 	// 		log.Fatal(err)
 	// 	}
 	// } else {
 	// 	fmt.Printf("cache file found\n")
 	// }
-	// if data.History, err = history.LoadCache(historycache); err != nil {
+	// if data.History, err = history.LoadCache(historyfile); err != nil {
 	// 	log.Fatal(err)
 	// }
 	fmt.Printf("History entries during past %d days: %d\n", sinceFlag, len(data.History))
@@ -108,7 +108,7 @@ func main() {
 
 	revcache := geo.NewReverseCache()
 
-	if err = revcache.Load(reversecache); err != nil {
+	if err = revcache.Load(reversefile); err != nil {
 		log.Fatal(err)
 	}
 
@@ -152,7 +152,7 @@ func main() {
 		}
 	}
 
-	if err = revcache.Save(reversecache); err != nil {
+	if err = revcache.Save(reversefile); err != nil {
 		fmt.Println(err)
 	}
 
