@@ -55,6 +55,9 @@
 
 {{ $lastDate := "" }}
 
+<!-- TODO moved tree (but user currently can't do that)? -->
+<!-- TODO the image? -->
+
 {{ range .History.Entries }}
 
 {{ if ne $lastDate .ChangeAt.Date }}
@@ -84,9 +87,6 @@
   <br/>
   <span class="bread">beskrivning: {{ .DescNew }}</span>
   {{ end }}
-
-  <!-- TODO moved tree (but user currently can't do that)? -->
-  <!-- TODO the image? -->
 
   {{ if eq .ChangeOp "UPDATE" }}
   <span class="op update">redigerat</span>
