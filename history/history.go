@@ -51,6 +51,7 @@ func (h *History) Len() int {
 }
 
 func (h *History) Entries() []Entry {
+	h.prepare()
 	h.sort()
 	return h.entries
 }
@@ -260,13 +261,13 @@ func (h *History) prepare() {
 		case "UPDATE":
 			h.updates++
 		}
-
-		h.prepared = true
 	}
 
 	if err = revcache.Save(reversefile); err != nil {
 		fmt.Println(err)
 	}
+
+	h.prepared = true
 }
 
 func (h *History) sort() {
