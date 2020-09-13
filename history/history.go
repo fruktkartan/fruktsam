@@ -19,6 +19,7 @@ import (
 )
 
 type History struct {
+	SinceDays                 int
 	entries                   []Entry
 	prepared                  bool
 	deletes, inserts, updates int
@@ -85,6 +86,7 @@ func (h *History) FromDB(sinceDays int) error {
 		return fmt.Errorf("history not empty, refusing to fill from db")
 	}
 	h.prepared = false
+	h.SinceDays = sinceDays
 
 	query := `SELECT id AS changeid, at AS changeat, op AS changeop
                      , old_json->>'ssm_key' AS key

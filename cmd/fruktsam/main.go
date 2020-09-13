@@ -22,10 +22,9 @@ const outfile = "dist/index.html"
 const defaultSinceDays = 90
 
 type templateData struct {
-	SinceDays int
-	History   history.History
-	Now       string
-	Stats     stats
+	History history.History
+	Now     string
+	Stats   stats
 }
 
 type stats struct {
@@ -64,8 +63,7 @@ func main() {
 	var data templateData
 
 	data.Now = util.FormatDateTime(time.Now())
-	data.SinceDays = sinceFlag
-	if err = data.History.FromDB(data.SinceDays); err != nil {
+	if err = data.History.FromDB(sinceFlag); err != nil {
 		log.Fatal(fmt.Sprintf("fromdb: %s", err))
 	}
 
