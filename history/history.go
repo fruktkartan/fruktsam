@@ -21,8 +21,7 @@ import (
 type History struct {
 	SinceDays                 int
 	entries                   []Entry
-	prepared                  bool
-	deletes, inserts, updates int
+	Deletes, Inserts, Updates int
 }
 
 type Entry struct {
@@ -52,28 +51,11 @@ func (h *History) Len() int {
 }
 
 func (h *History) Entries() []Entry {
-	h.prepare()
-	h.sort()
 	return h.entries
 }
 
-func (h *History) Deletes() int {
-	h.prepare()
-	return h.deletes
-}
-
-func (h *History) Inserts() int {
-	h.prepare()
-	return h.inserts
-}
-func (h *History) Updates() int {
-	h.prepare()
-	return h.updates
-}
-
 func (h *History) Net() string {
-	h.prepare()
-	net := h.inserts - h.deletes
+	net := h.Inserts - h.Deletes
 	plus := ""
 	if net > 0 {
 		plus = "+"
@@ -85,8 +67,6 @@ func (h *History) FromDB(sinceDays int) error {
 	if len(h.entries) > 0 {
 		return fmt.Errorf("history not empty, refusing to fill from db")
 	}
-	h.prepared = false
-	h.SinceDays = sinceDays
 
 	query := `SELECT id AS changeid, at AS changeat, op AS changeop
                      , old_json->>'ssm_key' AS key
@@ -117,6 +97,9 @@ func (h *History) FromDB(sinceDays int) error {
 	if err := db.Select(&h.entries, query); err != nil {
 		return err
 	}
+
+	h.SinceDays = sinceDays
+	h.prepare()
 
 	return nil
 }
@@ -192,7 +175,6 @@ func (h *History) Load(cachefile string) error {
 	if len(h.entries) > 0 {
 		return fmt.Errorf("history not empty, refusing to load from file")
 	}
-	h.prepared = false
 
 	f, err := os.Open(cachefile)
 	if err != nil {
@@ -208,15 +190,15 @@ func (h *History) Load(cachefile string) error {
 		return err
 	}
 
+	// note h.SinceDays is unknown here
+	h.prepare()
+
 	return nil
 }
 
 const reversefile = "reversecache"
 
 func (h *History) prepare() {
-	if h.prepared {
-		return
-	}
 	var err error
 
 	revcache := geo.NewReverseCache()
@@ -232,7 +214,7 @@ func (h *History) prepare() {
 		if he.Lat.Valid {
 			p := geo.Pos{Lat: he.Lat.Float64, Lon: he.Lon.Float64}
 			if !revcache.Has(p) {
-				fmt.Printf("get reverse address for entry %d\n", he.ChangeID)
+				fmt.Printf("get reverse address for history entry %d\n", he.ChangeID)
 				revcache.Add(p)
 				time.Sleep(1 * time.Second)
 			}
@@ -242,7 +224,7 @@ func (h *History) prepare() {
 		if he.LatNew.Valid {
 			p := geo.Pos{Lat: he.LatNew.Float64, Lon: he.LonNew.Float64}
 			if !revcache.Has(p) {
-				fmt.Printf("get reverse address for entry %d\n", he.ChangeID)
+				fmt.Printf("get reverse address (new) for history entry %d\n", he.ChangeID)
 				revcache.Add(p)
 				time.Sleep(1 * time.Second)
 			}
@@ -257,11 +239,11 @@ func (h *History) prepare() {
 
 		switch he.ChangeOp {
 		case "DELETE":
-			h.deletes++
+			h.Deletes++
 		case "INSERT":
-			h.inserts++
+			h.Inserts++
 		case "UPDATE":
-			h.updates++
+			h.Updates++
 		}
 	}
 
@@ -269,10 +251,6 @@ func (h *History) prepare() {
 		fmt.Println(err)
 	}
 
-	h.prepared = true
-}
-
-func (h *History) sort() {
 	sort.Slice(h.entries, func(i, j int) bool {
 		return h.entries[i].ChangeID > h.entries[j].ChangeID
 	})
