@@ -225,7 +225,7 @@ func (h *History) prepare() {
 
 	dmp := diffmatchpatch.New()
 	for idx := range h.entries {
-		he := h.entries[idx]
+		he := &h.entries[idx]
 
 		if he.Lat.Valid {
 			p := geo.Pos{Lat: he.Lat.Float64, Lon: he.Lon.Float64}
