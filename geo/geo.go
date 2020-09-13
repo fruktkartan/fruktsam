@@ -96,6 +96,7 @@ func (r *ReverseCache) Load(cachefile string) error {
 		if !os.IsNotExist(err) {
 			return err
 		}
+		fmt.Printf("Initialized empty Reversecache.\n")
 		return nil
 	}
 	defer f.Close()

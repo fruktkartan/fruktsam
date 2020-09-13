@@ -49,13 +49,13 @@
 
 <p class="readable">
   Nedan följer senaste {{ .SinceDays }} dagarnas ändringar. Under perioden
-  lades {{ .Stats.Inserts }} träd till och {{ .Stats.Deletes }} togs bort
-  (netto {{ .Stats.Net }}). {{ .Stats.Updates }} redigeringar gjordes.
+  lades {{ .History.Inserts }} träd till och {{ .History.Deletes }} togs bort
+  (netto {{ .History.Net }}). {{ .History.Updates }} redigeringar gjordes.
 </p>
 
 {{ $lastDate := "" }}
 
-{{ range .History }}
+{{ range .History.Entries }}
 
 {{ if ne $lastDate .ChangeAt.Date }}
   <p class="date readable">{{ .ChangeAt.Date }}</p>

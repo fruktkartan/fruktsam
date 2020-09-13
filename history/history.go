@@ -5,15 +5,24 @@ import (
 	"database/sql"
 	"encoding/gob"
 	"fmt"
+	"log"
 	"os"
+	"sort"
 	"strings"
+	"time"
 
+	"github.com/fruktkartan/fruktsam/geo"
 	"github.com/fruktkartan/fruktsam/util"
 	"github.com/jmoiron/sqlx"
 	_ "github.com/lib/pq" // for sqlx
+	"github.com/sergi/go-diff/diffmatchpatch"
 )
 
-type History []Entry
+type History struct {
+	entries                   []Entry
+	prepared                  bool
+	deletes, inserts, updates int
+}
 
 type Entry struct {
 	ChangeID int
@@ -32,22 +41,49 @@ type Entry struct {
 	NewAt            nullTime
 	NewLat, NewLon   sql.NullFloat64
 
-	// TODO should perhaps not serialize these, but they do need to be exported
-	// (capitalized) for exposing to template
-	// Maybe they can be setter/getter functions?
 	Address, NewAddress string
 	GeoURL, NewGeoURL   string
 	DescDiff            string
 }
 
-func NewHistory() *History {
-	return &History{}
+func (h *History) Len() int {
+	return len(h.entries)
+}
+
+func (h *History) Entries() []Entry {
+	h.sort()
+	return h.entries
+}
+
+func (h *History) Deletes() int {
+	h.prepare()
+	return h.deletes
+}
+
+func (h *History) Inserts() int {
+	h.prepare()
+	return h.inserts
+}
+func (h *History) Updates() int {
+	h.prepare()
+	return h.updates
+}
+
+func (h *History) Net() string {
+	h.prepare()
+	net := h.inserts - h.deletes
+	plus := ""
+	if net > 0 {
+		plus = "+"
+	}
+	return fmt.Sprintf("%s%d", plus, net)
 }
 
 func (h *History) FromDB(sinceDays int) error {
-	if len(*h) > 0 {
+	if len(h.entries) > 0 {
 		return fmt.Errorf("history not empty, refusing to fill from db")
 	}
+	h.prepared = false
 
 	query := `SELECT id AS changeid, at AS changeat, op AS changeop
                      , old_json->>'ssm_key' AS key
@@ -75,7 +111,11 @@ func (h *History) FromDB(sinceDays int) error {
 	if err != nil {
 		return err
 	}
-	return db.Select(h, query)
+	if err := db.Select(&h.entries, query); err != nil {
+		return err
+	}
+
+	return nil
 }
 
 type nullString struct {
@@ -146,9 +186,10 @@ func (h *History) Save(cachefile string) error {
 }
 
 func (h *History) Load(cachefile string) error {
-	if len(*h) > 0 {
+	if len(h.entries) > 0 {
 		return fmt.Errorf("history not empty, refusing to load from file")
 	}
+	h.prepared = false
 
 	f, err := os.Open(cachefile)
 	if err != nil {
@@ -165,4 +206,71 @@ func (h *History) Load(cachefile string) error {
 	}
 
 	return nil
+}
+
+const reversefile = "reversecache"
+
+func (h *History) prepare() {
+	if h.prepared {
+		return
+	}
+	var err error
+
+	revcache := geo.NewReverseCache()
+
+	if err = revcache.Load(reversefile); err != nil {
+		log.Fatal(err)
+	}
+
+	dmp := diffmatchpatch.New()
+	for idx := range h.entries {
+		he := h.entries[idx]
+
+		if he.Lat.Valid {
+			p := geo.Pos{Lat: he.Lat.Float64, Lon: he.Lon.Float64}
+			if !revcache.Has(p) {
+				fmt.Printf("get reverse address for entry %d\n", he.ChangeID)
+				revcache.Add(p)
+				time.Sleep(1 * time.Second)
+			}
+			he.Address = revcache.FormatAddress(p)
+			he.GeoURL = p.GeohackURL()
+		}
+		if he.NewLat.Valid {
+			p := geo.Pos{Lat: he.NewLat.Float64, Lon: he.NewLon.Float64}
+			if !revcache.Has(p) {
+				fmt.Printf("get reverse address for entry %d\n", he.ChangeID)
+				revcache.Add(p)
+				time.Sleep(1 * time.Second)
+			}
+			he.NewAddress = revcache.FormatAddress(p)
+			he.NewGeoURL = p.GeohackURL()
+		}
+
+		if he.ChangeOp == "UPDATE" {
+			he.DescDiff = dmp.DiffPrettyHtml(
+				dmp.DiffMain(he.Desc.String(), he.NewDesc.String(), false))
+		}
+
+		switch he.ChangeOp {
+		case "DELETE":
+			h.deletes++
+		case "INSERT":
+			h.inserts++
+		case "UPDATE":
+			h.updates++
+		}
+
+		h.prepared = true
+	}
+
+	if err = revcache.Save(reversefile); err != nil {
+		fmt.Println(err)
+	}
+}
+
+func (h *History) sort() {
+	sort.Slice(h.entries, func(i, j int) bool {
+		return h.entries[i].ChangeID > h.entries[j].ChangeID
+	})
 }
