@@ -40,47 +40,15 @@ type Entry struct {
 	DescDiff            string
 }
 
-func (h *History) Store(cachefile string) error {
-	b := new(bytes.Buffer)
-	enc := gob.NewEncoder(b)
-	err := enc.Encode(h)
-	if err != nil {
-		return err
-	}
-
-	f, err := os.OpenFile(cachefile, os.O_CREATE|os.O_WRONLY, 0666)
-	if err != nil {
-		return err
-	}
-	defer f.Close()
-
-	if _, err = f.Write(b.Bytes()); err != nil {
-		return err
-	}
-	return nil
+func NewHistory() *History {
+	return &History{}
 }
 
-func LoadCache(cachefile string) ([]Entry, error) {
-	cache := History{}
-
-	f, err := os.Open(cachefile)
-	if err != nil {
-		if !os.IsNotExist(err) {
-			return nil, err
-		}
-		return cache, nil
-	}
-	defer f.Close()
-
-	dec := gob.NewDecoder(f)
-	if err := dec.Decode(&cache); err != nil {
-		return nil, err
+func (h *History) FromDB(sinceDays int) error {
+	if len(*h) > 0 {
+		return fmt.Errorf("history not empty, refusing to fill from db")
 	}
 
-	return cache, nil
-}
-
-func FromDB(h *History, sinceDays int) error {
 	query := `SELECT id AS changeid, at AS changeat, op AS changeop
                      , old_json->>'ssm_key' AS key
                      , old_json->>'type' AS type
@@ -155,4 +123,46 @@ func (nt *nullTime) TimeStr() string {
 		return ""
 	}
 	return util.FormatTime(nt.Time)
+}
+
+func (h *History) Save(cachefile string) error {
+	b := new(bytes.Buffer)
+	enc := gob.NewEncoder(b)
+	err := enc.Encode(h)
+	if err != nil {
+		return err
+	}
+
+	f, err := os.OpenFile(cachefile, os.O_CREATE|os.O_WRONLY, 0666)
+	if err != nil {
+		return err
+	}
+	defer f.Close()
+
+	if _, err = f.Write(b.Bytes()); err != nil {
+		return err
+	}
+	return nil
+}
+
+func (h *History) Load(cachefile string) error {
+	if len(*h) > 0 {
+		return fmt.Errorf("history not empty, refusing to load from file")
+	}
+
+	f, err := os.Open(cachefile)
+	if err != nil {
+		if !os.IsNotExist(err) {
+			return err
+		}
+		return nil
+	}
+	defer f.Close()
+
+	dec := gob.NewDecoder(f)
+	if err := dec.Decode(h); err != nil {
+		return err
+	}
+
+	return nil
 }

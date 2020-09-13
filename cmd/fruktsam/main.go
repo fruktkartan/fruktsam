@@ -80,26 +80,28 @@ func main() {
 
 	var data templateData
 
-	if err = history.FromDB(&data.History, sinceFlag); err != nil {
+	if err = data.History.FromDB(sinceFlag); err != nil {
 		log.Fatal(err)
 	}
 	data.SinceDays = sinceFlag
 	data.Now = util.FormatDateTime(time.Now())
 
 	// if _, err = os.Stat(historyfile); err != nil {
-	// 	fmt.Printf("filling cache file\n")
-	// 	if err = history.HistoryFromDB(&data.History); err != nil {
+	// 	fmt.Printf("filling history from db\n")
+	// 	if err = data.History.FromDB(sinceFlag); err != nil {
 	// 		log.Fatal(err)
 	// 	}
-	// 	if err = data.History.Store(historyfile); err != nil {
+	// 	fmt.Printf("saving history to file\n")
+	// 	if err = data.History.Save(historyfile); err != nil {
 	// 		log.Fatal(err)
 	// 	}
 	// } else {
-	// 	fmt.Printf("cache file found\n")
+	// 	fmt.Printf("history file found\n")
 	// }
-	// if data.History, err = history.LoadCache(historyfile); err != nil {
+	// if err = data.History.Load(historyfile); err != nil {
 	// 	log.Fatal(err)
 	// }
+
 	fmt.Printf("History entries during past %d days: %d\n", sinceFlag, len(data.History))
 
 	sort.Slice(data.History, func(i, j int) bool {
