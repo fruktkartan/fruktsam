@@ -33,6 +33,7 @@
  }
  .old {
    text-decoration: line-through;
+   filter: contrast(25%);
  }
 </style>
 </head>
@@ -68,6 +69,7 @@
   <span class="bread old">beskrivning: {{ .Desc }}</span>
   <br/>
   <span class="bread old">redigerat: {{ .At }}</span>
+  {{ if ne .Img.String "" }}<span class="img old"><a href="{{ .Img }}" target="_blank" rel="noopener">📷</a></span>{{ end }}
   {{ end }}
 
   {{ if eq .ChangeOp "INSERT" }}
@@ -78,6 +80,7 @@
   <span class="address">{{ .AddressNew }}</span>
   <br/>
   <span class="bread">beskrivning: {{ .DescNew }}</span>
+  {{ if ne .ImgNew.String "" }}<span class="img"><a href="{{ .ImgNew }}" target="_blank" rel="noopener">📷</a></span>{{ end }}
   {{ end }}
 
   {{ if eq .ChangeOp "UPDATE" }}
@@ -91,6 +94,16 @@
   <span class="bread">beskrivning: {{ .DescDiff }}</span>
   <br/>
   <span class="bread old">redigerat: {{ .At }}</span>
+    {{ if ne .ImgNew.String "" }}
+      {{ if ne .Img.String "" }}{{ if ne .Img .ImgNew }}
+        <span class="img old"><a href="{{ .Img }}" target="_blank" rel="noopener">📷</a></span>
+      {{ end }}{{ end }}
+      <span class="img"><a href="{{ .ImgNew }}" target="_blank" rel="noopener">📷</a></span>
+    {{ else }}
+      {{ if ne .Img.String "" }}
+        <span class="img old"><a href="{{ .Img }}" target="_blank" rel="noopener">📷</a></span>
+      {{ end }}
+    {{ end }}
   {{ end }}
 </p>
 

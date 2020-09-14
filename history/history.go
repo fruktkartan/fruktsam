@@ -5,8 +5,10 @@ import (
 	"database/sql"
 	"encoding/gob"
 	"fmt"
+	"io/ioutil"
 	"log"
 	"os"
+	"path/filepath"
 	"sort"
 	"strings"
 	"time"
@@ -31,13 +33,13 @@ type Entry struct {
 
 	Key        nullStringTrimmed
 	Type, Desc nullStringTrimmed
-	By         nullString
+	Img, By    nullString
 	At         nullTime
 	Lat, Lon   sql.NullFloat64
 
 	KeyNew           nullStringTrimmed
 	TypeNew, DescNew nullStringTrimmed
-	ByNew            nullString
+	ImgNew, ByNew    nullString
 	AtNew            nullTime
 	LatNew, LonNew   sql.NullFloat64
 
@@ -72,6 +74,7 @@ func (h *History) FromDB(sinceDays int) error {
                      , old_json->>'ssm_key' AS key
                      , old_json->>'type' AS type
                      , old_json->>'description' AS desc
+                     , old_json->>'img' AS img
                      , old_json->>'added_by' AS by
                      , (old_json->>'added_at')::timestamp AS at
                      , ST_Y(old_point) AS lat
@@ -79,6 +82,7 @@ func (h *History) FromDB(sinceDays int) error {
                      , new_json->>'ssm_key' AS keynew
                      , new_json->>'type' AS typenew
                      , new_json->>'description' AS descnew
+                     , new_json->>'img' AS imgnew
                      , new_json->>'added_by' AS bynew
                      , (new_json->>'added_at')::timestamp AS atnew
                      , ST_Y(new_point) AS latnew
@@ -237,6 +241,20 @@ func (h *History) prepare() {
 				dmp.DiffMain(he.Desc.String(), he.DescNew.String(), false))
 		}
 
+		if he.Img.String() != "" {
+			htmlFile := writeImageHTML(he.Img.String())
+			if htmlFile != "" {
+				he.Img = nullString{sql.NullString{String: htmlFile, Valid: true}}
+			}
+		}
+
+		if he.ImgNew.String() != "" {
+			htmlFile := writeImageHTML(he.ImgNew.String())
+			if htmlFile != "" {
+				he.ImgNew = nullString{sql.NullString{String: htmlFile, Valid: true}}
+			}
+		}
+
 		switch he.ChangeOp {
 		case "DELETE":
 			h.Deletes++
@@ -254,4 +272,30 @@ func (h *History) prepare() {
 	sort.Slice(h.entries, func(i, j int) bool {
 		return h.entries[i].ChangeID > h.entries[j].ChangeID
 	})
+}
+
+// TODO? Should perhaps make ImgURL and ImgURLNew functions on Entry instead.
+// And use a template file. And History shouldn't have to know about "dist/"
+// huh.
+func writeImageHTML(image string) string {
+	htmlFile := fmt.Sprintf("img_%s.html", image[0:len(image)-len(filepath.Ext(image))])
+	htmlData := fmt.Sprintf(`
+<!doctype html><html lang=sv><head><meta charset=utf-8>
+<style>
+img {
+  height: 90vh;
+  width: 100%%;
+  object-fit: contain;
+}
+</style>
+<title>%s</title></head><body>
+<img alt="foto" src="https://fruktkartan-thumbs.s3.eu-north-1.amazonaws.com/%s_1200.jpg" />
+</body></html>
+`, image, image)
+	err := ioutil.WriteFile("dist/"+htmlFile, []byte(htmlData), 0600)
+	if err != nil {
+		log.Println(err.Error())
+		return ""
+	}
+	return htmlFile
 }
