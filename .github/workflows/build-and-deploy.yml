@@ -83,7 +83,7 @@ jobs:
           cd ./dist
           chmod -R go+r .
           echo "$PK" >/tmp/pk
-          echo "put -Rp ." | sftp -b - -i /tmp/pk sftp://frukt@lublin.se:5566/fruktsam/
+          echo "put -Rp ." | sftp -b - -i /tmp/pk -o StrictHostKeyChecking=no sftp://frukt@lublin.se:5566/fruktsam/
           rm -f /tmp/pk
         env:
           PK: ${{ secrets.FRUKT_PRIVATEKEY }}
