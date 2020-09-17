@@ -78,8 +78,8 @@ jobs:
       - name: Deploy2
         shell: bash
         run: |
-          apt-get update
-          apt-get --no-install-recommends --no-install-suggests install openssh-client
+          sudo apt-get update
+          sudo apt-get --no-install-recommends --no-install-suggests install openssh-client
           cd ./dist
           chmod -R go+r .
           echo "$PK" >/tmp/pk
