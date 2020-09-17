@@ -10,4 +10,10 @@ lint:
 	golangci-lint run
 
 deploy-dev: run
-	rsync -aP --chmod=ugo=rX dist/ steglits:web/fruktsam/
+	rsync -aP --chmod=ugo=rX dist/ lublin.se:/home/frukt/fruktsam/dev/
+
+simple-run: build
+	./fruktsam
+
+simple-deploy-dev: simple-run
+	rsync -aP --chmod=ugo=rX dist/ lublin.se:/home/frukt/fruktsam/dev/
