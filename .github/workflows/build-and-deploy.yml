@@ -80,9 +80,10 @@ jobs:
         run: |
           apt-get update
           apt-get --no-install-recommends --no-install-suggests install openssh-client
-          chmod -R go+r ./dist
+          cd ./dist
+          chmod -R go+r .
           echo "$PK" >/tmp/pk
-          echo "put -Rp dist/*" | sftp -b - -i /tmp/pk sftp://frukt@lublin.se:5566/fruktsam/
+          echo "put -Rp ." | sftp -b - -i /tmp/pk sftp://frukt@lublin.se:5566/fruktsam/
           rm -f /tmp/pk
         env:
           PK: ${{ secrets.FRUKT_PRIVATEKEY }}
