@@ -82,6 +82,7 @@ jobs:
           sudo apt-get --no-install-recommends --no-install-suggests install openssh-client
           cd ./dist
           chmod -R go+r .
+          umask 077
           echo "$PK" >/tmp/pk
           echo "put -Rp ." | sftp -b - -i /tmp/pk -o StrictHostKeyChecking=no sftp://frukt@lublin.se:5566/fruktsam/
           rm -f /tmp/pk
