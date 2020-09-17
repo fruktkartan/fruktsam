@@ -75,13 +75,14 @@ jobs:
           user_name: 'fruktrobot'
           user_email: '<>'
 
+      # TODO adjust historik when removing the above
       - name: Deploy2
         shell: bash
         run: |
           sudo apt-get update
           sudo apt-get --no-install-recommends --no-install-suggests install openssh-client
-          cd ./dist
-          chmod -R go+r .
+          cd ./dist/historik
+          chmod -R go+rX .
           umask 077
           echo "$PK" >/tmp/pk
           echo "put -Rp ." | sftp -b - -i /tmp/pk -o StrictHostKeyChecking=no sftp://frukt@lublin.se:5566/fruktsam/
