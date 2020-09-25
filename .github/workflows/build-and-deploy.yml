@@ -26,9 +26,6 @@ jobs:
         run: |
           make build
           ./fruktsam
-          mv dist dist_
-          mkdir dist
-          mv dist_ dist/historik
         env:
           DATABASE_URL: ${{ secrets.DATABASE_URL }}
 
