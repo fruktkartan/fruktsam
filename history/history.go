@@ -277,7 +277,12 @@ func (h *History) prepare() {
 // TODO? Should perhaps make ImgURL and ImgURLNew functions on Entry instead.
 // And use a template file. And History shouldn't have to know about "dist/"
 // huh.
+const outdir = "dist"
+
 func writeImageHTML(image string) string {
+	if err := os.MkdirAll(outdir, 0770); err != nil {
+		log.Fatal(err)
+	}
 	htmlFile := fmt.Sprintf("img_%s.html", image[0:len(image)-len(filepath.Ext(image))])
 	htmlData := fmt.Sprintf(`
 <!doctype html><html lang=sv><head><meta charset=utf-8>
@@ -292,7 +297,7 @@ img {
 <img alt="foto" src="https://fruktkartan-thumbs.s3.eu-north-1.amazonaws.com/%s_1200.jpg" />
 </body></html>
 `, image, image)
-	err := ioutil.WriteFile("dist/"+htmlFile, []byte(htmlData), 0600)
+	err := ioutil.WriteFile(filepath.Join(outdir, htmlFile), []byte(htmlData), 0600)
 	if err != nil {
 		log.Println(err.Error())
 		return ""
