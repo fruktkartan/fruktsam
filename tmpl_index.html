@@ -35,6 +35,9 @@
    text-decoration: line-through;
    filter: contrast(25%);
  }
+ .added {
+   border: 2px solid green;
+ }
 </style>
 </head>
 <body>
@@ -95,10 +98,14 @@
   <br/>
   <span class="bread old">redigerat: {{ .At }}</span>
     {{ if ne .ImgNew.String "" }}
-      {{ if ne .Img.String "" }}{{ if ne .Img .ImgNew }}
-        <span class="img old"><a href="{{ .Img }}" target="_blank" rel="noopener">📷</a></span>
-      {{ end }}{{ end }}
-      <span class="img"><a href="{{ .ImgNew }}" target="_blank" rel="noopener">📷</a></span>
+      {{ if ne .Img.String "" }}
+        {{ if ne .Img .ImgNew }}
+          <span class="img old"><a href="{{ .Img }}" target="_blank" rel="noopener">📷</a></span>
+        {{ end }}
+        <span class="img"><a href="{{ .ImgNew }}" target="_blank" rel="noopener">📷</a></span>
+      {{ else }}
+        <span class="img added"><a href="{{ .ImgNew }}" target="_blank" rel="noopener">📷</a></span>
+      {{ end }}
     {{ else }}
       {{ if ne .Img.String "" }}
         <span class="img old"><a href="{{ .Img }}" target="_blank" rel="noopener">📷</a></span>
