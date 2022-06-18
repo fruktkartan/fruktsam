@@ -77,19 +77,17 @@ func (h *History) FromDB(sinceDays int) error {
                      , old_json->>'img' AS img
                      , old_json->>'added_by' AS by
                      , (old_json->>'added_at')::timestamp AS at
-                     , ST_Y(old_point) AS lat
-                     , ST_X(old_point) AS lon
+                     , old_json#>>'{point,coordinates,1}' AS lat
+                     , old_json#>>'{point,coordinates,0}' AS lon
                      , new_json->>'ssm_key' AS keynew
                      , new_json->>'type' AS typenew
                      , new_json->>'description' AS descnew
                      , new_json->>'img' AS imgnew
                      , new_json->>'added_by' AS bynew
                      , (new_json->>'added_at')::timestamp AS atnew
-                     , ST_Y(new_point) AS latnew
-                     , ST_X(new_point) AS lonnew
-                FROM history
-                     , ST_GeomFromWKB(DECODE(old_json->>'point', 'hex')) AS old_point
-                     , ST_GeomFromWKB(DECODE(new_json->>'point', 'hex')) AS new_point`
+                     , new_json#>>'{point,coordinates,1}' AS latnew
+                     , new_json#>>'{point,coordinates,0}' AS lonnew
+                FROM history`
 	if sinceDays > 0 {
 		query += fmt.Sprintf(" WHERE at > (CURRENT_DATE - INTERVAL '%d days')", sinceDays)
 	}
