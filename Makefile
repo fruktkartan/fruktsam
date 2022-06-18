@@ -1,7 +1,9 @@
-build:
+
+.PHONY: fruktsam
+fruktsam:
 	go build ./cmd/fruktsam
 
-run: build
+run: fruktsam
 	curl -s -o reversecache "https://raw.githubusercontent.com/fruktkartan/fruktsam/master/reversecache"
 	./fruktsam
 	git restore reversecache
@@ -12,7 +14,7 @@ lint:
 deploy-dev: run
 	rsync -aP --chmod=ugo=rX dist/ lublin.se:/home/frukt/fruktsam/dev/
 
-simple-run: build
+simple-run: fruktsam
 	./fruktsam
 
 simple-deploy-dev: simple-run

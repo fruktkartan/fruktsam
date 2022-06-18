@@ -24,7 +24,7 @@ jobs:
           go-version: '^1.15'
       - name: Build
         run: |
-          make build
+          make fruktsam
           ./fruktsam
         env:
           DATABASE_URL: ${{ secrets.DATABASE_URL }}
@@ -43,7 +43,7 @@ jobs:
           go-version: '^1.15'
       - name: Build
         run: |
-          make build
+          make fruktsam
           ./fruktsam
         env:
           DATABASE_URL: ${{ secrets.DATABASE_URL }}
