@@ -66,7 +66,7 @@ jobs:
           chmod -R go+rX .
           umask 077
           echo "$PK" >/tmp/pk
-          echo "put -Rp ." | sftp -b - -i /tmp/pk -o StrictHostKeyChecking=no sftp://frukt@lublin.se:5566/fruktsam/
+          echo "put -Rp ." | sftp -b - -i /tmp/pk -o StrictHostKeyChecking=no sftp://frukt@lublin.se:55666/fruktsam/
           rm -f /tmp/pk
         env:
           PK: ${{ secrets.FRUKT_PRIVATEKEY }}
