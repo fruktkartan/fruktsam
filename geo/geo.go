@@ -119,6 +119,7 @@ func (r *ReverseCache) Add(p Pos) {
 		jsonbytes, err := reverse(p)
 		if err != nil {
 			fmt.Printf("%v: %s\n", p, err)
+			// We store in reversecache even if we got nothing
 			r.Table[p] = nil
 		} else {
 			r.Table[p] = jsonbytes
@@ -129,6 +130,10 @@ func (r *ReverseCache) Add(p Pos) {
 
 func (r *ReverseCache) FormatAddress(p Pos) string {
 	if !r.Has(p) {
+		return "????"
+	}
+	if r.Table[p] == nil {
+		log.Printf("%v: reverse in cache is nil", p)
 		return "????"
 	}
 
