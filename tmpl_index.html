@@ -65,6 +65,7 @@
   {{ if eq .ChangeOp "DELETE" }}
   <span class="op delete">borttaget</span>
   <span class="type">{{ .Type }}</span>
+  <span class="key">[{{ .Key }}]</span>
   {{ .ChangeAt.TimeStr }}
   <a href="{{ .GeoURL }}" target="_blank" rel="noopener">nära</a>
   <span class="address">{{ .Address }}</span>
