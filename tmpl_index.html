@@ -34,10 +34,16 @@
  .old {
    text-decoration: line-through;
    filter: contrast(25%);
+   text-decoration-color: black;
+   text-decoration-thickness: 2px;
  }
  .added {
    border: 2px solid green;
  }
+  ins, del {
+    /* get rid of default underline/overstrike for these (we have colors) */
+    text-decoration: none;
+  }
 </style>
 </head>
 <body>
