@@ -101,9 +101,9 @@
     <span class="near">— <a href="{{ .GeoURL }}" target="_blank" rel="noopener">nära</a> {{ .Address }}</span>
     <br/>
     <span class="bread old">beskrivning: {{ .Desc }}</span>
+    {{ if ne .Img.String "" }}<span class="photo removed"><a href="{{ .Img }}" target="_blank" rel="noopener">📷</a></span>{{ end }}
     <br/>
     <span class="bread">senast redigerat: {{ .At }}</span>
-    {{ if ne .Img.String "" }}<span class="photo removed"><a href="{{ .Img }}" target="_blank" rel="noopener">📷</a></span>{{ end }}
   {{ end }}
 
   {{ if eq .ChangeOp "INSERT" }}
@@ -122,19 +122,20 @@
     <span class="near">— <a href="{{ .GeoURLNew }}" target="_blank" rel="noopener">nära</a> {{ .AddressNew }}</span>
     <br/>
     <span class="bread">beskrivning: {{ .DescDiff }}</span>
-    <br/>
-    <span class="bread">senast redigerat: {{ .At }}</span>
     {{ if ne .ImgNew.String "" }}
-      <br />
+      <br/>
       {{ if and (ne .Img.String "") (ne .Img .ImgNew) }}
         <span class="photo removed"><a href="{{ .Img }}" target="_blank" rel="noopener">📷</a></span>
       {{ end }}
       <span class="photo added"><a href="{{ .ImgNew }}" target="_blank" rel="noopener">📷</a></span>
     {{ else }}
       {{ if ne .Img.String "" }}
-        <br /><span class="photo removed"><a href="{{ .Img }}" target="_blank" rel="noopener">📷</a></span>
+        <br/>
+        <span class="photo removed"><a href="{{ .Img }}" target="_blank" rel="noopener">📷</a></span>
       {{ end }}
     {{ end }}
+    <br/>
+    <span class="bread">senast redigerat: {{ .At }}</span>
   {{ end }}
 </div>
 
