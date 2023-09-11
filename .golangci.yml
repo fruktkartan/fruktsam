@@ -1,33 +1,40 @@
 linters:
-  enable-all: true
+  presets:
+    # found in: golangci-lint help linters
+    - bugs
+    - comment
+    - complexity
+    - error
+    - format
+    - import
+    - metalinter
+    - module
+    - performance
+    - sql
+    # - style  # turned off, can be too much
+    - test
+    - unused
   disable:
-    - gochecknoglobals
+    - cyclop
     - funlen
     - gocognit
-    - wsl
-    - gomnd
+    - nestif
+    - exhaustruct  # TODO? annoying for now
+    - goerr113  # TODO enable later
+    - godot
+    - godox
+    - depguard
+    - wrapcheck # TODO enable?
 
-    - gofumpt
-    - gci
-
-    - noctx
-
-    - nlreturn
-
-    # TODO
-    - unused
-    - deadcode
-    - goerr113
+issues:
+  max-issues-per-linter: 0
+  max-same-issues: 0
+  exclude-rules:
+    - linters:
+        - revive
+      text: increment-decrement
 
 linters-settings:
-  # too see which are enabled: GL_DEBUG=gocritic golangci-lint run
-  gocritic:
-    enabled-tags:
-      - diagnostic
-      - style
-      - performance
-      - experimental
-      - opinionated
-    disabled-checks:
-      # TODO
-      - commentedOutCode
+  govet:
+    enable:
+      - shadow

@@ -8,8 +8,10 @@ run: fruktsam
 	./fruktsam
 	git restore reversecache
 
+.PHONY: lint
 lint:
-	golangci-lint run
+	make -C gotools golangci-lint
+	./gotools/golangci-lint run
 
 deploy-dev: run
 	rsync -aP --chmod=ugo=rX dist/ lublin.se:/home/frukt/fruktsam/dev/
