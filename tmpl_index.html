@@ -29,6 +29,9 @@
  .type {
    font-style: italic;
  }
+ .near {
+   font-size: 11pt;
+ }
  .readable {
    max-width: 32em;
  }
@@ -92,8 +95,7 @@
   <span class="op delete">bort</span>
   <span class="type">{{ .Type }}</span>
   <span class="key">[{{ .Key }}]</span>
-  — <a href="{{ .GeoURL }}" target="_blank" rel="noopener">nära</a>
-  <span class="address">{{ .Address }}</span>
+  <span class="near">— <a href="{{ .GeoURL }}" target="_blank" rel="noopener">nära</a> {{ .Address }}</span>
   <br/>
   <span class="bread old">beskrivning: {{ .Desc }}</span>
   <br/>
@@ -104,8 +106,7 @@
   {{ if eq .ChangeOp "INSERT" }}
   <span class="op insert">nytt</span>
   <span class="type"><a href="https://fruktkartan.se/#/t/{{ .KeyNew }}" target="_blank" rel="noopener">{{ .TypeNew }}</a></span>
-  — <a href="{{ .GeoURLNew }}" target="_blank" rel="noopener">nära</a>
-  <span class="address">{{ .AddressNew }}</span>
+  <span class="near">— <a href="{{ .GeoURLNew }}" target="_blank" rel="noopener">nära</a> {{ .AddressNew }}</span>
   <br/>
   <span class="bread">beskrivning: {{ .DescNew }}</span>
   {{ if ne .ImgNew.String "" }}<span class="img"><a href="{{ .ImgNew }}" target="_blank" rel="noopener">📷</a></span>{{ end }}
@@ -115,8 +116,7 @@
   <span class="op update">red.</span>
   <span class="type"><a href="https://fruktkartan.se/#/t/{{ .KeyNew }}" target="_blank" rel="noopener">{{ .TypeNew }}</a></span>
   {{ if ne .Type .TypeNew }}<span class="old">typ:{{ .Type }}</span>{{ end }}
-  — <a href="{{ .GeoURLNew }}" target="_blank" rel="noopener">nära</a>
-  <span class="address">{{ .AddressNew }}</span>
+  <span class="near">— <a href="{{ .GeoURLNew }}" target="_blank" rel="noopener">nära</a> {{ .AddressNew }}</span>
   <br/>
   <span class="bread">beskrivning: {{ .DescDiff }}</span>
   <br/>
