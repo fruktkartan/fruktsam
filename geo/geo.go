@@ -228,30 +228,30 @@ type address struct {
 	Postcode         string `json:"postcode"`
 }
 
-func (a *address) dump(exclude []string) string {
-	refval := reflect.ValueOf(a)
-	vals := []string{}
-	contains := func(ss []string, s string) bool {
-		for _, v := range ss {
-			if v == s {
-				return true
-			}
-		}
-		return false
-	}
-	for i := 0; i < refval.NumField(); i++ {
-		fname := refval.Type().Field(i).Name
-		switch fname {
-		case "HouseNumber", "County", "Country", "CountryCode", "State", "StateDistrict", "Postcode":
-		default:
-			fval := refval.Field(i).String()
-			if fval != "" && !contains(exclude, fval) {
-				vals = append(vals, fname+":"+fval)
-			}
-		}
-	}
-	return strings.Join(vals, ",")
-}
+// func (a *address) dump(exclude []string) string {
+// 	refval := reflect.ValueOf(a)
+// 	vals := []string{}
+// 	contains := func(ss []string, s string) bool {
+// 		for _, v := range ss {
+// 			if v == s {
+// 				return true
+// 			}
+// 		}
+// 		return false
+// 	}
+// 	for i := 0; i < refval.NumField(); i++ {
+// 		fname := refval.Type().Field(i).Name
+// 		switch fname {
+// 		case "HouseNumber", "County", "Country", "CountryCode", "State", "StateDistrict", "Postcode":
+// 		default:
+// 			fval := refval.Field(i).String()
+// 			if fval != "" && !contains(exclude, fval) {
+// 				vals = append(vals, fname+":"+fval)
+// 			}
+// 		}
+// 	}
+// 	return strings.Join(vals, ",")
+// }
 
 func (a *address) locality() string {
 	var locality string
