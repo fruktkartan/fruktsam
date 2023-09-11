@@ -112,7 +112,7 @@
     <span class="near">— <a href="{{ .GeoURLNew }}" target="_blank" rel="noopener">nära</a> {{ .AddressNew }}</span>
     <br/>
     <span class="bread">beskrivning: {{ .DescNew }}</span>
-    {{ if ne .ImgNew.String "" }}<span class="photo added"><a href="{{ .ImgNew }}" target="_blank" rel="noopener">📷</a></span>{{ end }}
+    {{ if ne .ImgNew.String "" }}<br /><span class="photo added"><a href="{{ .ImgNew }}" target="_blank" rel="noopener">📷</a></span>{{ end }}
   {{ end }}
 
   {{ if eq .ChangeOp "UPDATE" }}
@@ -125,13 +125,14 @@
     <br/>
     <span class="bread">senast redigerat: {{ .At }}</span>
     {{ if ne .ImgNew.String "" }}
+      <br />
       {{ if and (ne .Img.String "") (ne .Img .ImgNew) }}
         <span class="photo removed"><a href="{{ .Img }}" target="_blank" rel="noopener">📷</a></span>
       {{ end }}
       <span class="photo added"><a href="{{ .ImgNew }}" target="_blank" rel="noopener">📷</a></span>
     {{ else }}
       {{ if ne .Img.String "" }}
-        <span class="photo removed"><a href="{{ .Img }}" target="_blank" rel="noopener">📷</a></span>
+        <br /><span class="photo removed"><a href="{{ .Img }}" target="_blank" rel="noopener">📷</a></span>
       {{ end }}
     {{ end }}
   {{ end }}
