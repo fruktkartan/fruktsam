@@ -2,6 +2,7 @@ package geo
 
 import (
 	"bytes"
+	"context"
 	"encoding/gob"
 	"encoding/json"
 	"fmt"
@@ -23,7 +24,7 @@ func (p *Pos) GeohackURL() string {
 }
 
 func reverse(p Pos) ([]byte, error) {
-	req, _ := http.NewRequest("GET", "https://nominatim.openstreetmap.org/reverse", nil)
+	req, _ := http.NewRequestWithContext(context.Background(), "GET", "https://nominatim.openstreetmap.org/reverse", nil)
 	req.Header.Add("Accept", "application/json")
 	q := req.URL.Query()
 	q.Add("format", "json")
