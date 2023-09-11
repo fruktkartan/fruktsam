@@ -20,11 +20,11 @@
  .change:nth-child(even) {
  }
  .op, .changetime {
-  font-family: monospace;
-  font-size: 12pt;
+   font-family: monospace;
+   font-size: 12pt;
  }
  .op {
-  font-weight: bold;
+   font-weight: bold;
  }
  .type {
    font-style: italic;
@@ -53,18 +53,21 @@
    color: darkorange;
  }
  .old {
+   color: #404040;
    text-decoration: line-through;
-   filter: contrast(25%);
-   text-decoration-color: black;
+   text-decoration-color: #404040;
    text-decoration-thickness: 2px;
  }
- .added {
+ .photo.added {
    border: 2px solid green;
  }
-  ins, del {
-    /* get rid of default underline/overstrike for these (we have colors) */
-    text-decoration: none;
-  }
+ .photo.removed {
+   border: 2px solid red;
+ }
+ ins, del {
+   /* get rid of default underline/overstrike for these (we have colors) */
+   text-decoration: none;
+ }
 </style>
 </head>
 <body>
@@ -92,47 +95,43 @@
   <span class="changetime">{{ .ChangeAt.TimeStr }}</span>
 
   {{ if eq .ChangeOp "DELETE" }}
-  <span class="op delete">bort</span>
-  <span class="type">{{ .Type }}</span>
-  <span class="key">[{{ .Key }}]</span>
-  <span class="near">— <a href="{{ .GeoURL }}" target="_blank" rel="noopener">nära</a> {{ .Address }}</span>
-  <br/>
-  <span class="bread old">beskrivning: {{ .Desc }}</span>
-  <br/>
-  <span class="bread">senast redigerat: {{ .At }}</span>
-  {{ if ne .Img.String "" }}<span class="img old"><a href="{{ .Img }}" target="_blank" rel="noopener">📷</a></span>{{ end }}
+    <span class="op delete">bort</span>
+    <span class="type">{{ .Type }}</span>
+    <span class="key">[{{ .Key }}]</span>
+    <span class="near">— <a href="{{ .GeoURL }}" target="_blank" rel="noopener">nära</a> {{ .Address }}</span>
+    <br/>
+    <span class="bread old">beskrivning: {{ .Desc }}</span>
+    <br/>
+    <span class="bread">senast redigerat: {{ .At }}</span>
+    {{ if ne .Img.String "" }}<span class="photo removed"><a href="{{ .Img }}" target="_blank" rel="noopener">📷</a></span>{{ end }}
   {{ end }}
 
   {{ if eq .ChangeOp "INSERT" }}
-  <span class="op insert">nytt</span>
-  <span class="type"><a href="https://fruktkartan.se/#/t/{{ .KeyNew }}" target="_blank" rel="noopener">{{ .TypeNew }}</a></span>
-  <span class="near">— <a href="{{ .GeoURLNew }}" target="_blank" rel="noopener">nära</a> {{ .AddressNew }}</span>
-  <br/>
-  <span class="bread">beskrivning: {{ .DescNew }}</span>
-  {{ if ne .ImgNew.String "" }}<span class="img"><a href="{{ .ImgNew }}" target="_blank" rel="noopener">📷</a></span>{{ end }}
+    <span class="op insert">nytt</span>
+    <span class="type"><a href="https://fruktkartan.se/#/t/{{ .KeyNew }}" target="_blank" rel="noopener">{{ .TypeNew }}</a></span>
+    <span class="near">— <a href="{{ .GeoURLNew }}" target="_blank" rel="noopener">nära</a> {{ .AddressNew }}</span>
+    <br/>
+    <span class="bread">beskrivning: {{ .DescNew }}</span>
+    {{ if ne .ImgNew.String "" }}<span class="photo added"><a href="{{ .ImgNew }}" target="_blank" rel="noopener">📷</a></span>{{ end }}
   {{ end }}
 
   {{ if eq .ChangeOp "UPDATE" }}
-  <span class="op update">red.</span>
-  <span class="type"><a href="https://fruktkartan.se/#/t/{{ .KeyNew }}" target="_blank" rel="noopener">{{ .TypeNew }}</a></span>
-  {{ if ne .Type .TypeNew }}<span class="old">typ:{{ .Type }}</span>{{ end }}
-  <span class="near">— <a href="{{ .GeoURLNew }}" target="_blank" rel="noopener">nära</a> {{ .AddressNew }}</span>
-  <br/>
-  <span class="bread">beskrivning: {{ .DescDiff }}</span>
-  <br/>
-  <span class="bread">senast redigerat: {{ .At }}</span>
+    <span class="op update">red.</span>
+    <span class="type"><a href="https://fruktkartan.se/#/t/{{ .KeyNew }}" target="_blank" rel="noopener">{{ .TypeNew }}</a></span>
+    {{ if ne .Type .TypeNew }}<span class="old">{{ .Type }}</span>{{ end }}
+    <span class="near">— <a href="{{ .GeoURLNew }}" target="_blank" rel="noopener">nära</a> {{ .AddressNew }}</span>
+    <br/>
+    <span class="bread">beskrivning: {{ .DescDiff }}</span>
+    <br/>
+    <span class="bread">senast redigerat: {{ .At }}</span>
     {{ if ne .ImgNew.String "" }}
-      {{ if ne .Img.String "" }}
-        {{ if ne .Img .ImgNew }}
-          <span class="img old"><a href="{{ .Img }}" target="_blank" rel="noopener">📷</a></span>
-        {{ end }}
-        <span class="img"><a href="{{ .ImgNew }}" target="_blank" rel="noopener">📷</a></span>
-      {{ else }}
-        <span class="img added"><a href="{{ .ImgNew }}" target="_blank" rel="noopener">📷</a></span>
+      {{ if and (ne .Img.String "") (ne .Img .ImgNew) }}
+        <span class="photo removed"><a href="{{ .Img }}" target="_blank" rel="noopener">📷</a></span>
       {{ end }}
+      <span class="photo added"><a href="{{ .ImgNew }}" target="_blank" rel="noopener">📷</a></span>
     {{ else }}
       {{ if ne .Img.String "" }}
-        <span class="img old"><a href="{{ .Img }}" target="_blank" rel="noopener">📷</a></span>
+        <span class="photo removed"><a href="{{ .Img }}" target="_blank" rel="noopener">📷</a></span>
       {{ end }}
     {{ end }}
   {{ end }}
