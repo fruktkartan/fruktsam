@@ -5,8 +5,26 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Historik - Fruktkartan</title>
 <style>
+ body {
+   font-family: sans;
+   font-size: 14pt;
+   background-color: #fafafa;
+ }
+ .change {
+   padding: 0.5em 0 0.5em 0;
+   margin: 0;
+ }
+ .change:nth-child(odd) {
+   background-color: #f8f0e3;
+ }
+ .change:nth-child(even) {
+ }
+ .op, .changetime {
+  font-family: monospace;
+  font-size: 13pt;
+ }
  .op {
-   font-weight: bold;
+  font-weight: bold;
  }
  .type {
    font-style: italic;
@@ -29,7 +47,7 @@
    color: green;
  }
  .update {
-   color: orange;
+   color: darkorange;
  }
  .old {
    text-decoration: line-through;
@@ -67,26 +85,26 @@
   {{ $lastDate = .ChangeAt.Date }}
 {{ end }}
 
-<p>
+<div class="change">
+  <span class="changetime">{{ .ChangeAt.TimeStr }}</span>
+
   {{ if eq .ChangeOp "DELETE" }}
-  <span class="op delete">borttaget</span>
+  <span class="op delete">bort</span>
   <span class="type">{{ .Type }}</span>
   <span class="key">[{{ .Key }}]</span>
-  {{ .ChangeAt.TimeStr }}
-  <a href="{{ .GeoURL }}" target="_blank" rel="noopener">nära</a>
+  — <a href="{{ .GeoURL }}" target="_blank" rel="noopener">nära</a>
   <span class="address">{{ .Address }}</span>
   <br/>
   <span class="bread old">beskrivning: {{ .Desc }}</span>
   <br/>
-  <span class="bread old">redigerat: {{ .At }}</span>
+  <span class="bread">senast redigerat: {{ .At }}</span>
   {{ if ne .Img.String "" }}<span class="img old"><a href="{{ .Img }}" target="_blank" rel="noopener">📷</a></span>{{ end }}
   {{ end }}
 
   {{ if eq .ChangeOp "INSERT" }}
   <span class="op insert">nytt</span>
   <span class="type"><a href="https://fruktkartan.se/#/t/{{ .KeyNew }}" target="_blank" rel="noopener">{{ .TypeNew }}</a></span>
-  {{ .ChangeAt.TimeStr }}
-  <a href="{{ .GeoURLNew }}" target="_blank" rel="noopener">nära</a>
+  — <a href="{{ .GeoURLNew }}" target="_blank" rel="noopener">nära</a>
   <span class="address">{{ .AddressNew }}</span>
   <br/>
   <span class="bread">beskrivning: {{ .DescNew }}</span>
@@ -94,16 +112,15 @@
   {{ end }}
 
   {{ if eq .ChangeOp "UPDATE" }}
-  <span class="op update">redigerat</span>
+  <span class="op update">red.</span>
   <span class="type"><a href="https://fruktkartan.se/#/t/{{ .KeyNew }}" target="_blank" rel="noopener">{{ .TypeNew }}</a></span>
   {{ if ne .Type .TypeNew }}<span class="old">typ:{{ .Type }}</span>{{ end }}
-  {{ .ChangeAt.TimeStr }}
-  <a href="{{ .GeoURLNew }}" target="_blank" rel="noopener">nära</a>
+  — <a href="{{ .GeoURLNew }}" target="_blank" rel="noopener">nära</a>
   <span class="address">{{ .AddressNew }}</span>
   <br/>
   <span class="bread">beskrivning: {{ .DescDiff }}</span>
   <br/>
-  <span class="bread old">redigerat: {{ .At }}</span>
+  <span class="bread">senast redigerat: {{ .At }}</span>
     {{ if ne .ImgNew.String "" }}
       {{ if ne .Img.String "" }}
         {{ if ne .Img .ImgNew }}
@@ -119,7 +136,7 @@
       {{ end }}
     {{ end }}
   {{ end }}
-</p>
+</div>
 
 {{ end }}
 

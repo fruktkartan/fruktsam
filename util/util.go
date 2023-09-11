@@ -12,7 +12,7 @@ var location *time.Location
 const (
 	mondayLocale = monday.LocaleSvSE
 	dateFmt      = "2006-01-02"
-	timeFmt      = "kl. 15.04"
+	timeFmt      = "15.04"
 	dateTimeFmt  = dateFmt + " " + timeFmt
 )
 
