@@ -9,7 +9,6 @@ import (
 	"log"
 	"net/http"
 	"os"
-	"reflect"
 	"strings"
 	"time"
 )
@@ -22,6 +21,7 @@ func (p *Pos) GeohackURL() string {
 	return fmt.Sprintf("https://geohack.toolforge.org/geohack.php?params=%g_N_%g_E",
 		p.Lat, p.Lon)
 }
+
 func reverse(p Pos) ([]byte, error) {
 	req, _ := http.NewRequest("GET", "https://nominatim.openstreetmap.org/reverse", nil)
 	req.Header.Add("Accept", "application/json")
@@ -74,7 +74,7 @@ func (r *ReverseCache) Save(cachefile string) error {
 		return err
 	}
 
-	f, err := os.OpenFile(cachefile, os.O_CREATE|os.O_WRONLY, 0666)
+	f, err := os.OpenFile(cachefile, os.O_CREATE|os.O_WRONLY, 0o666)
 	if err != nil {
 		return err
 	}
@@ -197,10 +197,10 @@ func (r *ReverseCache) FormatAddress(p Pos) string {
 }
 
 type osm struct {
-	DisplayName string `json:"display_name"`
-	Lat         string
-	Lon         string
-	Error       string
+	DisplayName string  `json:"display_name"`
+	Lat         string  `json:"lat"`
+	Lon         string  `json:"lon"`
+	Error       string  `json:"error"`
 	Address     address `json:"address"`
 }
 type address struct {

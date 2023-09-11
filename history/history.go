@@ -161,7 +161,7 @@ func (h *History) Save(cachefile string) error {
 		return err
 	}
 
-	f, err := os.OpenFile(cachefile, os.O_CREATE|os.O_WRONLY, 0666)
+	f, err := os.OpenFile(cachefile, os.O_CREATE|os.O_WRONLY, 0o666)
 	if err != nil {
 		return err
 	}
@@ -278,7 +278,7 @@ func (h *History) prepare() {
 const outdir = "dist"
 
 func writeImageHTML(image string) string {
-	if err := os.MkdirAll(outdir, 0770); err != nil {
+	if err := os.MkdirAll(outdir, 0o770); err != nil {
 		log.Fatal(err)
 	}
 	htmlFile := fmt.Sprintf("img_%s.html", image[0:len(image)-len(filepath.Ext(image))])
@@ -295,7 +295,7 @@ img {
 <img alt="foto" src="https://fruktkartan-thumbs.s3.eu-north-1.amazonaws.com/%s_1200.jpg" />
 </body></html>
 `, image, image)
-	err := ioutil.WriteFile(filepath.Join(outdir, htmlFile), []byte(htmlData), 0600)
+	err := ioutil.WriteFile(filepath.Join(outdir, htmlFile), []byte(htmlData), 0o600)
 	if err != nil {
 		log.Println(err.Error())
 		return ""

@@ -15,8 +15,10 @@ import (
 	"github.com/joho/godotenv"
 )
 
-const envfile = ".env"
-const outfile = "dist/index.html"
+const (
+	envfile = ".env"
+	outfile = "dist/index.html"
+)
 
 const defaultSinceDays = 90
 
@@ -27,7 +29,7 @@ type templateData struct {
 }
 
 func main() {
-	var sinceFlag = defaultSinceDays
+	sinceFlag := defaultSinceDays
 	var err error
 
 	app := kingpin.New("fruktsam", "Generate html from Fruktkartan edit history")
@@ -55,7 +57,7 @@ func main() {
 	}
 
 	var f *os.File
-	if err = os.MkdirAll(filepath.Dir(outfile), 0770); err != nil {
+	if err = os.MkdirAll(filepath.Dir(outfile), 0o770); err != nil {
 		log.Fatal(err)
 	}
 	if f, err = os.Create(outfile); err != nil {
