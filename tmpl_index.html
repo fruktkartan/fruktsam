@@ -8,7 +8,9 @@
  body {
    font-family: sans;
    background-color: #fafafa;
+   max-width: 34em;
  }
+
  .change {
    padding: 0.5em 0 0.5em 0;
    margin: 0;
@@ -19,30 +21,18 @@
  }
  .change:nth-child(even) {
  }
+
  .changetime, .op {
    font-family: monospace;
-   font-size: 90%;
  }
  .op {
    font-weight: bold;
  }
- .type {
-   font-style: italic;
- }
- .near {
-   font-size: 90%;
- }
- .readable {
-   max-width: 32em;
- }
+
  p.date {
    border-top: 2px solid grey;
  }
- .bread {
-   display: inline-block; /* to set max-width */
-   font-size: 90%;
-   max-width: 32em;
- }
+
  .delete {
    color: red;
  }
@@ -52,18 +42,21 @@
  .update {
    color: darkorange;
  }
+
  .old {
    color: #404040;
    text-decoration: line-through;
    text-decoration-color: #404040;
    text-decoration-thickness: 2px;
  }
+
  .photo.added {
    border: 2px solid green;
  }
  .photo.removed {
    border: 2px solid red;
  }
+
  ins, del {
    /* get rid of default underline/overstrike for these (we have colors) */
    text-decoration: none;
@@ -72,11 +65,11 @@
 </head>
 <body>
 
-<p class="readable">
+<p>
   Det finns {{ .Trees.Count }} träd på <a href="https://fruktkartan.se/">fruktkartan.se</a> ({{ .Now }}).
 </p>
 
-<p class="readable">
+<p>
   Nedan följer senaste {{ .History.SinceDays }} dagarnas ändringar. Under perioden
   lades {{ .History.Inserts }} träd till och {{ .History.Deletes }} togs bort
   (netto {{ .History.Net }}). {{ .History.Updates }} redigeringar gjordes.
@@ -87,11 +80,11 @@
 {{ range .History.Entries }}
 
 {{ if ne $lastDate .ChangeAt.Date }}
-  <p class="date readable">{{ .ChangeAt.Date }}</p>
+  <p class="date">{{ .ChangeAt.Date }}</p>
   {{ $lastDate = .ChangeAt.Date }}
 {{ end }}
 
-<div class="change">
+<p class="change">
   <span class="changetime">{{ .ChangeAt.TimeStr }}</span>
 
   {{ if eq .ChangeOp "DELETE" }}
@@ -100,10 +93,10 @@
     <span class="key">[{{ .Key }}]</span>
     <span class="near">— <a href="{{ .GeoURL }}" target="_blank" rel="noopener">nära</a> {{ .Address }}</span>
     <br/>
-    <span class="bread old">beskrivning: {{ .Desc }}</span>
+    <span class="desc old"><em>beskrivning:</em> {{ .Desc }}</span>
     {{ if ne .Img.String "" }}<span class="photo removed"><a href="{{ .Img }}" target="_blank" rel="noopener">📷</a></span>{{ end }}
     <br/>
-    <span class="bread">senast redigerat: {{ .At }}</span>
+    <span class="lastchange">senast redigerat: {{ .At }}</span>
   {{ end }}
 
   {{ if eq .ChangeOp "INSERT" }}
@@ -111,7 +104,7 @@
     <span class="type"><a href="https://fruktkartan.se/#/t/{{ .KeyNew }}" target="_blank" rel="noopener">{{ .TypeNew }}</a></span>
     <span class="near">— <a href="{{ .GeoURLNew }}" target="_blank" rel="noopener">nära</a> {{ .AddressNew }}</span>
     <br/>
-    <span class="bread">beskrivning: {{ .DescNew }}</span>
+    <span class="desc"><em>beskrivning:</em> {{ .DescNew }}</span>
     {{ if ne .ImgNew.String "" }}<br /><span class="photo added"><a href="{{ .ImgNew }}" target="_blank" rel="noopener">📷</a></span>{{ end }}
   {{ end }}
 
@@ -121,7 +114,7 @@
     {{ if ne .Type .TypeNew }}<span class="old">{{ .Type }}</span>{{ end }}
     <span class="near">— <a href="{{ .GeoURLNew }}" target="_blank" rel="noopener">nära</a> {{ .AddressNew }}</span>
     <br/>
-    <span class="bread">beskrivning: {{ .DescDiff }}</span>
+    <span class="desc"><em>beskrivning:</em> {{ .DescDiff }}</span>
     {{ if ne .ImgNew.String "" }}
       <br/>
       {{ if and (ne .Img.String "") (ne .Img .ImgNew) }}
@@ -135,9 +128,9 @@
       {{ end }}
     {{ end }}
     <br/>
-    <span class="bread">senast redigerat: {{ .At }}</span>
+    <span class="lastchange">senast redigerat: {{ .At }}</span>
   {{ end }}
-</div>
+</p>
 
 {{ end }}
 
