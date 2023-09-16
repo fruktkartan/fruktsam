@@ -5,7 +5,6 @@ import (
 	"database/sql"
 	"encoding/gob"
 	"fmt"
-	"io/ioutil"
 	"log"
 	"os"
 	"path/filepath"
@@ -46,6 +45,7 @@ type Entry struct {
 	Address, AddressNew string
 	GeoURL, GeoURLNew   string
 	DescDiff            string
+	UpdateIsEmpty       bool
 }
 
 func (h *History) Len() int {
@@ -237,6 +237,14 @@ func (h *History) prepare() {
 		if he.ChangeOp == "UPDATE" {
 			he.DescDiff = dmp.DiffPrettyHtml(
 				dmp.DiffMain(he.Desc.String(), he.DescNew.String(), false))
+
+			// Detect strange empty update
+			if he.Type == he.TypeNew &&
+				he.Desc == he.DescNew &&
+				he.Img == he.ImgNew &&
+				he.Lat == he.LatNew && he.Lon == he.LonNew {
+				he.UpdateIsEmpty = true
+			}
 		}
 
 		if he.Img.String() != "" {
@@ -295,7 +303,7 @@ img {
 <img alt="foto" src="https://fruktkartan-thumbs.s3.eu-north-1.amazonaws.com/%s_1200.jpg" />
 </body></html>
 `, image, image)
-	err := ioutil.WriteFile(filepath.Join(outdir, htmlFile), []byte(htmlData), 0o600)
+	err := os.WriteFile(filepath.Join(outdir, htmlFile), []byte(htmlData), 0o600)
 	if err != nil {
 		log.Println(err.Error())
 		return ""

@@ -93,10 +93,10 @@
     <span class="key">[{{ .Key }}]</span>
     <span class="near">— <a href="{{ .GeoURL }}" target="_blank" rel="noopener">nära</a> {{ .Address }}</span>
     <br/>
-    <span class="desc old"><em>beskrivning:</em> {{ .Desc }}</span>
+    <span class="desc old"><em>Beskrivning:</em> {{ .Desc }}</span>
     {{ if ne .Img.String "" }}<span class="photo removed"><a href="{{ .Img }}" target="_blank" rel="noopener">📷</a></span>{{ end }}
     <br/>
-    <span class="lastchange">senast redigerat: {{ .At }}</span>
+    <span class="lastchange"><em>Senast redigerat:</em> {{ .At }}</span>
   {{ end }}
 
   {{ if eq .ChangeOp "INSERT" }}
@@ -104,7 +104,7 @@
     <span class="type"><a href="https://fruktkartan.se/#/t/{{ .KeyNew }}" target="_blank" rel="noopener">{{ .TypeNew }}</a></span>
     <span class="near">— <a href="{{ .GeoURLNew }}" target="_blank" rel="noopener">nära</a> {{ .AddressNew }}</span>
     <br/>
-    <span class="desc"><em>beskrivning:</em> {{ .DescNew }}</span>
+    <span class="desc"><em>Beskrivning:</em> {{ .DescNew }}</span>
     {{ if ne .ImgNew.String "" }}<br /><span class="photo added"><a href="{{ .ImgNew }}" target="_blank" rel="noopener">📷</a></span>{{ end }}
   {{ end }}
 
@@ -114,7 +114,7 @@
     {{ if ne .Type .TypeNew }}<span class="old">{{ .Type }}</span>{{ end }}
     <span class="near">— <a href="{{ .GeoURLNew }}" target="_blank" rel="noopener">nära</a> {{ .AddressNew }}</span>
     <br/>
-    <span class="desc"><em>beskrivning:</em> {{ .DescDiff }}</span>
+    <span class="desc"><em>Beskrivning:</em> {{ .DescDiff }}</span>
     {{ if ne .ImgNew.String "" }}
       <br/>
       {{ if and (ne .Img.String "") (ne .Img .ImgNew) }}
@@ -128,7 +128,8 @@
       {{ end }}
     {{ end }}
     <br/>
-    <span class="lastchange">senast redigerat: {{ .At }}</span>
+    <span class="lastchange"><em>Senast redigerat:</em> {{ .At }}</span>
+    {{ if .UpdateIsEmpty }}<br/><span><strong>Ingen förändring, konstigt nog!</strong></span>{{ end }}
   {{ end }}
 </p>
 
