@@ -7,3 +7,12 @@ The build is deployed every night at 00:01 UTC (and on [manual workflow run](htt
 The updated cache of reverse-geocoded addresses is commited back to the repo.
 
 Needs `DATABASE_URL` environment variable, or in `.env`.
+
+The following can be used to find out the production database URL (once you've managed
+`login`, or `auth:login`?)
+
+```
+heroku pg:credentials:url --app fruktkartan-api
+```
+
+(`--app fruktkartan-api-dev` for the development database)
