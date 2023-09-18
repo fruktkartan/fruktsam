@@ -46,7 +46,7 @@ func main() {
 
 	data.Now = util.FormatDateTime(time.Now())
 	if err = data.History.FromDB(sinceFlag); err != nil {
-		log.Fatal(fmt.Sprintf("fromdb: %s", err))
+		log.Fatalf("FromDB: %s", err)
 	}
 
 	fmt.Printf("History entries during past %d days: %d\n", sinceFlag, data.History.Len())
