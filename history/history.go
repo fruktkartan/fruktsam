@@ -94,10 +94,10 @@ func (h *History) FromDB(sinceDays int) error {
 
 	db, err := sqlx.Connect("postgres", os.Getenv("DATABASE_URL"))
 	if err != nil {
-		return fmt.Errorf("Connect: %s", err)
+		return fmt.Errorf("Connect: %w", err)
 	}
 	if err := db.Select(&h.entries, query); err != nil {
-		return fmt.Errorf("Select: %s", err)
+		return fmt.Errorf("Select: %w", err)
 	}
 
 	h.SinceDays = sinceDays
