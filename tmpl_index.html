@@ -67,7 +67,11 @@
 <body>
 
 <p>
-  Det finns {{ .Trees.Count }} träd på <a href="https://fruktkartan.se/">fruktkartan.se</a> ({{ .Now }}).
+  Sidan genererades: {{ .Now }}. Databasnamn: {{ .DatabaseName }}
+</p>
+
+<p>
+  Det finns {{ .Trees.Count }} träd på <a href="https://fruktkartan.se/">fruktkartan.se</a>.
 </p>
 
 <p>
@@ -106,7 +110,7 @@
     <span class="near">— <a href="{{ .GeoURLNew }}" target="_blank" rel="noopener">nära</a> {{ .AddressNew }}</span>
     <br/>
     <span class="desc"><em>Beskrivning:</em> {{ .DescNew }}</span>
-    {{ if ne .ImgNew.String "" }}<br /><span class="photo added"><a href="{{ .ImgNew }}" target="_blank" rel="noopener">📷</a></span>{{ end }}
+    {{ if ne .ImgNew.String "" }}<br/><span class="photo added"><a href="{{ .ImgNew }}" target="_blank" rel="noopener">📷</a></span>{{ end }}
   {{ end }}
 
   {{ if eq .ChangeOp "UPDATE" }}

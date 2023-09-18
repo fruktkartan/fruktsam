@@ -5,6 +5,7 @@ import (
 	"log"
 	"os"
 	"path/filepath"
+	"strings"
 	"text/template"
 	"time"
 
@@ -23,9 +24,10 @@ const (
 const defaultSinceDays = 90
 
 type templateData struct {
-	History history.History
-	Now     string
-	Trees   trees.Trees
+	History      history.History
+	Now          string
+	DatabaseName string
+	Trees        trees.Trees
 }
 
 func main() {
@@ -43,6 +45,8 @@ func main() {
 	}
 
 	var data templateData
+
+	data.DatabaseName = getDatabaseName(os.Getenv("DATABASE_URL"))
 
 	data.Now = util.FormatDateTime(time.Now())
 	if err = data.History.FromDB(sinceFlag); err != nil {
@@ -66,4 +70,18 @@ func main() {
 	if err = tmpl.Execute(f, &data); err != nil {
 		log.Fatal(err)
 	}
+}
+
+func getDatabaseName(dbURL string) string {
+	if dbURL == "" {
+		log.Fatalf("env variable DATABASE_URL is empty")
+	}
+
+	// split postgres://user:pass:word@example.com:port/dbname
+	parts := strings.Split(dbURL, "/")
+	if len(parts) != 4 {
+		log.Fatal("DATABASE_URL: expected 4 /-separated parts")
+	}
+
+	return parts[3]
 }
