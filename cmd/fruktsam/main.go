@@ -10,6 +10,7 @@ import (
 	"time"
 
 	"github.com/alecthomas/kingpin"
+	"github.com/fruktkartan/fruktsam/flags"
 	"github.com/fruktkartan/fruktsam/history"
 	"github.com/fruktkartan/fruktsam/trees"
 	"github.com/fruktkartan/fruktsam/util"
@@ -28,6 +29,7 @@ type templateData struct {
 	Now          string
 	DatabaseName string
 	Trees        trees.Trees
+	Flags        flags.Flags
 }
 
 func main() {
@@ -49,11 +51,16 @@ func main() {
 	data.DatabaseName = getDatabaseName(os.Getenv("DATABASE_URL"))
 
 	data.Now = util.FormatDateTime(time.Now())
-	if err = data.History.FromDB(sinceFlag); err != nil {
-		log.Fatalf("FromDB: %s", err)
-	}
 
+	if err = data.History.FromDB(sinceFlag); err != nil {
+		log.Fatalf("History.FromDB: %s", err)
+	}
 	fmt.Printf("History entries during past %d days: %d\n", sinceFlag, data.History.Len())
+
+	if err = data.Flags.FromDB(); err != nil {
+		log.Fatalf("Flags.FromDB: %s", err)
+	}
+	fmt.Printf("Flagged trees: %d\n", data.Flags.Len())
 
 	tmpl, err := template.ParseFiles("tmpl_index.html")
 	if err != nil {

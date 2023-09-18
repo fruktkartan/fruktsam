@@ -22,16 +22,18 @@
  .change:nth-child(even) {
  }
 
- .changetime, .op {
+ .flagtime, .changetime, .op {
    font-family: monospace, monospace;
  }
  .op {
    font-weight: bold;
  }
 
- p.date {
+ .separator {
    font-size: 120%;
    background-color: #cdcdcd;
+   margin-top: 1em;
+   margin-bottom: 1em;
  }
 
  .delete {
@@ -80,12 +82,22 @@
   (netto {{ .History.Net }}). {{ .History.Updates }} redigeringar gjordes.
 </p>
 
+<div class="separator">Flaggade träd</div>
+
+{{ range .Flags.Entries }}
+  <span class="flagtime">{{ .At }}</span>
+  <a href="https://fruktkartan.se/#/t/{{ .Key }}" target="_blank" rel="noopener">träd:{{ .Key }}</a>
+  flagga:{{ .Flag }}
+  <br/>
+  <span><em>Anledning:</em> {{ .Reason }}</span>
+{{ end }}
+
 {{ $lastDate := "" }}
 
 {{ range .History.Entries }}
 
 {{ if ne $lastDate .ChangeAt.Date }}
-  <p class="date">{{ .ChangeAt.Date }}</p>
+  <div class="separator">{{ .ChangeAt.Date }}</div>
   {{ $lastDate = .ChangeAt.Date }}
 {{ end }}
 
