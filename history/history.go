@@ -9,11 +9,10 @@ import (
 	"os"
 	"path/filepath"
 	"sort"
-	"strings"
 	"time"
 
 	"github.com/fruktkartan/fruktsam/geo"
-	"github.com/fruktkartan/fruktsam/util"
+	"github.com/fruktkartan/fruktsam/types"
 	"github.com/jmoiron/sqlx"
 	_ "github.com/lib/pq" // for sqlx
 	"github.com/sergi/go-diff/diffmatchpatch"
@@ -27,19 +26,19 @@ type History struct {
 
 type Entry struct {
 	ChangeID int
-	ChangeAt nullTime
+	ChangeAt types.NullTime
 	ChangeOp string
 
-	Key        nullStringTrimmed
-	Type, Desc nullStringTrimmed
-	Img, By    nullString
-	At         nullTime
+	Key        types.NullStringTrimmed
+	Type, Desc types.NullStringTrimmed
+	Img, By    types.NullString
+	At         types.NullTime
 	Lat, Lon   sql.NullFloat64
 
-	KeyNew           nullStringTrimmed
-	TypeNew, DescNew nullStringTrimmed
-	ImgNew, ByNew    nullString
-	AtNew            nullTime
+	KeyNew           types.NullStringTrimmed
+	TypeNew, DescNew types.NullStringTrimmed
+	ImgNew, ByNew    types.NullString
+	AtNew            types.NullTime
 	LatNew, LonNew   sql.NullFloat64
 
 	Address, AddressNew string
@@ -104,53 +103,6 @@ func (h *History) FromDB(sinceDays int) error {
 	h.prepare()
 
 	return nil
-}
-
-type nullString struct {
-	sql.NullString
-}
-
-func (ns *nullString) String() string {
-	if !ns.NullString.Valid {
-		return ""
-	}
-	return ns.NullString.String
-}
-
-type nullStringTrimmed struct {
-	sql.NullString
-}
-
-func (ns *nullStringTrimmed) String() string {
-	if !ns.NullString.Valid {
-		return ""
-	}
-	return strings.TrimSpace(ns.NullString.String)
-}
-
-type nullTime struct {
-	sql.NullTime
-}
-
-func (nt *nullTime) String() string {
-	if !nt.NullTime.Valid {
-		return ""
-	}
-	return util.FormatDateTime(nt.Time)
-}
-
-func (nt *nullTime) Date() string {
-	if !nt.NullTime.Valid {
-		return ""
-	}
-	return util.FormatDate(nt.Time)
-}
-
-func (nt *nullTime) TimeStr() string {
-	if !nt.NullTime.Valid {
-		return ""
-	}
-	return util.FormatTime(nt.Time)
 }
 
 // TODO: currently unused
@@ -252,14 +204,14 @@ func (h *History) prepare() {
 		if he.Img.String() != "" {
 			htmlFile := writeImageHTML(he.Img.String())
 			if htmlFile != "" {
-				he.Img = nullString{sql.NullString{String: htmlFile, Valid: true}}
+				he.Img = types.NullString{NullString: sql.NullString{String: htmlFile, Valid: true}}
 			}
 		}
 
 		if he.ImgNew.String() != "" {
 			htmlFile := writeImageHTML(he.ImgNew.String())
 			if htmlFile != "" {
-				he.ImgNew = nullString{sql.NullString{String: htmlFile, Valid: true}}
+				he.ImgNew = types.NullString{NullString: sql.NullString{String: htmlFile, Valid: true}}
 			}
 		}
 
