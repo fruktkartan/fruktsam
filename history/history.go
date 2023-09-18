@@ -153,6 +153,7 @@ func (nt *nullTime) TimeStr() string {
 	return util.FormatTime(nt.Time)
 }
 
+// TODO: currently unused
 func (h *History) Save(cachefile string) error {
 	b := new(bytes.Buffer)
 	enc := gob.NewEncoder(b)
@@ -173,6 +174,7 @@ func (h *History) Save(cachefile string) error {
 	return nil
 }
 
+// TODO: currently unused
 func (h *History) Load(cachefile string) error {
 	if len(h.entries) > 0 {
 		return fmt.Errorf("history not empty, refusing to load from file")
