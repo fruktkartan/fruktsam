@@ -11,7 +11,7 @@ import (
 )
 
 type Trees struct {
-	entries []Entry
+	entries map[string]*Entry
 }
 
 type Entry struct {
@@ -25,6 +25,10 @@ type Entry struct {
 }
 
 func (t *Trees) FromDB() error {
+	if t.entries == nil {
+		t.entries = make(map[string]*Entry)
+	}
+
 	if len(t.entries) > 0 {
 		return fmt.Errorf("not empty, refusing to fill from db")
 	}
@@ -39,15 +43,19 @@ func (t *Trees) FromDB() error {
                    , ST_X(point) AS lon
                 FROM trees`
 
+	var rows []Entry
+
 	db, err := sqlx.Connect("postgres", os.Getenv("DATABASE_URL"))
 	if err != nil {
 		return fmt.Errorf("Connect: %w", err)
 	}
-	if err := db.Select(&t.entries, query); err != nil {
+	if err := db.Select(&rows, query); err != nil {
 		return fmt.Errorf("Select: %w", err)
 	}
 
-	// TODO could put in a map
+	for idx := range rows {
+		t.entries[rows[idx].Key.String()] = &rows[idx]
+	}
 
 	// t.prepare() // TODO?
 
@@ -55,14 +63,8 @@ func (t *Trees) FromDB() error {
 }
 
 func (t Trees) Get(key string) (Entry, bool) {
-	for idx := range t.entries {
-		tree := t.entries[idx]
-		if !tree.Key.Valid {
-			continue
-		}
-		if tree.Key.String() == key {
-			return tree, true
-		}
+	if tree, ok := t.entries[key]; ok {
+		return *tree, true
 	}
 	return Entry{}, false
 }
