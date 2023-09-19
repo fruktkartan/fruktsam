@@ -29,17 +29,21 @@ type Entry struct {
 	ChangeAt types.NullTime
 	ChangeOp string
 
-	Key        types.NullStringTrimmed
-	Type, Desc types.NullStringTrimmed
-	Img, By    types.NullString
-	At         types.NullTime
-	Lat, Lon   sql.NullFloat64
+	Key      types.NullStringTrimmed
+	Type     types.NullStringTrimmed
+	Desc     types.NullStringTrimmed
+	Img      types.NullString
+	By       types.NullString
+	At       types.NullTime
+	Lat, Lon sql.NullFloat64
 
-	KeyNew           types.NullStringTrimmed
-	TypeNew, DescNew types.NullStringTrimmed
-	ImgNew, ByNew    types.NullString
-	AtNew            types.NullTime
-	LatNew, LonNew   sql.NullFloat64
+	KeyNew         types.NullStringTrimmed
+	TypeNew        types.NullStringTrimmed
+	DescNew        types.NullStringTrimmed
+	ImgNew         types.NullString
+	ByNew          types.NullString
+	AtNew          types.NullTime
+	LatNew, LonNew sql.NullFloat64
 
 	Address, AddressNew string
 	GeoURL, GeoURLNew   string
@@ -47,7 +51,7 @@ type Entry struct {
 	UpdateIsEmpty       bool
 }
 
-func (h *History) Len() int {
+func (h *History) Count() int {
 	return len(h.entries)
 }
 

@@ -47,20 +47,23 @@ func main() {
 	}
 
 	var data templateData
-
 	data.DatabaseName = getDatabaseName(os.Getenv("DATABASE_URL"))
-
 	data.Now = util.FormatDateTime(time.Now())
+
+	if err = data.Trees.FromDB(); err != nil {
+		log.Fatalf("Trees.FromDB: %s", err)
+	}
+	fmt.Printf("Trees: %d\n", data.Trees.Count())
 
 	if err = data.History.FromDB(sinceFlag); err != nil {
 		log.Fatalf("History.FromDB: %s", err)
 	}
-	fmt.Printf("History entries during past %d days: %d\n", sinceFlag, data.History.Len())
+	fmt.Printf("History entries during past %d days: %d\n", sinceFlag, data.History.Count())
 
-	if err = data.Flags.FromDB(); err != nil {
+	if err = data.Flags.FromDB(data.Trees); err != nil {
 		log.Fatalf("Flags.FromDB: %s", err)
 	}
-	fmt.Printf("Flagged trees: %d\n", data.Flags.Len())
+	fmt.Printf("Flagged trees: %d\n", data.Flags.Count())
 
 	tmpl, err := template.ParseFiles("tmpl_index.html")
 	if err != nil {
