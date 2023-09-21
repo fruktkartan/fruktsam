@@ -68,20 +68,25 @@
 <body>
 
 <p>
-  Sidan genererades: {{ .Now }}. Databasnamn: {{ .DatabaseName }}
+  Sidan genererades: {{ .Now }} Databasnamn: {{ .DatabaseName }}
 </p>
 
 <p>
   Det finns {{ .Trees.Count }} träd på <a href="https://fruktkartan.se/">fruktkartan.se</a>.
+  Under de senaste {{ .History.SinceDays }} dagarna:
+  <br/>
+  {{ .History.Inserts }} träd lades till
+  <br/>
+  {{ .History.Deletes }} träd togs bort
+  <br/>
+  netto: {{ .History.Net }} träd
+  <br/>
+  {{ .History.Updates }} redigeringar gjordes
 </p>
 
-<p>
-  Nedan följer senaste {{ .History.SinceDays }} dagarnas ändringar. Under perioden
-  lades {{ .History.Inserts }} träd till och {{ .History.Deletes }} togs bort
-  (netto {{ .History.Net }}). {{ .History.Updates }} redigeringar gjordes.
-</p>
-
-<div class="separator">Flaggade träd</div>
+{{ if ne .Flags.Count 0 }}
+  <div class="separator">Flaggade träd</div>
+{{ end }}
 
 {{ range .Flags.Entries }}
   <span class="flagtime">{{ .At }}</span>
