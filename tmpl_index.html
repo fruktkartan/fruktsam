@@ -117,7 +117,10 @@
     <span class="op delete">bort</span>
     <span class="type">{{ .Type }}</span>
     <span class="key">[{{ .Key }}]</span>
-    <span class="near">— <a href="{{ .GeoURL }}" target="_blank" rel="noopener">nära</a> {{ .Address }}</span>
+    <span>—
+      <a href="{{ .Pos.OSMURL }}" target="_blank" rel="noopener">nära</a> {{ .Address }}
+      <a href="{{ .Pos.GoogmapsURL }}" target="_blank" rel="noopener">GM</a>
+    </span>
     <br/>
     <span class="desc"><span class="old"><em>Beskrivning:</em></span> {{ .Desc }}</span>
     {{ if ne .Img.String "" }}<span class="photo removed"><a href="{{ .Img }}" target="_blank" rel="noopener">📷</a></span>{{ end }}
@@ -128,7 +131,10 @@
   {{ if eq .ChangeOp "INSERT" }}
     <span class="op insert">nytt</span>
     <span class="type"><a href="https://fruktkartan.se/#/t/{{ .KeyNew }}" target="_blank" rel="noopener">{{ .TypeNew }}</a></span>
-    <span class="near">— <a href="{{ .GeoURLNew }}" target="_blank" rel="noopener">nära</a> {{ .AddressNew }}</span>
+    <span>—
+      <a href="{{ .PosNew.OSMURL }}" target="_blank" rel="noopener">nära</a> {{ .AddressNew }}
+      <a href="{{ .PosNew.GoogmapsURL }}" target="_blank" rel="noopener">GM</a>
+    </span>
     <br/>
     <span class="desc"><em>Beskrivning:</em> {{ .DescNew }}</span>
     {{ if ne .ImgNew.String "" }}<br/><span class="photo added"><a href="{{ .ImgNew }}" target="_blank" rel="noopener">📷</a></span>{{ end }}
@@ -138,7 +144,10 @@
     <span class="op update">red.</span>
     <span class="type"><a href="https://fruktkartan.se/#/t/{{ .KeyNew }}" target="_blank" rel="noopener">{{ .TypeNew }}</a></span>
     {{ if ne .Type .TypeNew }}<span class="old">{{ .Type }}</span>{{ end }}
-    <span class="near">— <a href="{{ .GeoURLNew }}" target="_blank" rel="noopener">nära</a> {{ .AddressNew }}</span>
+    <span>—
+      <a href="{{ .PosNew.OSMURL }}" target="_blank" rel="noopener">nära</a> {{ .AddressNew }}
+      <a href="{{ .PosNew.GoogmapsURL }}" target="_blank" rel="noopener">GM</a>
+    </span>
     <br/>
     <span class="desc"><em>Beskrivning:</em> {{ .DescDiff }}</span>
     {{ if ne .ImgNew.String "" }}

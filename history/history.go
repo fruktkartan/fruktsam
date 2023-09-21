@@ -46,7 +46,7 @@ type Entry struct {
 	LatNew, LonNew sql.NullFloat64
 
 	Address, AddressNew string
-	GeoURL, GeoURLNew   string
+	Pos, PosNew         geo.Pos
 	DescDiff            string
 	UpdateIsEmpty       bool
 }
@@ -179,7 +179,7 @@ func (h *History) prepare() {
 				time.Sleep(1 * time.Second)
 			}
 			he.Address = revcache.FormatAddress(p)
-			he.GeoURL = p.GeohackURL()
+			he.Pos = p
 		}
 		if he.LatNew.Valid {
 			p := geo.Pos{Lat: he.LatNew.Float64, Lon: he.LonNew.Float64}
@@ -189,7 +189,7 @@ func (h *History) prepare() {
 				time.Sleep(1 * time.Second)
 			}
 			he.AddressNew = revcache.FormatAddress(p)
-			he.GeoURLNew = p.GeohackURL()
+			he.PosNew = p
 		}
 
 		if he.ChangeOp == "UPDATE" {
