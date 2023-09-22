@@ -88,7 +88,9 @@
 
 {{ range .Flags.Entries }}
   <span class="flagtime">{{ .At }}</span>
-  <span class="type"><a href="https://fruktkartan.se/#/t/{{ .Key }}" target="_blank" rel="noopener">{{ .TreeType }}</a></span>
+  <span class="type">
+    <a href="https://fruktkartan.se/#/t/{{ .Key }}" target="_blank" rel="noopener">{{ .TreeType }}</a>
+  </span>
   <span class="key">[{{ .Key }}]</span>
   <br/>
   <em>Flagga:</em> <span class="flagname">{{ .Flag }}</span>
@@ -96,7 +98,12 @@
   <span><em>Anledning:</em> {{ .Reason }}</span>
   <br/>
   <span class="desc"><em>Beskrivning:</em> {{ .TreeDesc }}</span>
-  {{ if ne .TreeImg.String "" }}<br/><span class="photo"><a href="{{ .TreeImg }}" target="_blank" rel="noopener">📷</a></span>{{ end }}
+  {{ if ne .TreeImg.String "" }}
+    <br/>
+    <span class="photo">
+      <a href="{{ .TreeImg }}" target="_blank" rel="noopener">📷</a>
+    </span>
+  {{ end }}
   <br/>
   <span class="lastchange"><em>Senast redigerat:</em> {{ .TreeAt }}</span>
 {{ end }}
@@ -125,7 +132,9 @@
     <span class="desc"><span class="old"><em>Beskrivning:</em></span> {{ .Desc }}</span>
     {{ if ne .Img.String "" }}
       <br/>
-      <span class="photo removed"><a href="{{ .ImgHTMLFile }}" target="_blank" rel="noopener"><img src="{{ .ImgFile }}" /></a></span>
+      <span class="photo removed">
+        <a href="{{ .ImgHTMLFile }}" target="_blank" rel="noopener"><img src="{{ .ImgFile }}" /></a>
+      </span>
     {{ end }}
     <br/>
     <span class="lastchange"><em>Senast redigerat:</em> {{ .At }}</span>
@@ -133,7 +142,9 @@
 
   {{ if eq .ChangeOp "INSERT" }}
     <span class="op insert">nytt</span>
-    <span class="type"><a href="https://fruktkartan.se/#/t/{{ .KeyNew }}" target="_blank" rel="noopener">{{ .TypeNew }}</a></span>
+    <span class="type">
+      <a href="https://fruktkartan.se/#/t/{{ .KeyNew }}" target="_blank" rel="noopener">{{ .TypeNew }}</a>
+    </span>
     <span>—
       <a href="{{ .PosNew.OSMURL }}" target="_blank" rel="noopener">nära</a> {{ .AddressNew }}
       <a href="{{ .PosNew.GoogmapsURL }}" target="_blank" rel="noopener">GM</a>
@@ -142,13 +153,17 @@
     <span class="desc"><em>Beskrivning:</em> {{ .DescNew }}</span>
     {{ if ne .ImgNew.String "" }}
       <br/>
-      <span class="photo added"><a href="{{ .ImgHTMLFileNew }}" target="_blank" rel="noopener"><img src="{{ .ImgFileNew }}" /></a></span>
+      <span class="photo added">
+        <a href="{{ .ImgHTMLFileNew }}" target="_blank" rel="noopener"><img src="{{ .ImgFileNew }}" /></a>
+      </span>
     {{ end }}
   {{ end }}
 
   {{ if eq .ChangeOp "UPDATE" }}
     <span class="op update">red.</span>
-    <span class="type"><a href="https://fruktkartan.se/#/t/{{ .KeyNew }}" target="_blank" rel="noopener">{{ .TypeNew }}</a></span>
+    <span class="type">
+      <a href="https://fruktkartan.se/#/t/{{ .KeyNew }}" target="_blank" rel="noopener">{{ .TypeNew }}</a>
+    </span>
     {{ if ne .Type .TypeNew }}<span class="old">{{ .Type }}</span>{{ end }}
     <span>—
       <a href="{{ .PosNew.OSMURL }}" target="_blank" rel="noopener">nära</a> {{ .AddressNew }}
@@ -160,10 +175,14 @@
       <br/>
     {{ end }}
     {{ if ne .Img.String "" }}
-      <span class="photo removed"><a href="{{ .ImgHTMLFile }}" target="_blank" rel="noopener"><img src="{{ .ImgFile }}" /></a></span>
+      <span class="photo removed">
+        <a href="{{ .ImgHTMLFile }}" target="_blank" rel="noopener"><img src="{{ .ImgFile }}" /></a>
+      </span>
     {{ end }}
     {{ if ne .ImgNew.String "" }}
-      <span class="photo added"><a href="{{ .ImgHTMLFileNew }}" target="_blank" rel="noopener"><img src="{{ .ImgFileNew }}" /></a></span>
+      <span class="photo added">
+        <a href="{{ .ImgHTMLFileNew }}" target="_blank" rel="noopener"><img src="{{ .ImgFileNew }}" /></a>
+      </span>
     {{ end }}
     <br/>
     <span class="lastchange"><em>Senast redigerat:</em> {{ .At }}</span>
