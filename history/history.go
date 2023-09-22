@@ -12,7 +12,6 @@ import (
 	"log"
 	"net/http"
 	"os"
-	"path/filepath"
 	"sort"
 	"time"
 
@@ -51,12 +50,43 @@ type Entry struct {
 	AtNew          types.NullTime
 	LatNew, LonNew sql.NullFloat64
 
-	ImgFile, ImgFileNew         string
-	ImgHTMLFile, ImgHTMLFileNew string
-	Address, AddressNew         string
-	Pos, PosNew                 geo.Pos
-	DescDiff                    string
-	UpdateIsEmpty               bool
+	// ImgFile, ImgFileNew string
+	Address, AddressNew string
+	Pos, PosNew         geo.Pos
+	DescDiff            string
+	UpdateIsEmpty       bool
+}
+
+func (e Entry) ImgURL() string {
+	img := e.Img.String()
+	if img == "" {
+		return ""
+	}
+	return imageURLBase + fmt.Sprintf(imageURLPathFmt, img)
+}
+
+func (e Entry) ImgURLNew() string {
+	img := e.ImgNew.String()
+	if img == "" {
+		return ""
+	}
+	return imageURLBase + fmt.Sprintf(imageURLPathFmt, img)
+}
+
+func (e Entry) ImgFile() string {
+	img := e.Img.String()
+	if img == "" {
+		return ""
+	}
+	return imageFilePath(img)
+}
+
+func (e Entry) ImgFileNew() string {
+	img := e.ImgNew.String()
+	if img == "" {
+		return ""
+	}
+	return imageFilePath(img)
 }
 
 func (h *History) Count() int {
@@ -186,6 +216,9 @@ func (h *History) prepare() {
 	for idx := range h.entries {
 		he := &h.entries[idx]
 
+		createImageThumb(he.Img.String())
+		createImageThumb(he.ImgNew.String())
+
 		if he.Lat.Valid {
 			p := geo.Pos{Lat: he.Lat.Float64, Lon: he.Lon.Float64}
 			if !revcache.Has(p) {
@@ -220,16 +253,6 @@ func (h *History) prepare() {
 			}
 		}
 
-		if he.Img.String() != "" {
-			he.ImgFile = writeImageThumb(he.Img.String())
-			he.ImgHTMLFile = writeImageHTML(he.Img.String())
-		}
-
-		if he.ImgNew.String() != "" {
-			he.ImgFileNew = writeImageThumb(he.ImgNew.String())
-			he.ImgHTMLFileNew = writeImageHTML(he.ImgNew.String())
-		}
-
 		switch he.ChangeOp {
 		case "DELETE":
 			h.Deletes++
@@ -249,58 +272,41 @@ func (h *History) prepare() {
 	})
 }
 
-// TODO? Should perhaps make ImgURL and ImgURLNew functions on Entry instead.
-// And use a template file. And History shouldn't have to know about "dist/"
-// huh.
+// History shouldn't have to know about "dist/" huh?
 const (
 	outDir          = "dist"
 	imageURLBase    = "https://fruktkartan-thumbs.s3.eu-north-1.amazonaws.com"
 	imageURLPathFmt = "/%s_1200.jpg"
 	imageDir        = "images"
+	imageFileFmt    = "thumb_%s.jpg"
 )
 
-func writeImageHTML(dbImgName string) string {
-	htmlFile := fmt.Sprintf("img_%s.html", dbImgName[0:len(dbImgName)-len(filepath.Ext(dbImgName))])
-	htmlData := fmt.Sprintf(`
-<!doctype html><html lang=sv><head><meta charset=utf-8>
-<style>
-img {
-  height: 90vh;
-  width: 100%%;
-  object-fit: contain;
-}
-</style>
-<title>%s</title></head><body>
-<img alt="foto" src="%s" />
-</body></html>
-`, dbImgName, imageURLBase+fmt.Sprintf(imageURLPathFmt, dbImgName))
-	err := os.WriteFile(filepath.Join(outDir, htmlFile), []byte(htmlData), 0o600)
-	if err != nil {
-		log.Println(err.Error())
-		return ""
-	}
-	return htmlFile
+func imageFilePath(dbImgName string) string {
+	return imageDir + "/" + fmt.Sprintf(imageFileFmt, dbImgName)
 }
 
-func writeImageThumb(dbImgName string) string {
+func createImageThumb(dbImgName string) {
+	if dbImgName == "" {
+		return
+	}
+
 	imageURL := imageURLBase + fmt.Sprintf(imageURLPathFmt, dbImgName)
-	imageFilePath := imageDir + "/thumb_" + dbImgName + ".jpg"
-	imageFileOutPath := outDir + "/" + imageFilePath
+	imageFileOutPath := outDir + "/" + imageFilePath(dbImgName)
 
 	if _, err := os.Stat(imageFileOutPath); err == nil {
-		return imageFilePath
+		return
 	}
 
 	data, err := fetchURL(imageURL)
 	if err != nil {
 		log.Printf("fetch %s failed: %s\n", imageURL, err)
-		return ""
+		return
 	}
 
 	decoded, err := jpeg.Decode(bytes.NewReader(data))
 	if err != nil {
 		log.Printf("jpeg.Decode %s failed: %s\n", imageURL, err)
-		return ""
+		return
 	}
 
 	thumb := makeThumb(decoded)
@@ -308,17 +314,16 @@ func writeImageThumb(dbImgName string) string {
 	f, err := os.Create(imageFileOutPath)
 	if err != nil {
 		log.Printf("os.Create %s failed: %s\n", imageFileOutPath, err)
-		return ""
+		return
 	}
 	defer f.Close()
 
 	if err = jpeg.Encode(f, thumb, &jpeg.Options{Quality: 80}); err != nil {
 		log.Printf("os.Create %s failed: %s\n", imageFileOutPath, err)
-		return ""
+		return
 	}
 
 	log.Printf("downloaded %s\n", imageFileOutPath)
-	return imageFilePath
 }
 
 func fetchURL(url string) ([]byte, error) {

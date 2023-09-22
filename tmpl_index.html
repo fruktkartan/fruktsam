@@ -133,7 +133,7 @@
     {{ if ne .Img.String "" }}
       <br/>
       <span class="photo removed">
-        <a href="{{ .ImgHTMLFile }}" target="_blank" rel="noopener"><img src="{{ .ImgFile }}" /></a>
+        <a href="{{ .ImgURL }}" target="_blank" rel="noopener"><img src="{{ .ImgFile }}" /></a>
       </span>
     {{ end }}
     <br/>
@@ -154,7 +154,7 @@
     {{ if ne .ImgNew.String "" }}
       <br/>
       <span class="photo added">
-        <a href="{{ .ImgHTMLFileNew }}" target="_blank" rel="noopener"><img src="{{ .ImgFileNew }}" /></a>
+        <a href="{{ .ImgURLNew }}" target="_blank" rel="noopener"><img src="{{ .ImgFileNew }}" /></a>
       </span>
     {{ end }}
   {{ end }}
@@ -175,13 +175,17 @@
       <br/>
     {{ end }}
     {{ if ne .Img.String "" }}
-      <span class="photo removed">
-        <a href="{{ .ImgHTMLFile }}" target="_blank" rel="noopener"><img src="{{ .ImgFile }}" /></a>
+      {{ if ne .Img.String .ImgNew.String }}
+        <span class="photo removed">
+      {{ else }}
+        <span class="photo">
+      {{ end }}
+        <a href="{{ .ImgURL }}" target="_blank" rel="noopener"><img src="{{ .ImgFile }}" /></a>
       </span>
     {{ end }}
-    {{ if ne .ImgNew.String "" }}
+    {{ if and (ne .ImgNew.String "") (ne .Img.String .ImgNew.String) }}
       <span class="photo added">
-        <a href="{{ .ImgHTMLFileNew }}" target="_blank" rel="noopener"><img src="{{ .ImgFileNew }}" /></a>
+        <a href="{{ .ImgURLNew }}" target="_blank" rel="noopener"><img src="{{ .ImgFileNew }}" /></a>
       </span>
     {{ end }}
     <br/>
