@@ -16,5 +16,6 @@ require (
 	github.com/rogpeppe/go-internal v1.11.0 // indirect
 	github.com/sergi/go-diff v1.3.1
 	github.com/stretchr/testify v1.8.4 // indirect
+	golang.org/x/image v0.12.0
 	gopkg.in/check.v1 v1.0.0-20201130134442-10cb98267c6c // indirect
 )

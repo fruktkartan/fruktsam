@@ -6,6 +6,8 @@ import (
 	"database/sql"
 	"encoding/gob"
 	"fmt"
+	"image"
+	"image/jpeg"
 	"io"
 	"log"
 	"net/http"
@@ -19,6 +21,7 @@ import (
 	"github.com/jmoiron/sqlx"
 	_ "github.com/lib/pq" // for sqlx
 	"github.com/sergi/go-diff/diffmatchpatch"
+	"golang.org/x/image/draw"
 )
 
 type History struct {
@@ -257,11 +260,11 @@ const (
 	outDir          = "dist"
 	imageOutDir     = outDir + "/images"
 	imageURLBase    = "https://fruktkartan-thumbs.s3.eu-north-1.amazonaws.com"
-	imageURLFileFmt = "%s_600.jpg"
+	imageURLPathFmt = "/%s_1200.jpg"
 )
 
-func writeImageHTML(image string) string {
-	htmlFile := fmt.Sprintf("img_%s.html", image[0:len(image)-len(filepath.Ext(image))])
+func writeImageHTML(dbImgName string) string {
+	htmlFile := fmt.Sprintf("img_%s.html", dbImgName[0:len(dbImgName)-len(filepath.Ext(dbImgName))])
 	htmlData := fmt.Sprintf(`
 <!doctype html><html lang=sv><head><meta charset=utf-8>
 <style>
@@ -274,7 +277,7 @@ img {
 <title>%s</title></head><body>
 <img alt="foto" src="%s" />
 </body></html>
-`, image, imageURLBase+"/"+fmt.Sprintf(imageURLFileFmt, image))
+`, dbImgName, imageURLBase+fmt.Sprintf(imageURLPathFmt, dbImgName))
 	err := os.WriteFile(filepath.Join(outDir, htmlFile), []byte(htmlData), 0o600)
 	if err != nil {
 		log.Println(err.Error())
@@ -283,17 +286,41 @@ img {
 	return htmlFile
 }
 
-func writeImageThumb(image string) {
-	imageFile := fmt.Sprintf(imageURLFileFmt, image)
-	imageURL := imageURLBase + "/" + imageFile
-	savePath := imageOutDir + "/img_" + imageFile
+func writeImageThumb(dbImgName string) {
+	// 	if !strings.Contains(dbImgName, "411779") && !strings.Contains(dbImgName, "385268") {
+	// 		return
+	// 	}
+
+	imageURL := imageURLBase + fmt.Sprintf(imageURLPathFmt, dbImgName)
+	savePath := imageOutDir + "/thumb_" + dbImgName + ".jpg"
 
 	if _, err := os.Stat(savePath); err == nil {
 		return
 	}
 
-	if err := fetchURL(imageURL, savePath); err != nil {
-		log.Printf("failed to download %s: %s\n", imageURL, err)
+	data, err := fetchURL(imageURL)
+	if err != nil {
+		log.Printf("fetch %s failed: %s\n", imageURL, err)
+		return
+	}
+
+	decoded, err := jpeg.Decode(bytes.NewReader(data))
+	if err != nil {
+		log.Printf("jpeg.Decode %s failed: %s\n", imageURL, err)
+		return
+	}
+
+	thumb := makeThumb(decoded)
+
+	f, err := os.Create(savePath)
+	if err != nil {
+		log.Printf("os.Create %s failed: %s\n", savePath, err)
+		return
+	}
+	defer f.Close()
+
+	if err = jpeg.Encode(f, thumb, &jpeg.Options{Quality: 80}); err != nil {
+		log.Printf("os.Create %s failed: %s\n", savePath, err)
 		return
 	}
 
@@ -301,34 +328,55 @@ func writeImageThumb(image string) {
 	return
 }
 
-func fetchURL(url, savePath string) error {
+func fetchURL(url string) ([]byte, error) {
 	ctx, cancelFunc := context.WithTimeout(context.Background(), 15*time.Second)
 	defer cancelFunc()
 
 	req, err := http.NewRequestWithContext(ctx, http.MethodGet, url, nil)
 	if err != nil {
-		return err
+		return nil, err
 	}
 
 	resp, err := http.DefaultClient.Do(req)
 	if err != nil {
-		return err
+		return nil, err
 	}
 	defer resp.Body.Close()
 
 	if resp.StatusCode != http.StatusOK {
-		return fmt.Errorf("response code not OK: %d", resp.StatusCode)
+		return nil, fmt.Errorf("response code not OK: %d", resp.StatusCode)
 	}
 
-	f, err := os.Create(savePath)
+	b, err := io.ReadAll(resp.Body)
 	if err != nil {
-		return err
-	}
-	defer f.Close()
-
-	if _, err = io.Copy(f, resp.Body); err != nil {
-		return err
+		return nil, err
 	}
 
-	return nil
+	return b, nil
+}
+
+func makeThumb(decoded image.Image) *image.RGBA {
+	const sideMaxLen = 150
+	width := decoded.Bounds().Dx()
+	height := decoded.Bounds().Dy()
+
+	var thumb *image.RGBA
+
+	if width <= sideMaxLen && height <= sideMaxLen {
+		thumb = image.NewRGBA(image.Rect(0, 0, width, height))
+		draw.Draw(thumb, thumb.Bounds(), decoded, decoded.Bounds().Min, draw.Over)
+		return thumb
+	}
+
+	if height > width {
+		// portrait
+		thumb = image.NewRGBA(image.Rect(0, 0, width/(height/sideMaxLen), sideMaxLen))
+	} else {
+		// landscape
+		thumb = image.NewRGBA(image.Rect(0, 0, sideMaxLen, height/(width/sideMaxLen)))
+	}
+
+	draw.BiLinear.Scale(thumb, thumb.Bounds(), decoded, decoded.Bounds(), draw.Over, nil)
+
+	return thumb
 }
