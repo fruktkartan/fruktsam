@@ -349,7 +349,7 @@ func fetchURL(url string) ([]byte, error) {
 }
 
 func makeThumb(decoded image.Image) *image.RGBA {
-	const sideMaxLen = 150
+	const sideMaxLen = 130
 	width := decoded.Bounds().Dx()
 	height := decoded.Bounds().Dy()
 
