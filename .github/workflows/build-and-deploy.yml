@@ -54,7 +54,7 @@ jobs:
         run: |
           mkdir -p ./dist/images
           cd ./dist/images
-          echo "$PK" >/tmp/pk
+          umask 077; echo "$PK" >/tmp/pk
           echo "get *.jpg" | sftp -b - -i /tmp/pk -o StrictHostKeyChecking=no sftp://frukt@lublin.se:55666/fruktsam/dist/images/
           rm -f /tmp/pk
         env:
@@ -81,8 +81,7 @@ jobs:
         run: |
           cd ./dist
           chmod -R go+rX .
-          umask 077
-          echo "$PK" >/tmp/pk
+          umask 077; echo "$PK" >/tmp/pk
           echo "put -Rp ." | sftp -b - -i /tmp/pk -o StrictHostKeyChecking=no sftp://frukt@lublin.se:55666/fruktsam/
           rm -f /tmp/pk
         env:
