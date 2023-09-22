@@ -2,10 +2,13 @@ package history
 
 import (
 	"bytes"
+	"context"
 	"database/sql"
 	"encoding/gob"
 	"fmt"
+	"io"
 	"log"
+	"net/http"
 	"os"
 	"path/filepath"
 	"sort"
@@ -161,6 +164,13 @@ const reversefile = "reversecache"
 func (h *History) prepare() {
 	var err error
 
+	if err = os.MkdirAll(outDir, 0o770); err != nil {
+		log.Fatal(err)
+	}
+	if err = os.MkdirAll(imageOutDir, 0o770); err != nil {
+		log.Fatal(err)
+	}
+
 	revcache := geo.NewReverseCache()
 
 	if err = revcache.Load(reversefile); err != nil {
@@ -174,7 +184,7 @@ func (h *History) prepare() {
 		if he.Lat.Valid {
 			p := geo.Pos{Lat: he.Lat.Float64, Lon: he.Lon.Float64}
 			if !revcache.Has(p) {
-				fmt.Printf("get reverse address for history entry %d\n", he.ChangeID)
+				log.Printf("get reverse address for history entry %d\n", he.ChangeID)
 				revcache.Add(p)
 				time.Sleep(1 * time.Second)
 			}
@@ -184,7 +194,7 @@ func (h *History) prepare() {
 		if he.LatNew.Valid {
 			p := geo.Pos{Lat: he.LatNew.Float64, Lon: he.LonNew.Float64}
 			if !revcache.Has(p) {
-				fmt.Printf("get reverse address (new) for history entry %d\n", he.ChangeID)
+				log.Printf("get reverse address (new) for history entry %d\n", he.ChangeID)
 				revcache.Add(p)
 				time.Sleep(1 * time.Second)
 			}
@@ -206,6 +216,7 @@ func (h *History) prepare() {
 		}
 
 		if he.Img.String() != "" {
+			writeImageThumb(he.Img.String())
 			htmlFile := writeImageHTML(he.Img.String())
 			if htmlFile != "" {
 				he.Img = types.NullString{NullString: sql.NullString{String: htmlFile, Valid: true}}
@@ -213,6 +224,7 @@ func (h *History) prepare() {
 		}
 
 		if he.ImgNew.String() != "" {
+			writeImageThumb(he.ImgNew.String())
 			htmlFile := writeImageHTML(he.ImgNew.String())
 			if htmlFile != "" {
 				he.ImgNew = types.NullString{NullString: sql.NullString{String: htmlFile, Valid: true}}
@@ -230,7 +242,7 @@ func (h *History) prepare() {
 	}
 
 	if err = revcache.Save(reversefile); err != nil {
-		fmt.Println(err)
+		log.Printf("revcache.Save failed: %s\n", err)
 	}
 
 	sort.Slice(h.entries, func(i, j int) bool {
@@ -241,12 +253,14 @@ func (h *History) prepare() {
 // TODO? Should perhaps make ImgURL and ImgURLNew functions on Entry instead.
 // And use a template file. And History shouldn't have to know about "dist/"
 // huh.
-const outdir = "dist"
+const (
+	outDir          = "dist"
+	imageOutDir     = outDir + "/images"
+	imageURLBase    = "https://fruktkartan-thumbs.s3.eu-north-1.amazonaws.com"
+	imageURLFileFmt = "%s_600.jpg"
+)
 
 func writeImageHTML(image string) string {
-	if err := os.MkdirAll(outdir, 0o770); err != nil {
-		log.Fatal(err)
-	}
 	htmlFile := fmt.Sprintf("img_%s.html", image[0:len(image)-len(filepath.Ext(image))])
 	htmlData := fmt.Sprintf(`
 <!doctype html><html lang=sv><head><meta charset=utf-8>
@@ -258,13 +272,63 @@ img {
 }
 </style>
 <title>%s</title></head><body>
-<img alt="foto" src="https://fruktkartan-thumbs.s3.eu-north-1.amazonaws.com/%s_1200.jpg" />
+<img alt="foto" src="%s" />
 </body></html>
-`, image, image)
-	err := os.WriteFile(filepath.Join(outdir, htmlFile), []byte(htmlData), 0o600)
+`, image, imageURLBase+"/"+fmt.Sprintf(imageURLFileFmt, image))
+	err := os.WriteFile(filepath.Join(outDir, htmlFile), []byte(htmlData), 0o600)
 	if err != nil {
 		log.Println(err.Error())
 		return ""
 	}
 	return htmlFile
+}
+
+func writeImageThumb(image string) {
+	imageFile := fmt.Sprintf(imageURLFileFmt, image)
+	imageURL := imageURLBase + "/" + imageFile
+	savePath := imageOutDir + "/img_" + imageFile
+
+	if _, err := os.Stat(savePath); err == nil {
+		return
+	}
+
+	if err := fetchURL(imageURL, savePath); err != nil {
+		log.Printf("failed to download %s: %s\n", imageURL, err)
+		return
+	}
+
+	log.Printf("downloaded %s\n", savePath)
+	return
+}
+
+func fetchURL(url, savePath string) error {
+	ctx, cancelFunc := context.WithTimeout(context.Background(), 15*time.Second)
+	defer cancelFunc()
+
+	req, err := http.NewRequestWithContext(ctx, http.MethodGet, url, nil)
+	if err != nil {
+		return err
+	}
+
+	resp, err := http.DefaultClient.Do(req)
+	if err != nil {
+		return err
+	}
+	defer resp.Body.Close()
+
+	if resp.StatusCode != http.StatusOK {
+		return fmt.Errorf("response code not OK: %d", resp.StatusCode)
+	}
+
+	f, err := os.Create(savePath)
+	if err != nil {
+		return err
+	}
+	defer f.Close()
+
+	if _, err = io.Copy(f, resp.Body); err != nil {
+		return err
+	}
+
+	return nil
 }
