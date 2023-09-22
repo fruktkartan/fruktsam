@@ -52,11 +52,11 @@
    text-decoration-thickness: 2px;
  }
 
- .photo.added {
-   border: 2px solid green;
+ .photo.added img {
+   border: 3px solid green;
  }
- .photo.removed {
-   border: 2px solid red;
+ .photo.removed img {
+   border: 3px solid red;
  }
 
  ins, del {
@@ -123,7 +123,14 @@
     </span>
     <br/>
     <span class="desc"><span class="old"><em>Beskrivning:</em></span> {{ .Desc }}</span>
-    {{ if ne .Img.String "" }}<span class="photo removed"><a href="{{ .Img }}" target="_blank" rel="noopener">📷</a></span>{{ end }}
+    {{ if ne .Img.String "" }}
+    <br/>
+    <span class="photo removed">
+      <a href="{{ .ImgHTMLFile }}" target="_blank" rel="noopener">
+        <img src="{{ .ImgFile }}" />
+      </a>
+    </span>
+    {{ end }}
     <br/>
     <span class="lastchange"><em>Senast redigerat:</em> {{ .At }}</span>
   {{ end }}
@@ -137,7 +144,14 @@
     </span>
     <br/>
     <span class="desc"><em>Beskrivning:</em> {{ .DescNew }}</span>
-    {{ if ne .ImgNew.String "" }}<br/><span class="photo added"><a href="{{ .ImgNew }}" target="_blank" rel="noopener">📷</a></span>{{ end }}
+    {{ if ne .ImgNew.String "" }}
+    <br/>
+    <span class="photo added">
+      <a href="{{ .ImgHTMLFileNew }}" target="_blank" rel="noopener">
+        <img src="{{ .ImgFileNew }}" />
+      </a>
+    </span>
+    {{ end }}
   {{ end }}
 
   {{ if eq .ChangeOp "UPDATE" }}
@@ -153,13 +167,25 @@
     {{ if ne .ImgNew.String "" }}
       <br/>
       {{ if and (ne .Img.String "") (ne .Img .ImgNew) }}
-        <span class="photo removed"><a href="{{ .Img }}" target="_blank" rel="noopener">📷</a></span>
+      <span class="photo removed">
+        <a href="{{ .ImgHTMLFile }}" target="_blank" rel="noopener">
+          <img src="{{ .ImgFile }}" />
+        </a>
+      </span>
       {{ end }}
-      <span class="photo added"><a href="{{ .ImgNew }}" target="_blank" rel="noopener">📷</a></span>
+      <span class="photo added">
+        <a href="{{ .ImgHTMLFileNew }}" target="_blank" rel="noopener">
+          <img src="{{ .ImgFileNew }}" />
+        </a>
+      </span>
     {{ else }}
       {{ if ne .Img.String "" }}
         <br/>
-        <span class="photo removed"><a href="{{ .Img }}" target="_blank" rel="noopener">📷</a></span>
+        <span class="photo removed">
+          <a href="{{ .ImgHTMLFile }}" target="_blank" rel="noopener">
+            <img src="{{ .ImgFile }}" />
+          </a>
+        </span>
       {{ end }}
     {{ end }}
     <br/>

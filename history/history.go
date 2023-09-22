@@ -51,10 +51,12 @@ type Entry struct {
 	AtNew          types.NullTime
 	LatNew, LonNew sql.NullFloat64
 
-	Address, AddressNew string
-	Pos, PosNew         geo.Pos
-	DescDiff            string
-	UpdateIsEmpty       bool
+	ImgFile, ImgFileNew         string
+	ImgHTMLFile, ImgHTMLFileNew string
+	Address, AddressNew         string
+	Pos, PosNew                 geo.Pos
+	DescDiff                    string
+	UpdateIsEmpty               bool
 }
 
 func (h *History) Count() int {
@@ -170,7 +172,7 @@ func (h *History) prepare() {
 	if err = os.MkdirAll(outDir, 0o770); err != nil {
 		log.Fatal(err)
 	}
-	if err = os.MkdirAll(imageOutDir, 0o770); err != nil {
+	if err = os.MkdirAll(outDir+"/"+imageDir, 0o770); err != nil {
 		log.Fatal(err)
 	}
 
@@ -219,19 +221,13 @@ func (h *History) prepare() {
 		}
 
 		if he.Img.String() != "" {
-			writeImageThumb(he.Img.String())
-			htmlFile := writeImageHTML(he.Img.String())
-			if htmlFile != "" {
-				he.Img = types.NullString{NullString: sql.NullString{String: htmlFile, Valid: true}}
-			}
+			he.ImgFile = writeImageThumb(he.Img.String())
+			he.ImgHTMLFile = writeImageHTML(he.Img.String())
 		}
 
 		if he.ImgNew.String() != "" {
-			writeImageThumb(he.ImgNew.String())
-			htmlFile := writeImageHTML(he.ImgNew.String())
-			if htmlFile != "" {
-				he.ImgNew = types.NullString{NullString: sql.NullString{String: htmlFile, Valid: true}}
-			}
+			he.ImgFileNew = writeImageThumb(he.ImgNew.String())
+			he.ImgHTMLFileNew = writeImageHTML(he.ImgNew.String())
 		}
 
 		switch he.ChangeOp {
@@ -258,9 +254,9 @@ func (h *History) prepare() {
 // huh.
 const (
 	outDir          = "dist"
-	imageOutDir     = outDir + "/images"
 	imageURLBase    = "https://fruktkartan-thumbs.s3.eu-north-1.amazonaws.com"
 	imageURLPathFmt = "/%s_1200.jpg"
+	imageDir        = "images"
 )
 
 func writeImageHTML(dbImgName string) string {
@@ -286,46 +282,43 @@ img {
 	return htmlFile
 }
 
-func writeImageThumb(dbImgName string) {
-	// 	if !strings.Contains(dbImgName, "411779") && !strings.Contains(dbImgName, "385268") {
-	// 		return
-	// 	}
-
+func writeImageThumb(dbImgName string) string {
 	imageURL := imageURLBase + fmt.Sprintf(imageURLPathFmt, dbImgName)
-	savePath := imageOutDir + "/thumb_" + dbImgName + ".jpg"
+	imageFilePath := imageDir + "/thumb_" + dbImgName + ".jpg"
+	imageFileOutPath := outDir + "/" + imageFilePath
 
-	if _, err := os.Stat(savePath); err == nil {
-		return
+	if _, err := os.Stat(imageFileOutPath); err == nil {
+		return imageFilePath
 	}
 
 	data, err := fetchURL(imageURL)
 	if err != nil {
 		log.Printf("fetch %s failed: %s\n", imageURL, err)
-		return
+		return ""
 	}
 
 	decoded, err := jpeg.Decode(bytes.NewReader(data))
 	if err != nil {
 		log.Printf("jpeg.Decode %s failed: %s\n", imageURL, err)
-		return
+		return ""
 	}
 
 	thumb := makeThumb(decoded)
 
-	f, err := os.Create(savePath)
+	f, err := os.Create(imageFileOutPath)
 	if err != nil {
-		log.Printf("os.Create %s failed: %s\n", savePath, err)
-		return
+		log.Printf("os.Create %s failed: %s\n", imageFileOutPath, err)
+		return ""
 	}
 	defer f.Close()
 
 	if err = jpeg.Encode(f, thumb, &jpeg.Options{Quality: 80}); err != nil {
-		log.Printf("os.Create %s failed: %s\n", savePath, err)
-		return
+		log.Printf("os.Create %s failed: %s\n", imageFileOutPath, err)
+		return ""
 	}
 
-	log.Printf("downloaded %s\n", savePath)
-	return
+	log.Printf("downloaded %s\n", imageFileOutPath)
+	return imageFilePath
 }
 
 func fetchURL(url string) ([]byte, error) {
