@@ -55,7 +55,7 @@ jobs:
           mkdir -p ./dist/images
           cd ./dist/images
           umask 077; echo "$PK" >/tmp/pk
-          echo "get *.jpg" | sftp -b - -i /tmp/pk -o StrictHostKeyChecking=no sftp://frukt@lublin.se:55666/fruktsam/dist/images/
+          echo "get *.jpg" | sftp -b - -i /tmp/pk -o StrictHostKeyChecking=no sftp://frukt@lublin.se:55666/fruktsam/images/
           rm -f /tmp/pk
         env:
           PK: ${{ secrets.FRUKT_PRIVATEKEY }}
