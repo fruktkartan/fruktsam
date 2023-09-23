@@ -134,7 +134,7 @@
     <span class="key">[{{ .Key }}]</span>
     <span>—
       <a href="{{ .Pos.OSMURL }}" target="_blank" rel="noopener">nära</a> {{ .Address }}
-      <a href="{{ .Pos.GoogmapsURL }}" target="_blank" rel="noopener">GM</a>
+      <a href="{{ .Pos.GoogmapsURL }}" target="_blank" rel="noopener">(gm)</a>
     </span>
     <br/>
     <span class="desc"><span class="old"><em>Beskrivning:</em></span> {{ .Desc }}</span>
@@ -155,7 +155,7 @@
     </span>
     <span>—
       <a href="{{ .PosNew.OSMURL }}" target="_blank" rel="noopener">nära</a> {{ .AddressNew }}
-      <a href="{{ .PosNew.GoogmapsURL }}" target="_blank" rel="noopener">GM</a>
+      <a href="{{ .PosNew.GoogmapsURL }}" target="_blank" rel="noopener">(gm)</a>
     </span>
     <br/>
     <span class="desc"><em>Beskrivning:</em> {{ .DescNew }}</span>
@@ -175,7 +175,7 @@
     {{ if ne .Type .TypeNew }}<span class="old">{{ .Type }}</span>{{ end }}
     <span>—
       <a href="{{ .PosNew.OSMURL }}" target="_blank" rel="noopener">nära</a> {{ .AddressNew }}
-      <a href="{{ .PosNew.GoogmapsURL }}" target="_blank" rel="noopener">GM</a>
+      <a href="{{ .PosNew.GoogmapsURL }}" target="_blank" rel="noopener">(gm)</a>
     </span>
     <br/>
     <span class="desc"><em>Beskrivning:</em> {{ .DescDiff }}</span>
