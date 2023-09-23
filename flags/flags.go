@@ -3,6 +3,7 @@ package flags
 import (
 	"fmt"
 	"os"
+	"sort"
 
 	"github.com/fruktkartan/fruktsam/trees"
 	"github.com/fruktkartan/fruktsam/types"
@@ -66,6 +67,10 @@ func (f *Flags) FromDB(trees trees.Trees) error {
 		flagged.TreeBy = tree.By
 		flagged.TreeAt = tree.At
 	}
+
+	sort.Slice(f.entries, func(i, j int) bool {
+		return f.entries[i].At.Time.After(f.entries[j].At.Time)
+	})
 
 	return nil
 }
