@@ -100,7 +100,7 @@
   <p class="flagged">
     <span class="flagtime">{{ .At }}</span>
     <span class="type">
-      <a href="https://fruktkartan.se/#/t/{{ .Key }}" target="_blank" rel="noopener">{{ .TreeType }}</a>
+      <a href="https://fruktkartan.se/#/t/{{ .Key }}" target="_blank" rel="noopener">{{ .Tree.Type }}</a>
     </span>
     <span class="key">[{{ .Key }}]</span>
     <br/>
@@ -108,15 +108,15 @@
     <br/>
     <span><em>Anledning:</em> {{ .Reason }}</span>
     <br/>
-    <span class="desc"><em>Beskrivning:</em> {{ .TreeDesc }}</span>
-    {{ if ne .TreeImg.String "" }}
+    <span class="desc"><em>Beskrivning:</em> {{ .Tree.Desc }}</span>
+    {{ if ne .Tree.Img.String "" }}
       <br/>
       <span class="photo">
-        <a href="{{ .ImgURL }}" target="_blank" rel="noopener">📷</a>
+        <a href="{{ .TreeImgURL }}" target="_blank" rel="noopener">📷</a>
       </span>
     {{ end }}
     <br/>
-    <span class="lastchange"><em>Senast redigerat:</em> {{ .TreeAt }}</span>
+    <span class="lastchange"><em>Senast redigerat:</em> {{ .Tree.At }}</span>
   </p>
 {{ end }}
 

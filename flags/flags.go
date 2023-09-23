@@ -23,15 +23,11 @@ type Entry struct {
 	Flag   types.NullStringTrimmed // Actually NOT NULL in db table
 	Reason types.NullStringTrimmed
 
-	TreeType types.NullStringTrimmed
-	TreeDesc types.NullStringTrimmed
-	TreeImg  types.NullString
-	TreeBy   types.NullString
-	TreeAt   types.NullTime
+	Tree trees.Entry
 }
 
-func (e Entry) ImgURL() string {
-	img := e.TreeImg.String()
+func (e Entry) TreeImgURL() string {
+	img := e.Tree.Img.String()
 	if img == "" {
 		return ""
 	}
@@ -70,11 +66,7 @@ func (f *Flags) FromDB(trees trees.Trees) error {
 			fmt.Printf("Flagged tree %s not found in tree table\n", tree.Key.String())
 		}
 
-		flagged.TreeType = tree.Type
-		flagged.TreeDesc = tree.Desc
-		flagged.TreeImg = tree.Img
-		flagged.TreeBy = tree.By
-		flagged.TreeAt = tree.At
+		flagged.Tree = tree
 	}
 
 	sort.Slice(f.entries, func(i, j int) bool {
