@@ -123,89 +123,87 @@
 {{ $lastDate := "" }}
 
 {{ range .History.Entries }}
-
-{{ if ne $lastDate .ChangeAt.Date }}
-  <div class="separator">{{ .ChangeAt.Date }}</div>
-  {{ $lastDate = .ChangeAt.Date }}
-{{ end }}
-
-<p class="change">
-  <span class="changetime">{{ .ChangeAt.TimeStr }}</span>
-
-  {{ if eq .ChangeOp "DELETE" }}
-    <span class="op delete">bort</span>
-    <span class="type">{{ .Type }}</span>
-    <span class="key">[{{ .Key }}]</span>
-    <span>—
-      <a href="{{ .Pos.OSMURL }}" target="_blank" rel="noopener">nära</a> {{ .Address }}
-      <a href="{{ .Pos.GoogmapsURL }}" target="_blank" rel="noopener">(gm)</a>
-    </span>
-    <br/>
-    <span class="desc"><span class="old"><em>Beskrivning:</em></span> {{ .Desc }}</span>
-    {{ if ne .Img.String "" }}
-      <br/>
-      <span class="photo removed">
-        <a href="{{ .ImgURL }}" target="_blank" rel="noopener"><img src="{{ .ImgFile }}" /></a>
-      </span>
-    {{ end }}
-    <br/>
-    <span class="lastchange"><em>Senast redigerat:</em> {{ .At }}</span>
+  {{ if ne $lastDate .ChangeAt.Date }}
+    <div class="separator">{{ .ChangeAt.Date }}</div>
+    {{ $lastDate = .ChangeAt.Date }}
   {{ end }}
 
-  {{ if eq .ChangeOp "INSERT" }}
-    <span class="op insert">nytt</span>
-    <span class="type">
-      <a href="https://fruktkartan.se/#/t/{{ .KeyNew }}" target="_blank" rel="noopener">{{ .TypeNew }}</a>
-    </span>
-    <span>—
-      <a href="{{ .PosNew.OSMURL }}" target="_blank" rel="noopener">nära</a> {{ .AddressNew }}
-      <a href="{{ .PosNew.GoogmapsURL }}" target="_blank" rel="noopener">(gm)</a>
-    </span>
-    <br/>
-    <span class="desc"><em>Beskrivning:</em> {{ .DescNew }}</span>
-    {{ if ne .ImgNew.String "" }}
-      <br/>
-      <span class="photo added">
-        <a href="{{ .ImgURLNew }}" target="_blank" rel="noopener"><img src="{{ .ImgFileNew }}" /></a>
-      </span>
-    {{ end }}
-  {{ end }}
+  <p class="change">
+    <span class="changetime">{{ .ChangeAt.TimeStr }}</span>
 
-  {{ if eq .ChangeOp "UPDATE" }}
-    <span class="op update">red.</span>
-    <span class="type">
-      <a href="https://fruktkartan.se/#/t/{{ .KeyNew }}" target="_blank" rel="noopener">{{ .TypeNew }}</a>
-    </span>
-    {{ if ne .Type .TypeNew }}<span class="old">{{ .Type }}</span>{{ end }}
-    <span>—
-      <a href="{{ .PosNew.OSMURL }}" target="_blank" rel="noopener">nära</a> {{ .AddressNew }}
-      <a href="{{ .PosNew.GoogmapsURL }}" target="_blank" rel="noopener">(gm)</a>
-    </span>
-    <br/>
-    <span class="desc"><em>Beskrivning:</em> {{ .DescDiff }}</span>
-    {{ if or (ne .Img.String "") (ne .ImgNew.String "") }}
+    {{ if eq .ChangeOp "DELETE" }}
+      <span class="op delete">bort</span>
+      <span class="type">{{ .Type }}</span>
+      <span class="key">[{{ .Key }}]</span>
+      <span>—
+        <a href="{{ .Pos.OSMURL }}" target="_blank" rel="noopener">nära</a> {{ .Address }}
+        <a href="{{ .Pos.GoogmapsURL }}" target="_blank" rel="noopener">(gm)</a>
+      </span>
       <br/>
-    {{ end }}
-    {{ if ne .Img.String "" }}
-      {{ if ne .Img.String .ImgNew.String }}
+      <span class="desc"><span class="old"><em>Beskrivning:</em></span> {{ .Desc }}</span>
+      {{ if ne .Img.String "" }}
+        <br/>
         <span class="photo removed">
-      {{ else }}
-        <span class="photo unchanged">
+          <a href="{{ .ImgURL }}" target="_blank" rel="noopener"><img src="{{ .ImgFile }}" /></a>
+        </span>
       {{ end }}
-        <a href="{{ .ImgURL }}" target="_blank" rel="noopener"><img src="{{ .ImgFile }}" /></a>
-      </span>
+      <br/>
+      <span class="lastchange"><em>Senast redigerat:</em> {{ .At }}</span>
     {{ end }}
-    {{ if and (ne .ImgNew.String "") (ne .Img.String .ImgNew.String) }}
-      <span class="photo added">
-        <a href="{{ .ImgURLNew }}" target="_blank" rel="noopener"><img src="{{ .ImgFileNew }}" /></a>
-      </span>
-    {{ end }}
-    <br/>
-    <span class="lastchange"><em>Senast redigerat:</em> {{ .At }}</span>
-    {{ if .UpdateIsEmpty }}<br/><span><strong>Ingen förändring, konstigt nog!</strong></span>{{ end }}
-  {{ end }}
-</p>
 
+    {{ if eq .ChangeOp "INSERT" }}
+      <span class="op insert">nytt</span>
+      <span class="type">
+        <a href="https://fruktkartan.se/#/t/{{ .KeyNew }}" target="_blank" rel="noopener">{{ .TypeNew }}</a>
+      </span>
+      <span>—
+        <a href="{{ .PosNew.OSMURL }}" target="_blank" rel="noopener">nära</a> {{ .AddressNew }}
+        <a href="{{ .PosNew.GoogmapsURL }}" target="_blank" rel="noopener">(gm)</a>
+      </span>
+      <br/>
+      <span class="desc"><em>Beskrivning:</em> {{ .DescNew }}</span>
+      {{ if ne .ImgNew.String "" }}
+        <br/>
+        <span class="photo added">
+          <a href="{{ .ImgURLNew }}" target="_blank" rel="noopener"><img src="{{ .ImgFileNew }}" /></a>
+        </span>
+      {{ end }}
+    {{ end }}
+
+    {{ if eq .ChangeOp "UPDATE" }}
+      <span class="op update">red.</span>
+      <span class="type">
+        <a href="https://fruktkartan.se/#/t/{{ .KeyNew }}" target="_blank" rel="noopener">{{ .TypeNew }}</a>
+      </span>
+      {{ if ne .Type .TypeNew }}<span class="old">{{ .Type }}</span>{{ end }}
+      <span>—
+        <a href="{{ .PosNew.OSMURL }}" target="_blank" rel="noopener">nära</a> {{ .AddressNew }}
+        <a href="{{ .PosNew.GoogmapsURL }}" target="_blank" rel="noopener">(gm)</a>
+      </span>
+      <br/>
+      <span class="desc"><em>Beskrivning:</em> {{ .DescDiff }}</span>
+      {{ if or (ne .Img.String "") (ne .ImgNew.String "") }}
+        <br/>
+      {{ end }}
+      {{ if ne .Img.String "" }}
+        {{ if ne .Img.String .ImgNew.String }}
+          <span class="photo removed">
+        {{ else }}
+          <span class="photo unchanged">
+        {{ end }}
+          <a href="{{ .ImgURL }}" target="_blank" rel="noopener"><img src="{{ .ImgFile }}" /></a>
+        </span>
+      {{ end }}
+      {{ if and (ne .ImgNew.String "") (ne .Img.String .ImgNew.String) }}
+        <span class="photo added">
+          <a href="{{ .ImgURLNew }}" target="_blank" rel="noopener"><img src="{{ .ImgFileNew }}" /></a>
+        </span>
+      {{ end }}
+      <br/>
+      <span class="lastchange"><em>Senast redigerat:</em> {{ .At }}</span>
+      {{ if .UpdateIsEmpty }}<br/><span><strong>Ingen förändring, konstigt nog!</strong></span>{{ end }}
+    {{ end }}
+  </p>
 {{ end }}
 
 </body>
