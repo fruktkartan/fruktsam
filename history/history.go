@@ -55,7 +55,6 @@ type Entry struct {
 	AtNew          types.NullTime
 	LatNew, LonNew sql.NullFloat64
 
-	// ImgFile, ImgFileNew string
 	Address, AddressNew string
 	Pos, PosNew         geo.Pos
 	DescDiff            string
