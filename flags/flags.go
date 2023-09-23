@@ -5,6 +5,7 @@ import (
 	"os"
 	"sort"
 
+	"github.com/fruktkartan/fruktsam/history"
 	"github.com/fruktkartan/fruktsam/trees"
 	"github.com/fruktkartan/fruktsam/types"
 	"github.com/jmoiron/sqlx"
@@ -27,6 +28,14 @@ type Entry struct {
 	TreeImg  types.NullString
 	TreeBy   types.NullString
 	TreeAt   types.NullTime
+}
+
+func (e Entry) ImgURL() string {
+	img := e.TreeImg.String()
+	if img == "" {
+		return ""
+	}
+	return history.ImageURLBase + fmt.Sprintf(history.ImageURLPathFmt, img)
 }
 
 func (f *Flags) Count() int {

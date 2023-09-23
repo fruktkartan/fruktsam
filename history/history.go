@@ -23,6 +23,11 @@ import (
 	"golang.org/x/image/draw"
 )
 
+const (
+	ImageURLBase    = "https://fruktkartan-thumbs.s3.eu-north-1.amazonaws.com"
+	ImageURLPathFmt = "/%s_1200.jpg"
+)
+
 type History struct {
 	SinceDays                 int
 	entries                   []Entry
@@ -62,7 +67,7 @@ func (e Entry) ImgURL() string {
 	if img == "" {
 		return ""
 	}
-	return imageURLBase + fmt.Sprintf(imageURLPathFmt, img)
+	return ImageURLBase + fmt.Sprintf(ImageURLPathFmt, img)
 }
 
 func (e Entry) ImgURLNew() string {
@@ -70,7 +75,7 @@ func (e Entry) ImgURLNew() string {
 	if img == "" {
 		return ""
 	}
-	return imageURLBase + fmt.Sprintf(imageURLPathFmt, img)
+	return ImageURLBase + fmt.Sprintf(ImageURLPathFmt, img)
 }
 
 func (e Entry) ImgFile() string {
@@ -274,11 +279,9 @@ func (h *History) prepare() {
 
 // History shouldn't have to know about "dist/" huh?
 const (
-	outDir          = "dist"
-	imageURLBase    = "https://fruktkartan-thumbs.s3.eu-north-1.amazonaws.com"
-	imageURLPathFmt = "/%s_1200.jpg"
-	imageDir        = "images"
-	imageFileFmt    = "thumb_%s.jpg"
+	outDir       = "dist"
+	imageDir     = "images"
+	imageFileFmt = "thumb_%s.jpg"
 )
 
 func imageFilePath(dbImgName string) string {
@@ -290,7 +293,7 @@ func createImageThumb(dbImgName string) {
 		return
 	}
 
-	imageURL := imageURLBase + fmt.Sprintf(imageURLPathFmt, dbImgName)
+	imageURL := ImageURLBase + fmt.Sprintf(ImageURLPathFmt, dbImgName)
 	imageFileOutPath := outDir + "/" + imageFilePath(dbImgName)
 
 	if _, err := os.Stat(imageFileOutPath); err == nil {
