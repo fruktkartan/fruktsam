@@ -17,15 +17,13 @@
    max-width: 34em;
  }
 
- .change {
+ .change, .flagged {
    padding: 0.5em 0 0.5em 0;
    margin: 0;
    border-top: 1px solid grey;
  }
- .change:nth-child(odd) {
+ .change:nth-child(odd), .flagged:nth-child(odd) {
    background-color: #f8f0e3;
- }
- .change:nth-child(even) {
  }
 
  .flagtime, .changetime, .op, .flagname {
@@ -99,25 +97,27 @@
 {{ end }}
 
 {{ range .Flags.Entries }}
-  <span class="flagtime">{{ .At }}</span>
-  <span class="type">
-    <a href="https://fruktkartan.se/#/t/{{ .Key }}" target="_blank" rel="noopener">{{ .TreeType }}</a>
-  </span>
-  <span class="key">[{{ .Key }}]</span>
-  <br/>
-  <em>Flagga:</em> <span class="flagname">{{ .Flag }}</span>
-  <br/>
-  <span><em>Anledning:</em> {{ .Reason }}</span>
-  <br/>
-  <span class="desc"><em>Beskrivning:</em> {{ .TreeDesc }}</span>
-  {{ if ne .TreeImg.String "" }}
-    <br/>
-    <span class="photo">
-      <a href="{{ .TreeImg }}" target="_blank" rel="noopener">📷</a>
+  <p class="flagged">
+    <span class="flagtime">{{ .At }}</span>
+    <span class="type">
+      <a href="https://fruktkartan.se/#/t/{{ .Key }}" target="_blank" rel="noopener">{{ .TreeType }}</a>
     </span>
-  {{ end }}
-  <br/>
-  <span class="lastchange"><em>Senast redigerat:</em> {{ .TreeAt }}</span>
+    <span class="key">[{{ .Key }}]</span>
+    <br/>
+    <em>Flagga:</em> <span class="flagname">{{ .Flag }}</span>
+    <br/>
+    <span><em>Anledning:</em> {{ .Reason }}</span>
+    <br/>
+    <span class="desc"><em>Beskrivning:</em> {{ .TreeDesc }}</span>
+    {{ if ne .TreeImg.String "" }}
+      <br/>
+      <span class="photo">
+        <a href="{{ .TreeImg }}" target="_blank" rel="noopener">📷</a>
+      </span>
+    {{ end }}
+    <br/>
+    <span class="lastchange"><em>Senast redigerat:</em> {{ .TreeAt }}</span>
+  </p>
 {{ end }}
 
 {{ $lastDate := "" }}
