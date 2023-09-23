@@ -34,6 +34,14 @@ func (e Entry) TreeImgURL() string {
 	return history.ImageURLBase + fmt.Sprintf(history.ImageURLPathFmt, img)
 }
 
+func (e Entry) TreeImgFile() string {
+	img := e.Tree.Img.String()
+	if img == "" {
+		return ""
+	}
+	return history.ImageFilePath(img)
+}
+
 func (f *Flags) Count() int {
 	return len(f.entries)
 }
@@ -67,6 +75,8 @@ func (f *Flags) FromDB(trees trees.Trees) error {
 		}
 
 		flagged.Tree = tree
+
+		history.CreateImageThumb(tree.Img.String())
 	}
 
 	sort.Slice(f.entries, func(i, j int) bool {

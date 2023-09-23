@@ -56,6 +56,10 @@
    text-decoration-thickness: 2px;
  }
 
+ .photo img {
+   border: 2px solid black;
+   border-radius: 2px
+ }
  .photo.added img {
    border: 4px solid var(--green-color);
    border-radius: 4px;
@@ -63,10 +67,6 @@
  .photo.removed img {
    border: 4px solid var(--red-color);
    border-radius: 3px
- }
- .photo.unchanged img {
-   border: 2px solid black;
-   border-radius: 2px
  }
 
  ins, del {
@@ -112,7 +112,7 @@
     {{ if ne .Tree.Img.String "" }}
       <br/>
       <span class="photo">
-        <a href="{{ .TreeImgURL }}" target="_blank" rel="noopener">📷</a>
+        <a href="{{ .TreeImgURL }}" target="_blank" rel="noopener"><img src="{{ .TreeImgFile }}" /></a>
       </span>
     {{ end }}
     <br/>
@@ -189,7 +189,7 @@
         {{ if ne .Img.String .ImgNew.String }}
           <span class="photo removed">
         {{ else }}
-          <span class="photo unchanged">
+          <span class="photo">
         {{ end }}
           <a href="{{ .ImgURL }}" target="_blank" rel="noopener"><img src="{{ .ImgFile }}" /></a>
         </span>
