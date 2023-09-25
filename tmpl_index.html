@@ -74,6 +74,98 @@
    text-decoration: none;
  }
 </style>
+
+<script>
+ const apiBase = 'https://fruktkartan-api.herokuapp.com'
+
+ async function http(method, url) {
+   let opts = {
+     method: method,
+     headers: {
+       'Content-Type': 'application/json',
+       'Accept': 'application/json'
+     }
+   }
+   if ((method !== 'GET') && (method !== 'HEAD')) {
+     opts.body = '{}'
+   }
+   return await (await fetch(url, opts)
+     .catch(handleError))
+     .json()
+     .then((data) => {
+       // Is this then() needed?
+       return data
+     })
+     .catch((err) => {
+       // I think we end up here when json() cannot parse empty body
+       if ('error' in err) {
+         return err
+       }
+       return {}
+     })
+ }
+
+ function handleError(err) {
+   return new Response(JSON.stringify({
+     statusCode: 418,
+     error: 'synthetic teapot error',
+     message: `err: ${err}`
+   }))
+ }
+
+ async function deleteFlag(key, flag) {
+   if ((typeof(key) !== 'string') || (typeof(flag) !== 'string') ||
+       (key.length < 2) || (flag !== 'delete') ) {
+     window.alert(`dålig input!  key:${key} flag:${flag}`)
+     return
+   }
+
+   const tree = await http('GET', `${apiBase}/tree/${key}`)
+   if ('error' in tree) {
+     window.alert(`fel:\n\n${JSON.stringify(tree)}`)
+     return
+   }
+
+   if (!window.confirm(`Ta bort flaggan "${flag}" från ${tree.type} med key:${key}?`)) {
+     return
+   }
+
+   const res = await http('DELETE', `${apiBase}/flag/${key}/${flag}`)
+   if ('error' in res) {
+     window.alert(`fel:\n\n${JSON.stringify(res)}`)
+     return
+   }
+
+   window.alert(`Det verkar gått bra!\n\nresultat: ${JSON.stringify(res)}`)
+ }
+
+ async function deleteTree(key, flag) {
+   if ((typeof(key) !== 'string') || (typeof(flag) !== 'string') ||
+       (key.length < 2) || (flag !== 'delete') ) {
+     window.alert(`dålig input!  key:${key} flag:${flag}`)
+     return
+   }
+
+   const tree = await http('GET', `${apiBase}/tree/${key}`)
+   if ('error' in tree) {
+     window.alert(`fel:\n\n${JSON.stringify(tree)}`)
+     return
+   }
+
+   if (!window.confirm(`Ta bort ${tree.type} med key:${key}? (inkl. alla flaggor)`)) {
+     return
+   }
+
+   const res = await http('DELETE', `${apiBase}/tree/${key}`)
+   if ('error' in res) {
+     window.alert(`fel:\n\n${JSON.stringify(res)}`)
+     return
+   }
+
+   window.alert(`Det verkar gått bra!\n\nresultat: ${JSON.stringify(res)}`)
+ }
+</script>
+
 </head>
 <body>
 
@@ -117,6 +209,11 @@
     {{ end }}
     <br/>
     <span class="lastchange"><em>Senast redigerat:</em> {{ .Tree.At }}</span>
+    <br/>
+    <span>
+      <button onclick='deleteFlag("{{ .Key }}", "{{ .Flag }}")'>ta bort flaggan</button>
+      <button style="float: right;" onclick='deleteTree("{{ .Key }}", "{{ .Flag }}")'>ta bort trädet</button>
+    </span>
   </p>
 {{ end }}
 

@@ -17,5 +17,5 @@ heroku pg:credentials:url --app fruktkartan-api
 
 (`--app fruktkartan-api-dev` for the development database)
 
-TODO: when using the development database, generated links still point at
-fruktkartan.se
+TODO: even when using the development database, generated links, API calls etc
+still point at fruktkartan.se, fruktkartan-api.herokuapp.com, etc
