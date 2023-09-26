@@ -84,12 +84,12 @@
 
  // Replaces the HTML displaying the flags that generated when fruktsam was run
  async function loadFlagged() {
+   document.getElementById('flagged').innerHTML = 'Laddar...'
    let html = ''
    const flags = await http('GET', `${apiBase}/flags`)
    if ('error' in flags) {
      html += `fel: ${JSON.stringify(flags)}`
    } else if (flags.length > 0) {
-     html += `<div class="separator">Flaggade träd</div>`
      for (const flagged of flags) {
        const tree = await http('GET', `${apiBase}/tree/${flagged.tree}`)
        if ('error' in tree) {
@@ -119,6 +119,8 @@
 </p>
 `
      }
+   }  else {
+     html += `Inga flaggade träd`
    }
    document.getElementById('flagged').innerHTML = html
  }
@@ -236,10 +238,12 @@
   </ul>
 </p>
 
+<div class="separator">Flaggade träd</div>
+
 <div id="flagged">
 
-{{ if ne .Flags.Count 0 }}
-  <div class="separator">Flaggade träd</div>
+{{ if eq .Flags.Count 0 }}
+  Inga flaggade träd
 {{ end }}
 
 {{ range .Flags.Entries }}
