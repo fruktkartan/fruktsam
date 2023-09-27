@@ -82,9 +82,9 @@
    loadFlagged()
  }
 
- // Replaces the HTML displaying the flags that generated when fruktsam was run
+ // Replaces the HTML generated when fruktsam was run
  async function loadFlagged() {
-   document.getElementById('flagged').innerHTML = 'Laddar...'
+   document.getElementById('flagged').innerHTML = 'Laddar från databasen...'
    let html = ''
    const flags = await http('GET', `${apiBase}/flags`)
    if ('error' in flags) {
@@ -173,7 +173,7 @@
      return
    }
 
-   if (!window.confirm(`${tree.type} [${key}]\n\nVill du Ta bort flaggan "${flag}" från detta träd?`)) {
+   if (!window.confirm(`Träd: ${tree.type} [${key}]\n\nTa bort flaggan "${flag}" från detta träd?`)) {
     loadFlagged()
     return
    }
@@ -203,7 +203,7 @@
      return
    }
 
-   if (!window.confirm(`${tree.type} [${key}]\n\nVill du ta bort detta träd? (inkl. alla flaggor)`)) {
+   if (!window.confirm(`Träd: ${tree.type} [${key}]\n\nTa bort detta träd? (inkl. alla flaggor)`)) {
      loadFlagged()
      return
    }
