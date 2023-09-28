@@ -88,7 +88,11 @@
    if (m.length < 2) { m = '0' + m }
    let d = date.getDate().toString()
    if (d.length < 2) { d = '0' + d }
-   return `${date.getFullYear()}-${m}-${d} ${date.getHours()}:${date.getMinutes()}`
+   let hour = date.getHours().toString()
+   if (hour.length < 2) { hour = '0' + hour }
+   let min = date.getMinutes().toString()
+   if (min.length < 2) { min = '0' + min }
+   return `${date.getFullYear()}-${m}-${d} ${hour}:${min}`
  }
 
  // Replaces the HTML generated when fruktsam was run
