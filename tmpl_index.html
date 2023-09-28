@@ -82,6 +82,15 @@
    loadFlagged()
  }
 
+ function formatDate(dateStr) {
+   const date = new Date(dateStr)
+   let m = (date.getMonth() + 1).toString()
+   if (m.length < 2) { m = '0' + m }
+   let d = date.getDate().toString()
+   if (d.length < 2) { d = '0' + d }
+   return `${date.getFullYear()}-${m}-${d} ${date.getHours()}:${date.getMinutes()}`
+ }
+
  // Replaces the HTML generated when fruktsam was run
  async function loadFlagged() {
    document.getElementById('flagged').innerHTML = 'Laddar från databasen...'
@@ -96,9 +105,11 @@
          html += `<p class="flagged">fel vid hämtning av träd:\n\n${JSON.stringify(flagged.tree)}</p>`
          continue
        }
+       const flaggedAt = formatDate(flagged.flagged_at)
+       const lastChange = formatDate(tree.added)
        html += `
 <p class="flagged">
-  <span class="flagtime">${flagged.flagged_at}</span>
+  <span class="flagtime">${flaggedAt}</span>
   <span class="type">
     <a href="https://fruktkartan.se/#/t/${flagged.tree}" target="_blank" rel="noopener">${tree.type}</a>
   </span>
@@ -110,7 +121,7 @@
   <br/>
   <span class="desc"><em>Beskrivning: </em>${tree.desc}</span>
   <br/>
-  <span class="lastchange"><em>Senast redigerat: </em>${tree.added}</span>
+  <span class="lastchange"><em>Senast redigerat: </em>${lastChange}</span>
   <br/>
   <span>
     <button onclick='deleteFlag("${flagged.tree}", "${flagged.flag}")'>ta bort flaggan</button>
