@@ -84,15 +84,12 @@
 
  function formatDate(dateStr) {
    const date = new Date(dateStr)
-   let m = (date.getMonth() + 1).toString()
-   if (m.length < 2) { m = '0' + m }
-   let d = date.getDate().toString()
-   if (d.length < 2) { d = '0' + d }
-   let hour = date.getHours().toString()
-   if (hour.length < 2) { hour = '0' + hour }
-   let min = date.getMinutes().toString()
-   if (min.length < 2) { min = '0' + min }
-   return `${date.getFullYear()}-${m}-${d} ${hour}:${min}`
+   let s = String(date.getFullYear())
+   s += '-' + String(date.getMonth() + 1).padStart(2, '0')
+   s += '-' + String(date.getDate()).padStart(2, '0')
+   s += ' ' + String(date.getHours()).padStart(2, '0')
+   s += ':' + String(date.getMinutes()).padStart(2, '0')
+   return s
  }
 
  // Replaces the HTML generated when fruktsam was run
