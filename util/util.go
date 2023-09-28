@@ -16,30 +16,21 @@ const (
 	dateTimeFmt  = dateFmt + " " + timeFmt
 )
 
-func FormatDate(t time.Time) string {
-	if location == nil {
-		initLocation()
-	}
-	return monday.Format(t.In(location), dateFmt, mondayLocale)
-}
-
-func FormatTime(t time.Time) string {
-	if location == nil {
-		initLocation()
-	}
-	return monday.Format(t.In(location), timeFmt, mondayLocale)
-}
-
-func FormatDateTime(t time.Time) string {
-	if location == nil {
-		initLocation()
-	}
-	return monday.Format(t.In(location), dateTimeFmt, mondayLocale)
-}
-
-func initLocation() {
+func init() {
 	var err error
 	if location, err = time.LoadLocation("Europe/Stockholm"); err != nil {
 		log.Fatal(err)
 	}
+}
+
+func FormatDate(t time.Time) string {
+	return monday.Format(t.In(location), dateFmt, mondayLocale)
+}
+
+func FormatTime(t time.Time) string {
+	return monday.Format(t.In(location), timeFmt, mondayLocale)
+}
+
+func FormatDateTime(t time.Time) string {
+	return monday.Format(t.In(location), dateTimeFmt, mondayLocale)
 }
