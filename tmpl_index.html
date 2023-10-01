@@ -93,6 +93,16 @@
    if ('error' in flags) {
      html += `fel: ${JSON.stringify(flags)}`
    } else if (flags.length > 0) {
+     flags.sort((a, b) => {
+       if (a.flagged_at == b.flagged_at) {
+         return 0
+       }
+       if (a.flagged_at < b.flagged_at) {
+         // Sort a after b
+         return 1
+       }
+       return -1
+     })
      for (const flagged of flags) {
        const tree = await http('GET', `${apiBase}/tree/${flagged.tree}`)
        if ('error' in tree) {

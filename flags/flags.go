@@ -56,7 +56,8 @@ func (f *Flags) FromDB(trees trees.Trees) error {
                    , tree AS key
                    , flag
                    , reason
-                FROM flags`
+                FROM flags
+            ORDER BY flagged_at DESC`
 
 	db, err := sqlx.Connect("postgres", os.Getenv("DATABASE_URL"))
 	if err != nil {
