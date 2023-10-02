@@ -97,30 +97,38 @@
    document.getElementById('flagged').innerHTML = 'Laddar från databasen...'
    let html = ''
    const flags = await http('GET', `${apiBase}/flags`)
-   if ('error' in flags) {
-     html += `fel: ${JSON.stringify(flags)}`
-   } else if (flags.length > 0) {
-     flags.sort((a, b) => {
-       if (a.flagged_at == b.flagged_at) {
-         return 0
-       }
-       if (a.flagged_at < b.flagged_at) {
-         // Sort a after b
-         return 1
-       }
-       return -1
-     })
-     for (const flagged of flags) {
-       const tree = await http('GET', `${apiBase}/tree/${flagged.tree}`)
-       if ('error' in tree) {
-         html += `<p class="flagged">fel vid hämtning av träd:\n\n${JSON.stringify(flagged.tree)}</p>`
-         continue
-       }
-       const flaggedAt = formatDate(flagged.flagged_at)
-       const lastChange = formatDate(tree.added)
-       let photoHtml = ''
-       if (tree.file !== '') {
-         photoHtml = `
+
+   switch (true) {
+     case 'error' in flags:
+       html += `fel: ${JSON.stringify(flags)}`
+       break;
+
+     case flags.length == 0:
+       html += `Inga flaggade träd`
+       break;
+
+     default:
+       flags.sort((a, b) => {
+         if (a.flagged_at == b.flagged_at) {
+           return 0
+         }
+         if (a.flagged_at < b.flagged_at) {
+           // Sort a after b
+           return 1
+         }
+         return -1
+       })
+       for (const flagged of flags) {
+         const tree = await http('GET', `${apiBase}/tree/${flagged.tree}`)
+         if ('error' in tree) {
+           html += `<p class="flagged">fel vid hämtning av träd:\n\n${JSON.stringify(flagged.tree)}</p>`
+           continue
+         }
+         const flaggedAt = formatDate(flagged.flagged_at)
+         const lastChange = formatDate(tree.added)
+         let photoHtml = ''
+         if (tree.file !== '') {
+           photoHtml = `
 <br/>
 <span class="photo flagged">
   <a href="https://fruktkartan-thumbs.s3.eu-north-1.amazonaws.com/${tree.file}_1200.jpg" target="_blank" rel="noopener">
@@ -128,8 +136,8 @@
   </a>
 </span>
 `
-       }
-       html += `
+         }
+         html += `
 <p class="flagged">
   <span class="flagtime">${flaggedAt}</span>
   <span class="type">
@@ -151,10 +159,10 @@
   </span>
 </p>
 `
-     }
-   } else {
-     html += `Inga flaggade träd`
+       }
+       break;
    }
+
    document.getElementById('flagged').innerHTML = html
  }
 
