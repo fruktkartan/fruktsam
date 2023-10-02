@@ -62,6 +62,13 @@
    border-radius: 3px
  }
 
+ .photo.flagged img {
+   height: auto;
+   width: auto;
+   max-width: 130px;
+   max-height: 130px;
+ }
+
  ins, del {
    /* get rid of default underline/overstrike for these (we have colors) */
    text-decoration: none;
@@ -111,6 +118,17 @@
        }
        const flaggedAt = formatDate(flagged.flagged_at)
        const lastChange = formatDate(tree.added)
+       let photoHtml = ''
+       if (tree.file !== '') {
+         photoHtml = `
+<br/>
+<span class="photo flagged">
+  <a href="https://fruktkartan-thumbs.s3.eu-north-1.amazonaws.com/${tree.file}_1200.jpg" target="_blank" rel="noopener">
+    <img src="https://fruktkartan-thumbs.s3.eu-north-1.amazonaws.com/${tree.file}_1200.jpg" width="130px" />
+  </a>
+</span>
+`
+       }
        html += `
 <p class="flagged">
   <span class="flagtime">${flaggedAt}</span>
@@ -123,6 +141,7 @@
   <span><em>Anledning: </em>${flagged.reason}</span>
   <br/>
   <span class="desc"><em>Beskrivning: </em>${tree.desc}</span>
+  ${photoHtml}
   <br/>
   <span class="lastchange"><em>Senast redigerat: </em>${lastChange}</span>
   <br/>
@@ -133,7 +152,7 @@
 </p>
 `
      }
-   }  else {
+   } else {
      html += `Inga flaggade träd`
    }
    document.getElementById('flagged').innerHTML = html
