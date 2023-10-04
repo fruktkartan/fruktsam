@@ -283,6 +283,7 @@
 
 <div id="flagged">
 
+<noscript>
 {{ if eq .Flags.Count 0 }}
   Inga flaggade träd
 {{ end }}
@@ -310,6 +311,7 @@
     <span class="lastchange"><em>Senast redigerat: </em>{{ .Tree.At }}</span>
   </p>
 {{ end }}
+</noscript>
 
 </div>
 
