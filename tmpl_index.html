@@ -228,7 +228,9 @@
      return
    }
 
-   window.alert(`Det verkar gått bra!\n\nresultat: ${JSON.stringify(res)}`)
+   if (!isEmpty(res)) {
+     window.alert(`Kanske gick något snett?\n\nresultat: ${JSON.stringify(res)}`)
+   }
    loadFlagged()
  }
 
@@ -258,8 +260,14 @@
      return
    }
 
-   window.alert(`Det verkar gått bra!\n\nresultat: ${JSON.stringify(res)}`)
+   if (!isEmpty(res)) {
+     window.alert(`Kanske gick något snett?\n\nresultat: ${JSON.stringify(res)}`)
+   }
    loadFlagged()
+ }
+
+ function isEmpty(obj) {
+   return Object.keys(obj).length === 0;
  }
 </script>
 
