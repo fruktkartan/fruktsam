@@ -356,6 +356,8 @@
         <a href="{{ .PosNew.GoogmapsURL }}" target="_blank" rel="noopener">(gm)</a>
       </span>
       <br/>
+      <span><em>Av:</em> {{ .ByNew }}</span>
+      <br/>
       <span class="desc"><em>Beskrivning:</em> {{ .DescNew }}</span>
       {{ if ne .ImgNew.String "" }}
         <br/>
@@ -376,6 +378,8 @@
         <a href="{{ .PosNew.GoogmapsURL }}" target="_blank" rel="noopener">(gm)</a>
       </span>
       <br/>
+      <span><em>Av:</em> {{ .ByNew }}</span>
+      <br/>
       <span class="desc"><em>Beskrivning:</em> {{ .DescDiff }}</span>
       {{ if or (ne .Img.String "") (ne .ImgNew.String "") }}
         <br/>
@@ -395,7 +399,7 @@
         </span>
       {{ end }}
       <br/>
-      <span class="lastchange"><em>Senast redigerat:</em> {{ .At }}</span>
+      <span class="lastchange"><em>Tidigare redigerat:</em> {{ .At }}</span>
       {{ if .UpdateIsEmpty }}<br/><span><strong>Ingen förändring, konstigt nog!</strong></span>{{ end }}
     {{ end }}
   </p>
