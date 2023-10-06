@@ -148,6 +148,8 @@
   <br/>
   <span><em>Anledning: </em>${flagged.reason}</span>
   <br/>
+  <span><em>Flaggat av: </em>${flagged.flagged_by}</span>
+  <br/>
   <span class="desc"><em>Beskrivning: </em>${tree.desc}</span>
   ${photoHtml}
   <br/>
@@ -300,6 +302,8 @@
     <br/>
     <span><em>Anledning: </em>{{ .Reason }}</span>
     <br/>
+    <span><em>Flaggat av: </em>{{ .By }}</span>
+    <br/>
     <span class="desc"><em>Beskrivning: </em>{{ .Tree.Desc }}</span>
     {{ if ne .Tree.Img.String "" }}
       <br/>
@@ -356,7 +360,7 @@
         <a href="{{ .PosNew.GoogmapsURL }}" target="_blank" rel="noopener">(gm)</a>
       </span>
       <br/>
-      <span><em>Av:</em> {{ .ByNew }}</span>
+      <span><em>Tillagt av:</em> {{ .ByNew }}</span>
       <br/>
       <span class="desc"><em>Beskrivning:</em> {{ .DescNew }}</span>
       {{ if ne .ImgNew.String "" }}
@@ -378,7 +382,7 @@
         <a href="{{ .PosNew.GoogmapsURL }}" target="_blank" rel="noopener">(gm)</a>
       </span>
       <br/>
-      <span><em>Av:</em> {{ .ByNew }}</span>
+      <span><em>Redigerat av:</em> {{ .ByNew }}</span>
       <br/>
       <span class="desc"><em>Beskrivning:</em> {{ .DescDiff }}</span>
       {{ if or (ne .Img.String "") (ne .ImgNew.String "") }}
