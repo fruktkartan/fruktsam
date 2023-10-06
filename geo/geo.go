@@ -204,7 +204,17 @@ func (r *ReverseCache) FormatAddress(p Pos) string {
 		return "?"
 	}
 
-	return strings.Join(items, ", ")
+	s := strings.Join(items, ", ")
+
+	if a.CountryCode != "se" {
+		cc := strings.ToUpper(a.CountryCode)
+		if cc == "" {
+			cc = "??"
+		}
+		s += " (" + cc + ")"
+	}
+
+	return s
 }
 
 type osm struct {
