@@ -9,6 +9,8 @@
     --red-color: #f20505;
     --orange-color: #dd8213;
     --green-color: #53c45e;
+    --light-green-color: color-mix(in srgb, white 82%, var(--green-color));
+    --light-red-color: color-mix(in srgb, white 82%, var(--red-color));
   }
 
   body {
@@ -47,6 +49,15 @@
    text-decoration: line-through;
    text-decoration-color: var(--red-color);
    text-decoration-thickness: 2px;
+ }
+
+ .desc ins {
+   /* !important to override DiffPrettyHtml's hardcoded style on element */
+   background-color: var(--light-green-color) !important;
+ }
+ .desc del {
+   /* !important to override DiffPrettyHtml's hardcoded style on element */
+   background-color: var(--light-red-color) !important;
  }
 
  .photo img {
