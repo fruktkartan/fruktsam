@@ -9,7 +9,7 @@ import (
 	"text/template"
 	"time"
 
-	"github.com/alecthomas/kingpin"
+	"github.com/alecthomas/kingpin/v2"
 	"github.com/fruktkartan/fruktsam/flags"
 	"github.com/fruktkartan/fruktsam/history"
 	"github.com/fruktkartan/fruktsam/trees"
