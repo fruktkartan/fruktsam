@@ -1,9 +1,9 @@
 
-Build on push: ![](https://github.com/fruktkartan/fruktsam/workflows/Build%20(and%20deploy)/badge.svg?branch=master&event=push)  
-Manual deploy: ![](https://github.com/fruktkartan/fruktsam/workflows/Build%20(and%20deploy)/badge.svg?branch=master&event=workflow_dispatch)  
-Scheduled deploy: ![](https://github.com/fruktkartan/fruktsam/workflows/Build%20(and%20deploy)/badge.svg?branch=master&event=schedule)  
+Build on push: [![](https://github.com/fruktkartan/fruktsam/actions/workflows/build-and-deploy.yml/badge.svg?branch=master&event=push)](https://github.com/fruktkartan/fruktsam/actions/workflows/build-and-deploy.yml)
+Manual deploy: [![](https://github.com/fruktkartan/fruktsam/actions/workflows/build-and-deploy.yml/badge.svg?branch=master&event=workflow_dispatch)](https://github.com/fruktkartan/fruktsam/actions/workflows/build-and-deploy.yml)
+Scheduled deploy: [![](https://github.com/fruktkartan/fruktsam/actions/workflows/build-and-deploy.yml/badge.svg?branch=master&event=schedule)](https://github.com/fruktkartan/fruktsam/actions/workflows/build-and-deploy.yml)
 
-The build is deployed every night at 00:01 UTC (and on [manual workflow run](https://github.com/fruktkartan/fruktsam/actions?query=workflow%3A%22Build+%28and+deploy%29%22)).
+The build is deployed every night at 00:01 UTC (and on [manual workflow run](https://github.com/fruktkartan/fruktsam/actions/workflows/build-and-deploy.yml)
 The updated cache of reverse-geocoded addresses is commited back to the repo.
 
 Needs `DATABASE_URL` environment variable, or in `.env`.
