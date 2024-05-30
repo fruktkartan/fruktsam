@@ -5,6 +5,7 @@ import (
 	"context"
 	"encoding/gob"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"io"
 	"log"
@@ -33,6 +34,14 @@ func (p *Pos) GoogmapsURL() string {
 		p.Lat, p.Lon, p.Lat, p.Lon)
 }
 
+type httpError struct {
+	statusCode int
+}
+
+func (e httpError) Error() string {
+	return fmt.Sprintf("HTTP StatusCode: %d", e.statusCode)
+}
+
 func reverse(p Pos) ([]byte, error) {
 	req, _ := http.NewRequestWithContext(context.Background(), "GET", "https://nominatim.openstreetmap.org/reverse", nil)
 	req.Header.Add("Accept", "application/json")
@@ -55,7 +64,7 @@ func reverse(p Pos) ([]byte, error) {
 	}
 
 	if resp.StatusCode != http.StatusOK {
-		return nil, fmt.Errorf("request err: %s", resp.Status)
+		return nil, httpError{statusCode: resp.StatusCode}
 	}
 	return body, nil
 }
@@ -129,9 +138,14 @@ func (r *ReverseCache) Add(p Pos) {
 	if !r.Has(p) {
 		jsonbytes, err := reverse(p)
 		if err != nil {
-			fmt.Printf("%v: %s\n", p, err)
-			// We store in reversecache even if we got nothing
-			r.Table[p] = nil
+			var httpErr httpError
+			if errors.As(err, &httpErr) {
+				fmt.Printf("%v: %s (nothing added)\n", p, err)
+			} else {
+				fmt.Printf("%v: %s (added nil)\n", p, err)
+				// We store in reversecache even if we got nothing
+				r.Table[p] = nil
+			}
 		} else {
 			r.Table[p] = jsonbytes
 		}
