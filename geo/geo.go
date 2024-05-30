@@ -163,7 +163,7 @@ func (r *ReverseCache) Del(p Pos) {
 
 func (r *ReverseCache) FormatAddress(p Pos) string {
 	if !r.Has(p) {
-		return "????"
+		return "?????"
 	}
 	if r.Table[p] == nil {
 		log.Printf("%v: reverse in cache is nil", p)
