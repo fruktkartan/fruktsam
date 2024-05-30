@@ -153,6 +153,14 @@ func (r *ReverseCache) Add(p Pos) {
 	}
 }
 
+func (r *ReverseCache) Del(p Pos) {
+	if !r.Has(p) {
+		return
+	}
+	delete(r.Table, p)
+	r.dirty = true
+}
+
 func (r *ReverseCache) FormatAddress(p Pos) string {
 	if !r.Has(p) {
 		return "????"
