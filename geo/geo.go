@@ -44,7 +44,8 @@ func (e httpError) Error() string {
 
 func reverse(p Pos) ([]byte, error) {
 	req, _ := http.NewRequestWithContext(context.Background(), "GET", "https://nominatim.openstreetmap.org/reverse", nil)
-	req.Header.Add("Accept", "application/json")
+	req.Header.Add("accept", "application/json")
+	req.Header.Add("user-agent", "fruktsam (https://github.com/fruktkartan/fruktsam)")
 	q := req.URL.Query()
 	q.Add("format", "json")
 	q.Add("lat", fmt.Sprintf("%g", p.Lat))
