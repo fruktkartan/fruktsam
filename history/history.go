@@ -198,6 +198,8 @@ func (h *History) Load(cachefile string) error {
 	return nil
 }
 
+const reversefile = "reversecache"
+
 func (h *History) prepare() {
 	var err error
 
@@ -208,7 +210,11 @@ func (h *History) prepare() {
 		log.Fatal(err)
 	}
 
-	revcache := geo.GetInstance()
+	revcache := geo.NewReverseCache()
+
+	if err = revcache.Load(reversefile); err != nil {
+		log.Fatal(err)
+	}
 
 	dmp := diffmatchpatch.New()
 	for idx := range h.entries {
@@ -261,7 +267,7 @@ func (h *History) prepare() {
 		}
 	}
 
-	if err = revcache.Save(); err != nil {
+	if err = revcache.Save(reversefile); err != nil {
 		log.Printf("revcache.Save failed: %s\n", err)
 	}
 
