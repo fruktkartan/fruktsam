@@ -148,12 +148,22 @@
 </span>
 `
          }
+         var reverseURL = new URL('https://nominatim.openstreetmap.org/reverse')
+         reverseURL.searchParams.set('lat', tree.lat)
+         reverseURL.searchParams.set('lon', tree.lon)
+         reverseURL.searchParams.set('format', 'json')
+         const reverse = await http('GET', reverseURL.href)
+         if ('error' in reverse) {
+           html += `<p class="flagged">fel vid hämtning av nominatim-reverse för:\n\n${JSON.stringify(flagged.tree)}</p>`
+           continue
+         }
          html += `
 <p class="flagged">
   <span class="flagtime">${flaggedAt}</span>
   <span class="type">
     <a href="https://fruktkartan.se/#/t/${flagged.tree}" target="_blank" rel="noopener">${tree.type}</a>
   </span>
+  — ${reverse.display_name}
   <br/>
   <em>Flagga: </em><span class="flagname">${flagged.flag}</span>
   <br/>
