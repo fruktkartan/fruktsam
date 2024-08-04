@@ -90,7 +90,16 @@
  const apiBase = 'https://fruktkartan-api.herokuapp.com'
 
  window.onload = async () => {
-   loadFlagged()
+   const params = new URLSearchParams(window.location.search)
+   if (params.get('js') !== null) {
+     loadFlagged()
+  } else {
+     var jsURL = new URL(window.location.href)
+     jsURL.searchParams.set('js', '')
+     const s = `<a href="${jsURL.href}">Ladda med js istället</a><br/><br/>`
+     const html = document.getElementById('flagged').innerHTML
+     document.getElementById('flagged').innerHTML = s + html
+   }
  }
 
  function formatDate(dateStr) {
@@ -304,7 +313,6 @@
 
 <div id="flagged">
 
-<noscript>
 {{ if eq .Flags.Count 0 }}
   Inga flaggade träd
 {{ end }}
@@ -316,6 +324,11 @@
       <a href="https://fruktkartan.se/#/t/{{ .Key }}" target="_blank" rel="noopener">{{ .Tree.Type }}</a>
     </span>
     <span class="key">[{{ .Key }}]</span>
+    <br/>
+    <span>—
+      <a href="{{ .Tree.Pos.OSMURL }}" target="_blank" rel="noopener">nära</a> {{ .Tree.Address }}
+      <a href="{{ .Tree.Pos.GoogmapsURL }}" target="_blank" rel="noopener">(gm)</a>
+    </span>
     <br/>
     <em>Flagga: </em><span class="flagname">{{ .Flag }}</span>
     <br/>
@@ -334,7 +347,6 @@
     <span class="lastchange"><em>Senast redigerat: </em>{{ .Tree.At }}</span>
   </p>
 {{ end }}
-</noscript>
 
 </div>
 

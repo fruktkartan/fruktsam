@@ -12,7 +12,17 @@ import (
 	"net/http"
 	"os"
 	"strings"
+	"sync"
 	"time"
+)
+
+// TODO locking for concurrent access?
+
+const reversefile = "reversecache"
+
+var (
+	r    *ReverseCache
+	once sync.Once
 )
 
 type Pos struct {
@@ -71,31 +81,36 @@ func reverse(p Pos) ([]byte, error) {
 }
 
 type ReverseCache struct {
-	Table table
+	Table apiResults // exported for gob
 	dirty bool
 }
 
-type table map[Pos][]byte
+type apiResults map[Pos][]byte
 
-func NewReverseCache() *ReverseCache {
-	r := ReverseCache{}
-	r.Table = make(table)
-	return &r
+func GetInstance() *ReverseCache {
+	once.Do(func() {
+		r = &ReverseCache{}
+		r.Table = make(apiResults)
+		if err := r.load(); err != nil {
+			log.Fatal(err)
+		}
+	})
+
+	return r
 }
 
-func (r *ReverseCache) Save(cachefile string) error {
+func (r *ReverseCache) Save() error {
 	if !r.dirty {
 		fmt.Printf("Reversecache not modified, not saving\n")
 		return nil
 	}
 	b := new(bytes.Buffer)
 	enc := gob.NewEncoder(b)
-	err := enc.Encode(r)
-	if err != nil {
+	if err := enc.Encode(r); err != nil {
 		return err
 	}
 
-	f, err := os.OpenFile(cachefile, os.O_CREATE|os.O_WRONLY, 0o666)
+	f, err := os.OpenFile(reversefile, os.O_CREATE|os.O_WRONLY, 0o666)
 	if err != nil {
 		return err
 	}
@@ -107,12 +122,12 @@ func (r *ReverseCache) Save(cachefile string) error {
 	return nil
 }
 
-func (r *ReverseCache) Load(cachefile string) error {
+func (r *ReverseCache) load() error {
 	if len(r.Table) > 0 {
 		return fmt.Errorf("reversecache not empty, refusing to load from file")
 	}
 
-	f, err := os.Open(cachefile)
+	f, err := os.Open(reversefile)
 	if err != nil {
 		if !os.IsNotExist(err) {
 			return err

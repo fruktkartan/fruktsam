@@ -3,8 +3,11 @@ package trees
 import (
 	"database/sql"
 	"fmt"
+	"log"
 	"os"
+	"time"
 
+	"github.com/fruktkartan/fruktsam/geo"
 	"github.com/fruktkartan/fruktsam/types"
 	"github.com/jmoiron/sqlx"
 	_ "github.com/lib/pq" // for sqlx
@@ -22,6 +25,9 @@ type Entry struct {
 	By       types.NullString
 	At       types.NullTime
 	Lat, Lon sql.NullFloat64
+
+	Address string
+	Pos     geo.Pos
 }
 
 func (t *Trees) FromDB() error {
@@ -53,11 +59,25 @@ func (t *Trees) FromDB() error {
 		return fmt.Errorf("Select: %w", err)
 	}
 
-	for idx := range rows {
-		t.entries[rows[idx].Key.String()] = &rows[idx]
+	for i := range rows {
+		t.entries[rows[i].Key.String()] = &rows[i]
 	}
 
-	// t.prepare() // TODO?
+	revcache := geo.GetInstance()
+
+	for i := range t.entries {
+		if t.entries[i].Lat.Valid {
+			// history.prepare uses this code too
+			p := geo.Pos{Lat: t.entries[i].Lat.Float64, Lon: t.entries[i].Lon.Float64}
+			if !revcache.Has(p) {
+				log.Printf("get reverse address for trees entry %s\n", t.entries[i].Key.String())
+				revcache.Add(p)
+				time.Sleep(1 * time.Second)
+			}
+			t.entries[i].Address = revcache.FormatAddress(p)
+			t.entries[i].Pos = p
+		}
+	}
 
 	return nil
 }
