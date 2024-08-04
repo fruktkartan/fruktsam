@@ -87,7 +87,7 @@ type ReverseCache struct {
 
 type apiResults map[Pos][]byte
 
-func GetInstance() *ReverseCache {
+func GetReverseCache() *ReverseCache {
 	once.Do(func() {
 		r = &ReverseCache{}
 		r.Table = make(apiResults)

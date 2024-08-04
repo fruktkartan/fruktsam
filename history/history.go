@@ -208,7 +208,7 @@ func (h *History) prepare() {
 		log.Fatal(err)
 	}
 
-	revcache := geo.GetInstance()
+	revcache := geo.GetReverseCache()
 
 	dmp := diffmatchpatch.New()
 	for idx := range h.entries {
