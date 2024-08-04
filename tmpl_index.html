@@ -302,41 +302,7 @@
 
 <h2>Flaggade träd</h2>
 
-<div id="flagged">
-
-<noscript>
-{{ if eq .Flags.Count 0 }}
-  Inga flaggade träd
-{{ end }}
-
-{{ range .Flags.Entries }}
-  <p class="flagged">
-    <span class="flagtime">{{ .At }}</span>
-    <span class="type">
-      <a href="https://fruktkartan.se/#/t/{{ .Key }}" target="_blank" rel="noopener">{{ .Tree.Type }}</a>
-    </span>
-    <span class="key">[{{ .Key }}]</span>
-    <br/>
-    <em>Flagga: </em><span class="flagname">{{ .Flag }}</span>
-    <br/>
-    <span><em>Anledning: </em>{{ .Reason }}</span>
-    <br/>
-    <span><em>Flaggat av: </em>{{ .By }}</span>
-    <br/>
-    <span class="desc"><em>Beskrivning: </em>{{ .Tree.Desc }}</span>
-    {{ if ne .Tree.Img.String "" }}
-      <br/>
-      <span class="photo">
-        <a href="{{ .TreeImgURL }}" target="_blank" rel="noopener"><img src="{{ .TreeImgFile }}" /></a>
-      </span>
-    {{ end }}
-    <br/>
-    <span class="lastchange"><em>Senast redigerat: </em>{{ .Tree.At }}</span>
-  </p>
-{{ end }}
-</noscript>
-
-</div>
+<div id="flagged"></div>
 
 {{ $lastDate := "" }}
 
