@@ -82,7 +82,7 @@ func (e Entry) ImgFile() string {
 	if img == "" {
 		return ""
 	}
-	return ImageFilePath(img)
+	return imageFilePath(img)
 }
 
 func (e Entry) ImgFileNew() string {
@@ -90,7 +90,7 @@ func (e Entry) ImgFileNew() string {
 	if img == "" {
 		return ""
 	}
-	return ImageFilePath(img)
+	return imageFilePath(img)
 }
 
 func (h *History) Count() int {
@@ -212,8 +212,8 @@ func (h *History) prepare() {
 	for idx := range h.entries {
 		he := &h.entries[idx]
 
-		CreateImageThumb(he.Img.String())
-		CreateImageThumb(he.ImgNew.String())
+		createImageThumb(he.Img.String())
+		createImageThumb(he.ImgNew.String())
 
 		if he.Lat.Valid {
 			p := types.Pos{Lat: he.Lat.Float64, Lon: he.Lon.Float64}
@@ -275,17 +275,17 @@ const (
 	imageFileFmt = "thumb_%s.jpg"
 )
 
-func ImageFilePath(dbImgName string) string {
+func imageFilePath(dbImgName string) string {
 	return imageDir + "/" + fmt.Sprintf(imageFileFmt, dbImgName)
 }
 
-func CreateImageThumb(dbImgName string) {
+func createImageThumb(dbImgName string) {
 	if dbImgName == "" {
 		return
 	}
 
 	imageURL := ImageURLBase + fmt.Sprintf(ImageURLPathFmt, dbImgName)
-	imageFileOutPath := outDir + "/" + ImageFilePath(dbImgName)
+	imageFileOutPath := outDir + "/" + imageFilePath(dbImgName)
 
 	if _, err := os.Stat(imageFileOutPath); err == nil {
 		return
