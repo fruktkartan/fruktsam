@@ -55,6 +55,7 @@ func reverse(p types.Pos) ([]byte, error) {
 	req, _ := http.NewRequestWithContext(context.Background(), "GET", "https://nominatim.openstreetmap.org/reverse", nil)
 	req.Header.Add("accept", "application/json")
 	req.Header.Add("user-agent", "fruktsam (https://github.com/fruktkartan/fruktsam)")
+	req.Header.Add("accept-language", "sv,en-US,en")
 	q := req.URL.Query()
 	q.Add("format", "json")
 	q.Add("lat", fmt.Sprintf("%g", p.Lat))
