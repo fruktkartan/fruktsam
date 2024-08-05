@@ -132,7 +132,7 @@
        for (const flagged of flags) {
          const tree = await http('GET', `${apiBase}/tree/${flagged.tree}`)
          if ('error' in tree) {
-           html += `<p class="flagged">fel vid hämtning av träd:\n\n${JSON.stringify(flagged.tree)}</p>`
+           html += `<p class="flagged">fel vid hämtning av träd '${JSON.stringify(flagged.tree)}':\n\n${tree.error}</p>`
            continue
          }
          const flaggedAt = formatDate(flagged.flagged_at)
@@ -153,8 +153,8 @@
          reverseURL.searchParams.set('lon', tree.lon)
          reverseURL.searchParams.set('format', 'json')
          const reverse = await http('GET', reverseURL.href)
-         if ('error' in reverse) {
-           html += `<p class="flagged">fel vid hämtning av nominatim-reverse för:\n\n${JSON.stringify(flagged.tree)}</p>`
+         if (('error' in reverse) || (!('display_name' in reverse))) {
+           html += `<p class="flagged">fel vid hämtning av nominatim-reverse för träd '${JSON.stringify(flagged.tree)}':\n\n${reverse.error}</p>`
            continue
          }
          html += `
