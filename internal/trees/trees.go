@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"os"
 
-	"github.com/fruktkartan/fruktsam/types"
+	"github.com/fruktkartan/fruktsam/internal/types"
 	"github.com/jmoiron/sqlx"
 	_ "github.com/lib/pq" // for sqlx
 )

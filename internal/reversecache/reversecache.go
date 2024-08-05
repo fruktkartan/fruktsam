@@ -1,4 +1,4 @@
-package geo
+package reversecache
 
 import (
 	"bytes"
@@ -14,9 +14,27 @@ import (
 	"strings"
 	"sync"
 	"time"
+
+	"github.com/fruktkartan/fruktsam/internal/types"
 )
 
 // TODO locking for concurrent access?
+
+func Add(p types.Pos) {
+	getInstance().add(p)
+}
+
+func Has(p types.Pos) bool {
+	return getInstance().has(p)
+}
+
+func Save() error {
+	return getInstance().save()
+}
+
+func FormatAddress(p types.Pos) string {
+	return getInstance().formatAddress(p)
+}
 
 const reversefile = "reversecache"
 
@@ -24,25 +42,6 @@ var (
 	r    *ReverseCache
 	once sync.Once
 )
-
-type Pos struct {
-	Lat, Lon float64
-}
-
-func (p *Pos) GeohackURL() string {
-	return fmt.Sprintf("https://geohack.toolforge.org/geohack.php?params=%g_N_%g_E",
-		p.Lat, p.Lon)
-}
-
-func (p *Pos) OSMURL() string {
-	return fmt.Sprintf("https://www.openstreetmap.org/?mlat=%g&mlon=%g&zoom=15&layers=M",
-		p.Lat, p.Lon)
-}
-
-func (p *Pos) GoogmapsURL() string {
-	return fmt.Sprintf("https://www.google.com/maps?ll=%g,%g&q=%g,%g&hl=en&t=k&z=15",
-		p.Lat, p.Lon, p.Lat, p.Lon)
-}
 
 type httpError struct {
 	statusCode int
@@ -52,7 +51,7 @@ func (e httpError) Error() string {
 	return fmt.Sprintf("HTTP StatusCode: %d", e.statusCode)
 }
 
-func reverse(p Pos) ([]byte, error) {
+func reverse(p types.Pos) ([]byte, error) {
 	req, _ := http.NewRequestWithContext(context.Background(), "GET", "https://nominatim.openstreetmap.org/reverse", nil)
 	req.Header.Add("accept", "application/json")
 	req.Header.Add("user-agent", "fruktsam (https://github.com/fruktkartan/fruktsam)")
@@ -85,9 +84,9 @@ type ReverseCache struct {
 	dirty bool
 }
 
-type apiResults map[Pos][]byte
+type apiResults map[types.Pos][]byte
 
-func GetReverseCache() *ReverseCache {
+func getInstance() *ReverseCache {
 	once.Do(func() {
 		r = &ReverseCache{}
 		r.Table = make(apiResults)
@@ -99,7 +98,7 @@ func GetReverseCache() *ReverseCache {
 	return r
 }
 
-func (r *ReverseCache) Save() error {
+func (r *ReverseCache) save() error {
 	if !r.dirty {
 		fmt.Printf("Reversecache not modified, not saving\n")
 		return nil
@@ -145,13 +144,13 @@ func (r *ReverseCache) load() error {
 	return nil
 }
 
-func (r *ReverseCache) Has(p Pos) bool {
+func (r *ReverseCache) has(p types.Pos) bool {
 	_, ok := r.Table[p]
 	return ok
 }
 
-func (r *ReverseCache) Add(p Pos) {
-	if !r.Has(p) {
+func (r *ReverseCache) add(p types.Pos) {
+	if !r.has(p) {
 		jsonbytes, err := reverse(p)
 		if err != nil {
 			var httpErr httpError
@@ -169,16 +168,16 @@ func (r *ReverseCache) Add(p Pos) {
 	}
 }
 
-func (r *ReverseCache) Del(p Pos) {
-	if !r.Has(p) {
-		return
-	}
-	delete(r.Table, p)
-	r.dirty = true
-}
+// func (r *ReverseCache) del(p types.Pos) {
+// 	if !r.has(p) {
+// 		return
+// 	}
+// 	delete(r.Table, p)
+// 	r.dirty = true
+// }
 
-func (r *ReverseCache) FormatAddress(p Pos) string {
-	if !r.Has(p) {
+func (r *ReverseCache) formatAddress(p types.Pos) string {
+	if !r.has(p) {
 		return "?????"
 	}
 	if r.Table[p] == nil {

@@ -15,8 +15,8 @@ import (
 	"sort"
 	"time"
 
-	"github.com/fruktkartan/fruktsam/geo"
-	"github.com/fruktkartan/fruktsam/types"
+	"github.com/fruktkartan/fruktsam/internal/reversecache"
+	"github.com/fruktkartan/fruktsam/internal/types"
 	"github.com/jmoiron/sqlx"
 	_ "github.com/lib/pq" // for sqlx
 	"github.com/sergi/go-diff/diffmatchpatch"
@@ -56,7 +56,7 @@ type Entry struct {
 	LatNew, LonNew sql.NullFloat64
 
 	Address, AddressNew string
-	Pos, PosNew         geo.Pos
+	Pos, PosNew         types.Pos
 	DescDiff            string
 	UpdateIsEmpty       bool
 }
@@ -208,8 +208,6 @@ func (h *History) prepare() {
 		log.Fatal(err)
 	}
 
-	revcache := geo.GetReverseCache()
-
 	dmp := diffmatchpatch.New()
 	for idx := range h.entries {
 		he := &h.entries[idx]
@@ -218,23 +216,23 @@ func (h *History) prepare() {
 		CreateImageThumb(he.ImgNew.String())
 
 		if he.Lat.Valid {
-			p := geo.Pos{Lat: he.Lat.Float64, Lon: he.Lon.Float64}
-			if !revcache.Has(p) {
+			p := types.Pos{Lat: he.Lat.Float64, Lon: he.Lon.Float64}
+			if !reversecache.Has(p) {
 				log.Printf("get reverse address for history entry %d\n", he.ChangeID)
-				revcache.Add(p)
+				reversecache.Add(p)
 				time.Sleep(1 * time.Second)
 			}
-			he.Address = revcache.FormatAddress(p)
+			he.Address = reversecache.FormatAddress(p)
 			he.Pos = p
 		}
 		if he.LatNew.Valid {
-			p := geo.Pos{Lat: he.LatNew.Float64, Lon: he.LonNew.Float64}
-			if !revcache.Has(p) {
+			p := types.Pos{Lat: he.LatNew.Float64, Lon: he.LonNew.Float64}
+			if !reversecache.Has(p) {
 				log.Printf("get reverse address (new) for history entry %d\n", he.ChangeID)
-				revcache.Add(p)
+				reversecache.Add(p)
 				time.Sleep(1 * time.Second)
 			}
-			he.AddressNew = revcache.FormatAddress(p)
+			he.AddressNew = reversecache.FormatAddress(p)
 			he.PosNew = p
 		}
 
@@ -261,8 +259,8 @@ func (h *History) prepare() {
 		}
 	}
 
-	if err = revcache.Save(); err != nil {
-		log.Printf("revcache.Save failed: %s\n", err)
+	if err = reversecache.Save(); err != nil {
+		log.Printf("reversecache.Save failed: %s\n", err)
 	}
 
 	sort.Slice(h.entries, func(i, j int) bool {

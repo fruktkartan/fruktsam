@@ -10,9 +10,9 @@ import (
 	"time"
 
 	"github.com/alecthomas/kingpin/v2"
-	"github.com/fruktkartan/fruktsam/history"
-	"github.com/fruktkartan/fruktsam/trees"
-	"github.com/fruktkartan/fruktsam/util"
+	"github.com/fruktkartan/fruktsam/internal/history"
+	"github.com/fruktkartan/fruktsam/internal/trees"
+	"github.com/fruktkartan/fruktsam/internal/util"
 	"github.com/joho/godotenv"
 )
 
