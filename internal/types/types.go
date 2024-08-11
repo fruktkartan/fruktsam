@@ -3,6 +3,7 @@ package types
 import (
 	"database/sql"
 	"fmt"
+	"strconv"
 	"strings"
 
 	"github.com/fruktkartan/fruktsam/internal/util"
@@ -46,6 +47,14 @@ func (nt *NullTime) Date() string {
 		return ""
 	}
 	return util.FormatDate(nt.Time)
+}
+
+func (nt *NullTime) WeekNumber() string {
+	if !nt.NullTime.Valid {
+		return ""
+	}
+	_, w := nt.Time.ISOWeek()
+	return strconv.Itoa(w)
 }
 
 func (nt *NullTime) TimeStr() string {

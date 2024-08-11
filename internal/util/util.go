@@ -1,7 +1,6 @@
 package util
 
 import (
-	"fmt"
 	"log"
 	"time"
 
@@ -25,8 +24,7 @@ func init() {
 }
 
 func FormatDate(t time.Time) string {
-	_, w := t.ISOWeek()
-	return monday.Format(t.In(location), dateFmt, mondayLocale) + fmt.Sprintf(" v%d", w)
+	return monday.Format(t.In(location), dateFmt, mondayLocale)
 }
 
 func FormatTime(t time.Time) string {

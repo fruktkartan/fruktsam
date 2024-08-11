@@ -318,7 +318,7 @@
 
 {{ range .History.Entries }}
   {{ if ne $lastDate .ChangeAt.Date }}
-    <h2>{{ .ChangeAt.Date }}</h2>
+    <h2>{{ .ChangeAt.Date }} v{{ .ChangeAt.WeekNumber }}</h2>
     {{ $lastDate = .ChangeAt.Date }}
   {{ end }}
 
