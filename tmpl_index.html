@@ -152,7 +152,7 @@
          reverseURL.searchParams.set('lat', tree.lat)
          reverseURL.searchParams.set('lon', tree.lon)
          reverseURL.searchParams.set('format', 'json')
-         const reverse = await http('GET', reverseURL.href)
+         const reverse = await http('GET', reverseURL.href, { 'Accept-Language': 'sv,en-US,en' })
          if (('error' in reverse) || (!('display_name' in reverse))) {
            html += `<p class="flagged">fel vid hämtning av nominatim-reverse för träd '${JSON.stringify(flagged.tree)}':\n\n${reverse.error}</p>`
            continue
@@ -189,12 +189,13 @@
    document.getElementById('flagged').innerHTML = html
  }
 
- async function http(method, url) {
+ async function http(method, url, headers) {
    let opts = {
      method: method,
      headers: {
        'Content-Type': 'application/json',
-       'Accept': 'application/json'
+       'Accept': 'application/json',
+       ...headers
      }
    }
    if ((method !== 'GET') && (method !== 'HEAD')) {
