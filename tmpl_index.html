@@ -148,23 +148,25 @@
 </span>
 `
          }
-         var reverseURL = new URL('https://nominatim.openstreetmap.org/reverse')
-         reverseURL.searchParams.set('lat', tree.lat)
-         reverseURL.searchParams.set('lon', tree.lon)
-         reverseURL.searchParams.set('format', 'json')
-         const reverse = await http('GET', reverseURL.href, { 'Accept-Language': 'sv,en-US,en' })
-         if (('error' in reverse) || (!('display_name' in reverse))) {
-           html += `<p class="flagged">fel vid hämtning av nominatim-reverse för träd '${JSON.stringify(flagged.tree)}':\n\n${reverse.error}</p>`
-           continue
-         }
+// If we have more than just a few flagged trees, then fetching this
+// is too slow/hangs.
+//         var reverseURL = new URL('https://nominatim.openstreetmap.org/reverse')
+//         reverseURL.searchParams.set('lat', tree.lat)
+//         reverseURL.searchParams.set('lon', tree.lon)
+//         reverseURL.searchParams.set('format', 'json')
+//         const reverse = await http('GET', reverseURL.href, { 'Accept-Language': 'sv,en-US,en' })
+//         if (('error' in reverse) || (!('display_name' in reverse))) {
+//           html += `<p class="flagged">fel vid hämtning av nominatim-reverse för träd '${JSON.stringify(flagged.tree)}':\n\n${reverse.error}</p>`
+//           continue
+//         }
+//  — ${reverse.display_name}
+//  <br/>
          html += `
 <p class="flagged">
   <span class="flagtime">${flaggedAt}</span>
   <span class="type">
     <a href="https://fruktkartan.se/#/t/${flagged.tree}" target="_blank" rel="noopener">${tree.type}</a>
   </span>
-  — ${reverse.display_name}
-  <br/>
   <em>Flagga: </em><span class="flagname">${flagged.flag}</span>
   <br/>
   <span><em>Anledning: </em>${flagged.reason}</span>
