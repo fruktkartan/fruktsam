@@ -106,40 +106,40 @@
  // Replaces the HTML generated when fruktsam was run
  async function loadFlagged() {
    document.getElementById('flagged').innerHTML = 'Laddar från databasen...'
-   let html = ''
    const flags = await http('GET', `${apiBase}/flags`)
 
-   switch (true) {
-     case 'error' in flags:
-       html += `fel: ${JSON.stringify(flags)}`
-       break;
+   if ('error' in flags) {
+     document.getElementById('flagged').innerHTML = `fel: ${JSON.stringify(flags)}`
+     return
+   }
 
-     case flags.length == 0:
-       html += `Inga flaggade träd`
-       break;
+   if (flags.length == 0) {
+     document.getElementById('flagged').innerHTML = `Inga flaggade träd`
+     return
+   }
 
-     default:
-       flags.sort((a, b) => {
-         if (a.flagged_at == b.flagged_at) {
-           return 0
-         }
-         if (a.flagged_at < b.flagged_at) {
-           // Sort a after b
-           return 1
-         }
-         return -1
-       })
-       for (const flagged of flags) {
-         const tree = await http('GET', `${apiBase}/tree/${flagged.tree}`)
-         if ('error' in tree) {
-           html += `<p class="flagged">fel vid hämtning av träd '${JSON.stringify(flagged.tree)}':\n\n${tree.error}</p>`
-           continue
-         }
-         const flaggedAt = formatDate(flagged.flagged_at)
-         const lastChange = formatDate(tree.added)
-         let photoHtml = ''
-         if (tree.file !== '') {
-           photoHtml = `
+   let html = ''
+   flags.sort((a, b) => {
+     if (a.flagged_at == b.flagged_at) {
+       return 0
+     }
+     if (a.flagged_at < b.flagged_at) {
+       // Sort a after b
+       return 1
+     }
+     return -1
+   })
+   for (const flagged of flags) {
+     const tree = await http('GET', `${apiBase}/tree/${flagged.tree}`)
+     if ('error' in tree) {
+       html += `<p class="flagged">fel vid hämtning av träd '${JSON.stringify(flagged.tree)}':\n\n${tree.error}</p>`
+       continue
+     }
+     const flaggedAt = formatDate(flagged.flagged_at)
+     const lastChange = formatDate(tree.added)
+     let photoHtml = ''
+     if (tree.file !== '') {
+       photoHtml = `
 <br/>
 <span class="photo flagged">
   <a href="https://fruktkartan-thumbs.s3.eu-north-1.amazonaws.com/${tree.file}_1200.jpg" target="_blank" rel="noopener">
@@ -147,21 +147,21 @@
   </a>
 </span>
 `
-         }
+     }
 // If we have more than just a few flagged trees, then fetching this
 // is too slow/hangs.
-//         var reverseURL = new URL('https://nominatim.openstreetmap.org/reverse')
-//         reverseURL.searchParams.set('lat', tree.lat)
-//         reverseURL.searchParams.set('lon', tree.lon)
-//         reverseURL.searchParams.set('format', 'json')
-//         const reverse = await http('GET', reverseURL.href, { 'Accept-Language': 'sv,en-US,en' })
-//         if (('error' in reverse) || (!('display_name' in reverse))) {
-//           html += `<p class="flagged">fel vid hämtning av nominatim-reverse för träd '${JSON.stringify(flagged.tree)}':\n\n${reverse.error}</p>`
-//           continue
-//         }
-//  — ${reverse.display_name}
-//  <br/>
-         html += `
+//     var reverseURL = new URL('https://nominatim.openstreetmap.org/reverse')
+//     reverseURL.searchParams.set('lat', tree.lat)
+//     reverseURL.searchParams.set('lon', tree.lon)
+//     reverseURL.searchParams.set('format', 'json')
+//     const reverse = await http('GET', reverseURL.href, { 'Accept-Language': 'sv,en-US,en' })
+//     if (('error' in reverse) || (!('display_name' in reverse))) {
+//       html += `<p class="flagged">fel vid hämtning av nominatim-reverse för träd '${JSON.stringify(flagged.tree)}':\n\n${reverse.error}</p>`
+//       continue
+//     }
+//     — ${reverse.display_name}
+//     <br/>
+     html += `
 <p class="flagged">
   <span class="flagtime">${flaggedAt}</span>
   <span class="type">
@@ -184,8 +184,6 @@
   </span>
 </p>
 `
-       }
-       break;
    }
 
    document.getElementById('flagged').innerHTML = html
