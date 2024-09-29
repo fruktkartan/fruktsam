@@ -82,3 +82,8 @@ func (p *Pos) GoogmapsURL() string {
 	return fmt.Sprintf("https://www.google.com/maps?ll=%g,%g&q=%g,%g&hl=en&t=k&z=15",
 		p.Lat, p.Lon, p.Lat, p.Lon)
 }
+
+func (p *Pos) GeoURL() string {
+	return fmt.Sprintf("geo:%g,%g",
+		p.Lat, p.Lon)
+}

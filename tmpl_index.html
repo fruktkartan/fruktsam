@@ -330,9 +330,10 @@
       <span class="op delete">bort</span>
       <span class="type">{{ .Type }}</span>
       <span class="key">[{{ .Key }}]</span>
-      <span>—
-        <a href="{{ .Pos.OSMURL }}" target="_blank" rel="noopener">nära</a> {{ .Address }}
-        <a href="{{ .Pos.GoogmapsURL }}" target="_blank" rel="noopener">(gm)</a>
+      <span>— nära {{ .Address }}
+        <a href="{{ .Pos.OSMURL }}" target="_blank" rel="noopener">osm</a>
+        · <a href="{{ .Pos.GoogmapsURL }}" target="_blank" rel="noopener">gm</a>
+        · <a href="{{ .Pos.GeoURL }}" target="_blank" rel="noopener">geo</a>
       </span>
       <br/>
       <span class="desc"><span class="old"><em>Beskrivning:</em></span> {{ .Desc }}</span>
@@ -351,9 +352,10 @@
       <span class="type">
         <a href="https://fruktkartan.se/#/t/{{ .KeyNew }}" target="_blank" rel="noopener">{{ .TypeNew }}</a>
       </span>
-      <span>—
-        <a href="{{ .PosNew.OSMURL }}" target="_blank" rel="noopener">nära</a> {{ .AddressNew }}
-        <a href="{{ .PosNew.GoogmapsURL }}" target="_blank" rel="noopener">(gm)</a>
+      <span>— nära {{ .AddressNew }}
+        <a href="{{ .PosNew.OSMURL }}" target="_blank" rel="noopener">osm</a>
+        · <a href="{{ .PosNew.GoogmapsURL }}" target="_blank" rel="noopener">gm</a>
+        · <a href="{{ .PosNew.GeoURL }}" target="_blank" rel="noopener">geo</a>
       </span>
       <br/>
       <span><em>Tillagt av:</em> {{ .ByNew }}</span>
@@ -373,9 +375,10 @@
         <a href="https://fruktkartan.se/#/t/{{ .KeyNew }}" target="_blank" rel="noopener">{{ .TypeNew }}</a>
       </span>
       {{ if ne .Type .TypeNew }}<span class="old">{{ .Type }}</span>{{ end }}
-      <span>—
-        <a href="{{ .PosNew.OSMURL }}" target="_blank" rel="noopener">nära</a> {{ .AddressNew }}
-        <a href="{{ .PosNew.GoogmapsURL }}" target="_blank" rel="noopener">(gm)</a>
+      <span>— nära {{ .AddressNew }}
+        <a href="{{ .PosNew.OSMURL }}" target="_blank" rel="noopener">osm</a>
+        · <a href="{{ .PosNew.GoogmapsURL }}" target="_blank" rel="noopener">gm</a>
+        · <a href="{{ .PosNew.GeoURL }}" target="_blank" rel="noopener">geo</a>
       </span>
       <br/>
       <span><em>Redigerat av:</em> {{ .ByNew }}</span>
