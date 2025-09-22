@@ -115,34 +115,35 @@ func (h *History) FromDB(sinceDays int) error {
 		return fmt.Errorf("not empty, refusing to fill from db")
 	}
 
-	query := `SELECT id AS changeid, at AS changeat, op AS changeop
-                     , old_json->>'ssm_key' AS key
-                     , old_json->>'type' AS type
-                     , old_json->>'description' AS desc
-                     , old_json->>'img' AS img
-                     , old_json->>'added_by' AS by
-                     , (old_json->>'added_at')::timestamp AS at
-                     , old_json#>>'{point,coordinates,1}' AS lat
-                     , old_json#>>'{point,coordinates,0}' AS lon
-                     , new_json->>'ssm_key' AS keynew
-                     , new_json->>'type' AS typenew
-                     , new_json->>'description' AS descnew
-                     , new_json->>'img' AS imgnew
-                     , new_json->>'added_by' AS bynew
-                     , (new_json->>'added_at')::timestamp AS atnew
-                     , new_json#>>'{point,coordinates,1}' AS latnew
-                     , new_json#>>'{point,coordinates,0}' AS lonnew
-                FROM history
-               WHERE (tab='trees')`
-	if sinceDays > 0 {
-		query += fmt.Sprintf(" AND (at > (CURRENT_DATE - INTERVAL '%d days'))", sinceDays)
-	}
-
 	db, err := sqlx.Connect("postgres", os.Getenv("DATABASE_URL"))
 	if err != nil {
 		return fmt.Errorf("Connect: %w", err)
 	}
 
+	query := `SELECT id AS changeid
+                   , at AS changeat
+                   , op AS changeop
+                   , old_json->>'ssm_key'               AS key
+                   , old_json->>'type'                  AS type
+                   , old_json->>'description'           AS desc
+                   , old_json->>'img'                   AS img
+                   , old_json->>'added_by'              AS by
+                   , (old_json->>'added_at')::timestamp AS at
+                   , old_json#>>'{point,coordinates,1}' AS lat
+                   , old_json#>>'{point,coordinates,0}' AS lon
+                   , new_json->>'ssm_key'               AS keynew
+                   , new_json->>'type'                  AS typenew
+                   , new_json->>'description'           AS descnew
+                   , new_json->>'img'                   AS imgnew
+                   , new_json->>'added_by'              AS bynew
+                   , (new_json->>'added_at')::timestamp AS atnew
+                   , new_json#>>'{point,coordinates,1}' AS latnew
+                   , new_json#>>'{point,coordinates,0}' AS lonnew
+                FROM history
+               WHERE (tab='trees')`
+	if sinceDays > 0 {
+		query += fmt.Sprintf(" AND (at > (CURRENT_DATE - INTERVAL '%d days'))", sinceDays)
+	}
 	if err := db.Select(&h.entries, query); err != nil {
 		return fmt.Errorf("Select: %w", err)
 	}
