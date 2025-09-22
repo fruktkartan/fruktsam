@@ -345,6 +345,11 @@
       {{ end }}
       <br/>
       <span class="lastchange"><em>Senast redigerat:</em> {{ .At }}</span>
+      {{ with .DeleteReasons }}
+        <br/>
+        <em>Anledningar:</em>
+        {{ range $i, $v := . }}{{if $i}}, {{end}}"{{ $v }}"{{ end }}
+      {{ end }}
     {{ end }}
 
     {{ if eq .ChangeOp "INSERT" }}

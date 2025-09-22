@@ -31,13 +31,22 @@ const (
 type History struct {
 	SinceDays                 int
 	entries                   []Entry
+	deletedFlags              []deletedFlag
 	Deletes, Inserts, Updates int
+}
+
+type deletedFlag struct {
+	TreeKey types.NullStringTrimmed
+	Type    types.NullStringTrimmed
+	Reason  types.NullStringTrimmed
 }
 
 type Entry struct {
 	ChangeID int
 	ChangeAt types.NullTime
 	ChangeOp string
+
+	DeleteReasons []string
 
 	Key      types.NullStringTrimmed
 	Type     types.NullStringTrimmed
@@ -145,7 +154,19 @@ func (h *History) FromDB(sinceDays int) error {
 		query += fmt.Sprintf(" AND (at > (CURRENT_DATE - INTERVAL '%d days'))", sinceDays)
 	}
 	if err := db.Select(&h.entries, query); err != nil {
-		return fmt.Errorf("Select: %w", err)
+		return fmt.Errorf("Select trees: %w", err)
+	}
+
+	// Get all flags which have been deleted (though we currently only
+	// have flag type "delete")
+	query2 := `SELECT old_json->>'tree' AS treekey
+                    , old_json->>'flag' AS type
+                    , old_json->>'reason' AS reason
+                 FROM history
+                WHERE tab='flags'
+             ORDER BY at`
+	if err := db.Select(&h.deletedFlags, query2); err != nil {
+		return fmt.Errorf("Select flags: %w", err)
 	}
 
 	h.SinceDays = sinceDays
@@ -239,10 +260,26 @@ func (h *History) prepare() {
 			he.PosNew = p
 		}
 
-		if he.ChangeOp == "UPDATE" {
+		switch he.ChangeOp {
+		case "DELETE":
+			h.Deletes++
+			// For a deleted tree: dig out reason in history of
+			// deleted flags of type "delete". A tree may have been
+			// flagged for deletion, then admin chose to not delete
+			// the tree, just the flag. But we show the reasons of all
+			// historic delete-flags.
+			for _, flag := range h.deletedFlags {
+				if flag.Type.String() != "delete" || flag.TreeKey != he.Key {
+					continue
+				}
+				he.DeleteReasons = append(he.DeleteReasons, flag.Reason.String())
+			}
+		case "INSERT":
+			h.Inserts++
+		case "UPDATE":
+			h.Updates++
 			he.DescDiff = dmp.DiffPrettyHtml(
 				dmp.DiffMain(he.Desc.String(), he.DescNew.String(), false))
-
 			// Detect strange empty update
 			if he.Type == he.TypeNew &&
 				he.Desc == he.DescNew &&
@@ -250,15 +287,6 @@ func (h *History) prepare() {
 				he.Lat == he.LatNew && he.Lon == he.LonNew {
 				he.UpdateIsEmpty = true
 			}
-		}
-
-		switch he.ChangeOp {
-		case "DELETE":
-			h.Deletes++
-		case "INSERT":
-			h.Inserts++
-		case "UPDATE":
-			h.Updates++
 		}
 	}
 
