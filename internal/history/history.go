@@ -112,7 +112,7 @@ func (h *History) Net() string {
 
 func (h *History) FromDB(sinceDays int) error {
 	if len(h.entries) > 0 {
-		return fmt.Errorf("history not empty, refusing to fill from db")
+		return fmt.Errorf("not empty, refusing to fill from db")
 	}
 
 	query := `SELECT id AS changeid, at AS changeat, op AS changeop
@@ -132,15 +132,17 @@ func (h *History) FromDB(sinceDays int) error {
                      , (new_json->>'added_at')::timestamp AS atnew
                      , new_json#>>'{point,coordinates,1}' AS latnew
                      , new_json#>>'{point,coordinates,0}' AS lonnew
-                FROM history`
+                FROM history
+               WHERE (tab='trees')`
 	if sinceDays > 0 {
-		query += fmt.Sprintf(" WHERE at > (CURRENT_DATE - INTERVAL '%d days')", sinceDays)
+		query += fmt.Sprintf(" AND (at > (CURRENT_DATE - INTERVAL '%d days'))", sinceDays)
 	}
 
 	db, err := sqlx.Connect("postgres", os.Getenv("DATABASE_URL"))
 	if err != nil {
 		return fmt.Errorf("Connect: %w", err)
 	}
+
 	if err := db.Select(&h.entries, query); err != nil {
 		return fmt.Errorf("Select: %w", err)
 	}
