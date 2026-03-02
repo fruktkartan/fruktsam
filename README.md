@@ -12,10 +12,10 @@ The following can be used to find out the production database URL (once you've m
 `login`, or `auth:login`?)
 
 ```
-heroku pg:credentials:url --app fruktkartan-api
+heroku pg:credentials:url --app fruktkartan-fullstack
 ```
 
-(`--app fruktkartan-api-dev` for the development database)
+(`--app fruktkartan-fullstack-dev` for the development database)
 
 TODO: even when using the development database, generated links, API calls etc
-still point at fruktkartan.se, fruktkartan-api.herokuapp.com, etc
+still point at fruktkartan.se
