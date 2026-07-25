@@ -1,12 +1,12 @@
 
-Build on push: [![](https://github.com/fruktkartan/fruktsam/actions/workflows/build-and-deploy.yml/badge.svg?branch=master&event=push)](https://github.com/fruktkartan/fruktsam/actions/workflows/build-and-deploy.yml) \
-Manual deploy: [![](https://github.com/fruktkartan/fruktsam/actions/workflows/build-and-deploy.yml/badge.svg?branch=master&event=workflow_dispatch)](https://github.com/fruktkartan/fruktsam/actions/workflows/build-and-deploy.yml) \
-Scheduled deploy: [![](https://github.com/fruktkartan/fruktsam/actions/workflows/build-and-deploy.yml/badge.svg?branch=master&event=schedule)](https://github.com/fruktkartan/fruktsam/actions/workflows/build-and-deploy.yml)
-
-The build is deployed every night at 00:01 UTC (and on [manual workflow run](https://github.com/fruktkartan/fruktsam/actions/workflows/build-and-deploy.yml)).
-The updated cache of reverse-geocoded addresses is commited back to the repo.
-
 Needs `DATABASE_URL` environment variable, or in `.env`.
+
+Note that if you run this without a `reversecache` file (with some
+data) in the destination directory (default `./dist`, see flag `-d`),
+fruktsam will do an OSM nominatim-reverse web API call for each and
+every tree in the database, which might become rate limited. Also, all
+needed image files that do not already exist in the destination's
+`images` directory will need to be downloaded.
 
 The following can be used to find out the production database URL (once you've managed
 `login`, or `auth:login`?)
