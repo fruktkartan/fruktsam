@@ -1,6 +1,7 @@
 package main
 
 import (
+	"bytes"
 	"fmt"
 	"log"
 	"os"
@@ -14,6 +15,7 @@ import (
 	"github.com/fruktkartan/fruktsam/internal/history"
 	"github.com/fruktkartan/fruktsam/internal/trees"
 	"github.com/fruktkartan/fruktsam/internal/util"
+	"github.com/google/renameio/v2"
 	"github.com/joho/godotenv"
 )
 
@@ -86,18 +88,18 @@ func run() error {
 		return fmt.Errorf("failed template ParseFiles: %w", err)
 	}
 
-	var f *os.File
 	if err = os.MkdirAll(destDirFlag, 0o755); err != nil {
 		return fmt.Errorf("failed MkdirAll: %w", err)
 	}
 
-	outFile := filepath.Join(destDirFlag, outFile)
-	if f, err = os.OpenFile(outFile, os.O_RDWR|os.O_CREATE|os.O_TRUNC, 0o644); err != nil {
-		return fmt.Errorf("failed OpenFile: %w", err)
-	}
-	defer f.Close()
-	if err = tmpl.Execute(f, &data); err != nil {
+	var buf bytes.Buffer
+	if err = tmpl.Execute(&buf, &data); err != nil {
 		return fmt.Errorf("failed template Execute: %w", err)
+	}
+
+	outFile := filepath.Join(destDirFlag, outFile)
+	if err = renameio.WriteFile(outFile, buf.Bytes(), 0o644); err != nil {
+		return fmt.Errorf("failed WriteFile: %w", err)
 	}
 	log.Printf("Wrote %s", outFile)
 

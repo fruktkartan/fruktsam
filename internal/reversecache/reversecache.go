@@ -16,6 +16,7 @@ import (
 	"time"
 
 	"github.com/fruktkartan/fruktsam/internal/types"
+	"github.com/google/renameio/v2"
 )
 
 // TODO locking for concurrent access?
@@ -83,16 +84,11 @@ func (r *ReverseCache) Save() error {
 		return err
 	}
 
-	f, err := os.OpenFile(r.cacheFile, os.O_CREATE|os.O_WRONLY, 0o644)
-	if err != nil {
-		return err
-	}
-	defer f.Close()
-
-	if _, err = f.Write(b.Bytes()); err != nil {
+	if err := renameio.WriteFile(r.cacheFile, b.Bytes(), 0o644); err != nil {
 		return err
 	}
 	log.Printf("Reversecache: saved %d entries to %s", len(r.Table), r.cacheFile)
+
 	return nil
 }
 

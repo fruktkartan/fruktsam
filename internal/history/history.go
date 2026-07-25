@@ -352,6 +352,7 @@ func createImageThumb(dbImgName string, destDir string) {
 
 	if err = jpeg.Encode(f, thumb, &jpeg.Options{Quality: 80}); err != nil {
 		log.Printf("failed jpeg.Encode %s: %s", imageFileOutPath, err)
+		_ = os.Remove(imageFileOutPath)
 		return
 	}
 
