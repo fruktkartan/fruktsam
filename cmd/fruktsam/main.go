@@ -90,12 +90,16 @@ func run() error {
 	if err = os.MkdirAll(destDirFlag, 0o770); err != nil {
 		return fmt.Errorf("failed MkdirAll: %w", err)
 	}
-	if f, err = os.Create(filepath.Join(destDirFlag, outFile)); err != nil {
+
+	outFile := filepath.Join(destDirFlag, outFile)
+	if f, err = os.Create(outFile); err != nil {
 		return fmt.Errorf("failed Create: %w", err)
 	}
+	defer f.Close()
 	if err = tmpl.Execute(f, &data); err != nil {
 		return fmt.Errorf("failed template Execute: %w", err)
 	}
+	log.Printf("Wrote %s", outFile)
 
 	return nil
 }

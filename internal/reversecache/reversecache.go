@@ -92,6 +92,7 @@ func (r *ReverseCache) Save() error {
 	if _, err = f.Write(b.Bytes()); err != nil {
 		return err
 	}
+	log.Printf("Reversecache: saved %d entries to %s", len(r.Table), r.cacheFile)
 	return nil
 }
 
