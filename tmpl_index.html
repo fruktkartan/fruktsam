@@ -84,6 +84,17 @@
    /* get rid of default underline/overstrike for these (we have colors) */
    text-decoration: none;
  }
+
+ right {
+   float: right;
+ }
+
+ delete {
+   color: #fefefe;
+   background-color: #b3261e;
+ }
+
+
 </style>
 
 <script>
@@ -180,7 +191,7 @@
   <br/>
   <span>
     <button onclick='deleteFlag("${flagged.tree}", "${flagged.flag}")'>ta bort flaggan</button>
-    <button style="float: right;" onclick='deleteTree("${flagged.tree}", "${flagged.flag}")'>ta bort trädet</button>
+    <button class="delete right" onclick='deleteTree("${flagged.tree}", "${flagged.flag}")'>ta bort trädet</button>
   </span>
 </p>
 `
