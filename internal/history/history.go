@@ -249,7 +249,7 @@ func (h *History) prepare() error {
 		if he.Lat.Valid {
 			p := types.Pos{Lat: he.Lat.Float64, Lon: he.Lon.Float64}
 			if !h.reverseCache.Has(p) {
-				log.Printf("get reverse address for history entry %d\n", he.ChangeID)
+				log.Printf("get reverse address for history entry %d", he.ChangeID)
 				h.reverseCache.Add(p)
 				time.Sleep(1 * time.Second)
 			}
@@ -259,7 +259,7 @@ func (h *History) prepare() error {
 		if he.LatNew.Valid {
 			p := types.Pos{Lat: he.LatNew.Float64, Lon: he.LonNew.Float64}
 			if !h.reverseCache.Has(p) {
-				log.Printf("get reverse address (new) for history entry %d\n", he.ChangeID)
+				log.Printf("get reverse address (new) for history entry %d", he.ChangeID)
 				h.reverseCache.Add(p)
 				time.Sleep(1 * time.Second)
 			}
@@ -298,7 +298,7 @@ func (h *History) prepare() error {
 	}
 
 	if err := h.reverseCache.Save(); err != nil {
-		log.Printf("reversecache.Save failed: %s\n", err)
+		log.Printf("failed reversecache.Save: %s", err)
 	}
 
 	sort.Slice(h.entries, func(i, j int) bool {
@@ -331,13 +331,13 @@ func createImageThumb(dbImgName string, destDir string) {
 
 	data, err := fetchURL(imageURL)
 	if err != nil {
-		log.Printf("fetch %s failed: %s\n", imageURL, err)
+		log.Printf("failed fetch %s: %s", imageURL, err)
 		return
 	}
 
 	decoded, err := jpeg.Decode(bytes.NewReader(data))
 	if err != nil {
-		log.Printf("jpeg.Decode %s failed: %s\n", imageURL, err)
+		log.Printf("failed jpeg.Decode %s: %s", imageURL, err)
 		return
 	}
 
@@ -345,17 +345,17 @@ func createImageThumb(dbImgName string, destDir string) {
 
 	f, err := os.OpenFile(imageFileOutPath, os.O_RDWR|os.O_CREATE|os.O_TRUNC, 0o644)
 	if err != nil {
-		log.Printf("os.Create %s failed: %s\n", imageFileOutPath, err)
+		log.Printf("failed OpenFile %s: %s", imageFileOutPath, err)
 		return
 	}
 	defer f.Close()
 
 	if err = jpeg.Encode(f, thumb, &jpeg.Options{Quality: 80}); err != nil {
-		log.Printf("os.Create %s failed: %s\n", imageFileOutPath, err)
+		log.Printf("failed jpeg.Encode %s: %s", imageFileOutPath, err)
 		return
 	}
 
-	log.Printf("downloaded %s\n", imageFileOutPath)
+	log.Printf("downloaded %s", imageFileOutPath)
 }
 
 func fetchURL(url string) ([]byte, error) {

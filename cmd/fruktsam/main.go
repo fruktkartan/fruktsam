@@ -93,7 +93,7 @@ func run() error {
 
 	outFile := filepath.Join(destDirFlag, outFile)
 	if f, err = os.OpenFile(outFile, os.O_RDWR|os.O_CREATE|os.O_TRUNC, 0o644); err != nil {
-		return fmt.Errorf("failed Create: %w", err)
+		return fmt.Errorf("failed OpenFile: %w", err)
 	}
 	defer f.Close()
 	if err = tmpl.Execute(f, &data); err != nil {
