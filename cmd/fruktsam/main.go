@@ -87,12 +87,12 @@ func run() error {
 	}
 
 	var f *os.File
-	if err = os.MkdirAll(destDirFlag, 0o770); err != nil {
+	if err = os.MkdirAll(destDirFlag, 0o755); err != nil {
 		return fmt.Errorf("failed MkdirAll: %w", err)
 	}
 
 	outFile := filepath.Join(destDirFlag, outFile)
-	if f, err = os.Create(outFile); err != nil {
+	if f, err = os.OpenFile(outFile, os.O_RDWR|os.O_CREATE|os.O_TRUNC, 0o644); err != nil {
 		return fmt.Errorf("failed Create: %w", err)
 	}
 	defer f.Close()

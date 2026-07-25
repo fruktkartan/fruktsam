@@ -193,7 +193,7 @@ func (h *History) FromDB(sinceDays int, destDir string) error {
 // 		return err
 // 	}
 
-// 	f, err := os.OpenFile(cachefile, os.O_CREATE|os.O_WRONLY, 0o666)
+// 	f, err := os.OpenFile(cachefile, os.O_CREATE|os.O_WRONLY, 0o644)
 // 	if err != nil {
 // 		return err
 // 	}
@@ -232,10 +232,10 @@ func (h *History) FromDB(sinceDays int, destDir string) error {
 // }
 
 func (h *History) prepare() error {
-	if err := os.MkdirAll(h.destDir, 0o770); err != nil {
+	if err := os.MkdirAll(h.destDir, 0o755); err != nil {
 		return fmt.Errorf("failed MkdirAll: %w", err)
 	}
-	if err := os.MkdirAll(filepath.Join(h.destDir, imageDir), 0o770); err != nil {
+	if err := os.MkdirAll(filepath.Join(h.destDir, imageDir), 0o755); err != nil {
 		return fmt.Errorf("failed MkdirAll: %w", err)
 	}
 
@@ -343,7 +343,7 @@ func createImageThumb(dbImgName string, destDir string) {
 
 	thumb := makeThumb(decoded)
 
-	f, err := os.Create(imageFileOutPath)
+	f, err := os.OpenFile(imageFileOutPath, os.O_RDWR|os.O_CREATE|os.O_TRUNC, 0o644)
 	if err != nil {
 		log.Printf("os.Create %s failed: %s\n", imageFileOutPath, err)
 		return

@@ -83,7 +83,7 @@ func (r *ReverseCache) Save() error {
 		return err
 	}
 
-	f, err := os.OpenFile(r.cacheFile, os.O_CREATE|os.O_WRONLY, 0o666)
+	f, err := os.OpenFile(r.cacheFile, os.O_CREATE|os.O_WRONLY, 0o644)
 	if err != nil {
 		return err
 	}
