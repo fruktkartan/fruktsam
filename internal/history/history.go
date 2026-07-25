@@ -4,7 +4,6 @@ import (
 	"bytes"
 	"context"
 	"database/sql"
-	"encoding/gob"
 	"fmt"
 	"image"
 	"image/jpeg"
@@ -12,6 +11,7 @@ import (
 	"log"
 	"net/http"
 	"os"
+	"path/filepath"
 	"sort"
 	"time"
 
@@ -30,6 +30,8 @@ const (
 
 type History struct {
 	SinceDays                 int
+	destDir                   string
+	reverseCache              *reversecache.ReverseCache
 	entries                   []Entry
 	deletedFlags              []deletedFlag
 	Deletes, Inserts, Updates int
@@ -119,9 +121,17 @@ func (h *History) Net() string {
 	return fmt.Sprintf("%s%d", plus, net)
 }
 
-func (h *History) FromDB(sinceDays int) error {
+func (h *History) FromDB(sinceDays int, destDir string) error {
 	if len(h.entries) > 0 {
 		return fmt.Errorf("not empty, refusing to fill from db")
+	}
+
+	if h.reverseCache == nil {
+		var err error
+		h.reverseCache, err = reversecache.NewReverseCache(destDir)
+		if err != nil {
+			return err
+		}
 	}
 
 	db, err := sqlx.Connect("postgres", os.Getenv("DATABASE_URL"))
@@ -170,93 +180,90 @@ func (h *History) FromDB(sinceDays int) error {
 	}
 
 	h.SinceDays = sinceDays
-	h.prepare()
-
-	return nil
+	h.destDir = destDir
+	return h.prepare()
 }
 
 // TODO: currently unused
-func (h *History) Save(cachefile string) error {
-	b := new(bytes.Buffer)
-	enc := gob.NewEncoder(b)
-	err := enc.Encode(h)
-	if err != nil {
-		return err
-	}
+// func (h *History) Save(cachefile string) error {
+// 	b := new(bytes.Buffer)
+// 	enc := gob.NewEncoder(b)
+// 	err := enc.Encode(h)
+// 	if err != nil {
+// 		return err
+// 	}
 
-	f, err := os.OpenFile(cachefile, os.O_CREATE|os.O_WRONLY, 0o666)
-	if err != nil {
-		return err
-	}
-	defer f.Close()
+// 	f, err := os.OpenFile(cachefile, os.O_CREATE|os.O_WRONLY, 0o666)
+// 	if err != nil {
+// 		return err
+// 	}
+// 	defer f.Close()
 
-	if _, err = f.Write(b.Bytes()); err != nil {
-		return err
-	}
-	return nil
-}
+// 	if _, err = f.Write(b.Bytes()); err != nil {
+// 		return err
+// 	}
+// 	return nil
+// }
 
 // TODO: currently unused
-func (h *History) Load(cachefile string) error {
-	if len(h.entries) > 0 {
-		return fmt.Errorf("history not empty, refusing to load from file")
+// func (h *History) Load(cachefile string) error {
+// 	if len(h.entries) > 0 {
+// 		return fmt.Errorf("history not empty, refusing to load from file")
+// 	}
+
+// 	f, err := os.Open(cachefile)
+// 	if err != nil {
+// 		if !os.IsNotExist(err) {
+// 			return err
+// 		}
+// 		return nil
+// 	}
+// 	defer f.Close()
+
+// 	dec := gob.NewDecoder(f)
+// 	if err := dec.Decode(h); err != nil {
+// 		return err
+// 	}
+
+// 	// note h.SinceDays is unknown here
+// 	h.prepare()
+
+// 	return nil
+// }
+
+func (h *History) prepare() error {
+	if err := os.MkdirAll(h.destDir, 0o770); err != nil {
+		return fmt.Errorf("failed MkdirAll: %w", err)
 	}
-
-	f, err := os.Open(cachefile)
-	if err != nil {
-		if !os.IsNotExist(err) {
-			return err
-		}
-		return nil
-	}
-	defer f.Close()
-
-	dec := gob.NewDecoder(f)
-	if err := dec.Decode(h); err != nil {
-		return err
-	}
-
-	// note h.SinceDays is unknown here
-	h.prepare()
-
-	return nil
-}
-
-func (h *History) prepare() {
-	var err error
-
-	if err = os.MkdirAll(outDir, 0o770); err != nil {
-		log.Fatal(err)
-	}
-	if err = os.MkdirAll(outDir+"/"+imageDir, 0o770); err != nil {
-		log.Fatal(err)
+	if err := os.MkdirAll(filepath.Join(h.destDir, imageDir), 0o770); err != nil {
+		return fmt.Errorf("failed MkdirAll: %w", err)
 	}
 
 	dmp := diffmatchpatch.New()
 	for idx := range h.entries {
 		he := &h.entries[idx]
 
-		createImageThumb(he.Img.String())
-		createImageThumb(he.ImgNew.String())
+		createImageThumb(he.Img.String(), h.destDir)
+		createImageThumb(he.ImgNew.String(), h.destDir)
 
 		if he.Lat.Valid {
 			p := types.Pos{Lat: he.Lat.Float64, Lon: he.Lon.Float64}
-			if !reversecache.Has(p) {
+			if !h.reverseCache.Has(p) {
 				log.Printf("get reverse address for history entry %d\n", he.ChangeID)
-				reversecache.Add(p)
+				h.reverseCache.Add(p)
 				time.Sleep(1 * time.Second)
 			}
-			he.Address = reversecache.FormatAddress(p)
+			he.Address = h.reverseCache.FormatAddress(p)
 			he.Pos = p
 		}
 		if he.LatNew.Valid {
 			p := types.Pos{Lat: he.LatNew.Float64, Lon: he.LonNew.Float64}
-			if !reversecache.Has(p) {
+			if !h.reverseCache.Has(p) {
 				log.Printf("get reverse address (new) for history entry %d\n", he.ChangeID)
-				reversecache.Add(p)
+				h.reverseCache.Add(p)
 				time.Sleep(1 * time.Second)
 			}
-			he.AddressNew = reversecache.FormatAddress(p)
+			he.AddressNew = h.reverseCache.FormatAddress(p)
 			he.PosNew = p
 		}
 
@@ -290,33 +297,33 @@ func (h *History) prepare() {
 		}
 	}
 
-	if err = reversecache.Save(); err != nil {
+	if err := h.reverseCache.Save(); err != nil {
 		log.Printf("reversecache.Save failed: %s\n", err)
 	}
 
 	sort.Slice(h.entries, func(i, j int) bool {
 		return h.entries[i].ChangeID > h.entries[j].ChangeID
 	})
+
+	return nil
 }
 
-// History shouldn't have to know about "dist/" huh?
 const (
-	outDir       = "dist"
 	imageDir     = "images"
 	imageFileFmt = "thumb_%s.jpg"
 )
 
 func imageFilePath(dbImgName string) string {
-	return imageDir + "/" + fmt.Sprintf(imageFileFmt, dbImgName)
+	return filepath.Join(imageDir, fmt.Sprintf(imageFileFmt, dbImgName))
 }
 
-func createImageThumb(dbImgName string) {
+func createImageThumb(dbImgName string, destDir string) {
 	if dbImgName == "" {
 		return
 	}
 
 	imageURL := ImageURLBase + fmt.Sprintf(ImageURLPathFmt, dbImgName)
-	imageFileOutPath := outDir + "/" + imageFilePath(dbImgName)
+	imageFileOutPath := filepath.Join(destDir, imageFilePath(dbImgName))
 
 	if _, err := os.Stat(imageFileOutPath); err == nil {
 		return

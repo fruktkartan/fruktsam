@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"log"
 	"os"
+	"path"
 	"path/filepath"
 	"strings"
 	"text/template"
@@ -17,11 +18,11 @@ import (
 )
 
 const (
-	envfile = ".env"
-	outfile = "dist/index.html"
+	envfile          = ".env"
+	outFile          = "index.html"
+	defaultSinceDays = 90
+	defaultDestDir   = "dist"
 )
-
-const defaultSinceDays = 90
 
 type templateData struct {
 	History      history.History
@@ -40,19 +41,30 @@ func main() {
 
 func run() error {
 	sinceFlag := defaultSinceDays
-	var err error
+	destDirFlag := defaultDestDir
 
 	app := kingpin.New("fruktsam", "Generate html from Fruktkartan edit history")
 	app.Flag("since", fmt.Sprintf("How many days back, default: %d", defaultSinceDays)).
 		PlaceHolder("DAYS").IntVar(&sinceFlag)
+	app.Flag("dest", fmt.Sprintf("Destination directory, default: %s", defaultDestDir)).
+		PlaceHolder("DIRECTORY").Short('d').StringVar(&destDirFlag)
 	app.HelpFlag.Short('h')
 	kingpin.MustParse(app.Parse(os.Args[1:]))
 
-	if err = godotenv.Load(envfile); err != nil && !os.IsNotExist(err) {
+	if !path.IsAbs(destDirFlag) {
+		cwd, err := os.Getwd()
+		if err != nil {
+			return fmt.Errorf("failed Getwd: %w", err)
+		}
+		destDirFlag = filepath.Join(cwd, destDirFlag)
+	}
+
+	if err := godotenv.Load(envfile); err != nil && !os.IsNotExist(err) {
 		return fmt.Errorf("failed load file %s: %w", envfile, err)
 	}
 
 	var data templateData
+	var err error
 	data.DatabaseName, err = getDatabaseName(os.Getenv("DATABASE_URL"))
 	if err != nil {
 		return err
@@ -62,12 +74,12 @@ func run() error {
 	if err = data.Trees.FromDB(); err != nil {
 		return fmt.Errorf("failed Trees.FromDB: %w", err)
 	}
-	fmt.Printf("Trees: %d\n", data.Trees.Count())
+	log.Printf("Trees: %d", data.Trees.Count())
 
-	if err = data.History.FromDB(sinceFlag); err != nil {
+	if err = data.History.FromDB(sinceFlag, destDirFlag); err != nil {
 		return fmt.Errorf("failed History.FromDB: %w", err)
 	}
-	fmt.Printf("History entries during past %d days: %d\n", sinceFlag, data.History.Count())
+	log.Printf("History entries during past %d days: %d", sinceFlag, data.History.Count())
 
 	tmpl, err := template.ParseFiles("tmpl_index.html")
 	if err != nil {
@@ -75,10 +87,10 @@ func run() error {
 	}
 
 	var f *os.File
-	if err = os.MkdirAll(filepath.Dir(outfile), 0o770); err != nil {
+	if err = os.MkdirAll(destDirFlag, 0o770); err != nil {
 		return fmt.Errorf("failed MkdirAll: %w", err)
 	}
-	if f, err = os.Create(outfile); err != nil {
+	if f, err = os.Create(filepath.Join(destDirFlag, outFile)); err != nil {
 		return fmt.Errorf("failed Create: %w", err)
 	}
 	if err = tmpl.Execute(f, &data); err != nil {

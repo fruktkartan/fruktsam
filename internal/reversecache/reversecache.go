@@ -11,8 +11,8 @@ import (
 	"log"
 	"net/http"
 	"os"
+	"path/filepath"
 	"strings"
-	"sync"
 	"time"
 
 	"github.com/fruktkartan/fruktsam/internal/types"
@@ -20,88 +20,61 @@ import (
 
 // TODO locking for concurrent access?
 
-func Add(p types.Pos) {
-	getInstance().add(p)
-}
-
-func Has(p types.Pos) bool {
-	return getInstance().has(p)
-}
-
-func Save() error {
-	return getInstance().save()
-}
-
-func FormatAddress(p types.Pos) string {
-	return getInstance().formatAddress(p)
-}
-
-const reversefile = "reversecache"
-
-var (
-	r    *ReverseCache
-	once sync.Once
-)
-
-type httpError struct {
-	statusCode int
-}
-
-func (e httpError) Error() string {
-	return fmt.Sprintf("HTTP StatusCode: %d", e.statusCode)
-}
-
-func reverse(p types.Pos) ([]byte, error) {
-	req, _ := http.NewRequestWithContext(context.Background(), "GET", "https://nominatim.openstreetmap.org/reverse", nil)
-	req.Header.Add("accept", "application/json")
-	req.Header.Add("user-agent", "fruktsam (https://github.com/fruktkartan/fruktsam)")
-	req.Header.Add("accept-language", "sv,en-US,en")
-	q := req.URL.Query()
-	q.Add("format", "json")
-	q.Add("lat", fmt.Sprintf("%g", p.Lat))
-	q.Add("lon", fmt.Sprintf("%g", p.Lon))
-	req.URL.RawQuery = q.Encode()
-
-	client := &http.Client{Timeout: 5 * time.Second}
-	resp, err := client.Do(req)
-	if err != nil {
-		return nil, err
-	}
-	defer resp.Body.Close()
-
-	body, err := io.ReadAll(resp.Body)
-	if err != nil {
-		return nil, err
-	}
-
-	if resp.StatusCode != http.StatusOK {
-		return nil, httpError{statusCode: resp.StatusCode}
-	}
-	return body, nil
-}
+const reverseFile = "reversecache"
 
 type ReverseCache struct {
-	Table apiResults // exported for gob
-	dirty bool
+	Table     apiResults // exported for gob
+	cacheFile string
+	dirty     bool
 }
 
 type apiResults map[types.Pos][]byte
 
-func getInstance() *ReverseCache {
-	once.Do(func() {
-		r = &ReverseCache{}
-		r.Table = make(apiResults)
-		if err := r.load(); err != nil {
-			log.Fatal(err)
-		}
-	})
-
-	return r
+func NewReverseCache(destDir string) (*ReverseCache, error) {
+	r := ReverseCache{cacheFile: filepath.Join(destDir, reverseFile)}
+	r.Table = make(apiResults)
+	if err := r.load(); err != nil {
+		return nil, err
+	}
+	return &r, nil
 }
 
-func (r *ReverseCache) save() error {
+func (r *ReverseCache) Has(p types.Pos) bool {
+	_, ok := r.Table[p]
+	return ok
+}
+
+func (r *ReverseCache) Add(p types.Pos) {
+	if r.Has(p) {
+		return
+	}
+	jsonbytes, err := reverse(p)
+	if err != nil {
+		var httpErr httpError
+		if errors.As(err, &httpErr) {
+			log.Printf("Reversecache: %v: %s (nothing added)", p, err)
+		} else {
+			log.Printf("Reversecache: %v: %s (added nil)", p, err)
+			// We store in reversecache even if we got nothing
+			r.Table[p] = nil
+		}
+	} else {
+		r.Table[p] = jsonbytes
+	}
+	r.dirty = true
+}
+
+// func (r *ReverseCache) del(p types.Pos) {
+// 	if !r.has(p) {
+// 		return
+// 	}
+// 	delete(r.Table, p)
+// 	r.dirty = true
+// }
+
+func (r *ReverseCache) Save() error {
 	if !r.dirty {
-		fmt.Printf("Reversecache not modified, not saving\n")
+		log.Printf("Reversecache: no changes, nothing saved")
 		return nil
 	}
 	b := new(bytes.Buffer)
@@ -110,7 +83,7 @@ func (r *ReverseCache) save() error {
 		return err
 	}
 
-	f, err := os.OpenFile(reversefile, os.O_CREATE|os.O_WRONLY, 0o666)
+	f, err := os.OpenFile(r.cacheFile, os.O_CREATE|os.O_WRONLY, 0o666)
 	if err != nil {
 		return err
 	}
@@ -127,12 +100,12 @@ func (r *ReverseCache) load() error {
 		return fmt.Errorf("reversecache not empty, refusing to load from file")
 	}
 
-	f, err := os.Open(reversefile)
+	f, err := os.Open(r.cacheFile)
 	if err != nil {
 		if !os.IsNotExist(err) {
 			return err
 		}
-		fmt.Printf("Initialized empty Reversecache.\n")
+		log.Printf("Reversecache: initialized empty in %s", r.cacheFile)
 		return nil
 	}
 	defer f.Close()
@@ -141,55 +114,23 @@ func (r *ReverseCache) load() error {
 	if err := dec.Decode(&r); err != nil {
 		return err
 	}
-	fmt.Printf("Reversecache loaded with %d entries from file\n", len(r.Table))
+	log.Printf("Reversecache: loaded %d entries from %s", len(r.Table), r.cacheFile)
 	return nil
 }
 
-func (r *ReverseCache) has(p types.Pos) bool {
-	_, ok := r.Table[p]
-	return ok
-}
-
-func (r *ReverseCache) add(p types.Pos) {
-	if !r.has(p) {
-		jsonbytes, err := reverse(p)
-		if err != nil {
-			var httpErr httpError
-			if errors.As(err, &httpErr) {
-				fmt.Printf("%v: %s (nothing added)\n", p, err)
-			} else {
-				fmt.Printf("%v: %s (added nil)\n", p, err)
-				// We store in reversecache even if we got nothing
-				r.Table[p] = nil
-			}
-		} else {
-			r.Table[p] = jsonbytes
-		}
-		r.dirty = true
-	}
-}
-
-// func (r *ReverseCache) del(p types.Pos) {
-// 	if !r.has(p) {
-// 		return
-// 	}
-// 	delete(r.Table, p)
-// 	r.dirty = true
-// }
-
-func (r *ReverseCache) formatAddress(p types.Pos) string {
-	if !r.has(p) {
+func (r *ReverseCache) FormatAddress(p types.Pos) string {
+	if !r.Has(p) {
 		return "?????"
 	}
 	if r.Table[p] == nil {
-		log.Printf("%v: reverse in cache is nil", p)
+		log.Printf("Reversecache: %v: reverse in cache is nil", p)
 		return "????"
 	}
 
 	root := osm{}
 	err := json.Unmarshal(r.Table[p], &root)
 	if err != nil {
-		log.Printf("%v: %s\n", p, err)
+		log.Printf("Reversecache: %v: %s", p, err)
 		return "???"
 	}
 
@@ -253,6 +194,43 @@ func (r *ReverseCache) formatAddress(p types.Pos) string {
 	}
 
 	return s
+}
+
+type httpError struct {
+	statusCode int
+}
+
+func (e httpError) Error() string {
+	return fmt.Sprintf("HTTP StatusCode: %d", e.statusCode)
+}
+
+func reverse(p types.Pos) ([]byte, error) {
+	req, _ := http.NewRequestWithContext(context.Background(), "GET", "https://nominatim.openstreetmap.org/reverse", nil)
+	req.Header.Add("accept", "application/json")
+	req.Header.Add("user-agent", "fruktsam (https://github.com/fruktkartan/fruktsam)")
+	req.Header.Add("accept-language", "sv,en-US,en")
+	q := req.URL.Query()
+	q.Add("format", "json")
+	q.Add("lat", fmt.Sprintf("%g", p.Lat))
+	q.Add("lon", fmt.Sprintf("%g", p.Lon))
+	req.URL.RawQuery = q.Encode()
+
+	client := &http.Client{Timeout: 5 * time.Second}
+	resp, err := client.Do(req)
+	if err != nil {
+		return nil, err
+	}
+	defer resp.Body.Close()
+
+	body, err := io.ReadAll(resp.Body)
+	if err != nil {
+		return nil, err
+	}
+
+	if resp.StatusCode != http.StatusOK {
+		return nil, httpError{statusCode: resp.StatusCode}
+	}
+	return body, nil
 }
 
 type osm struct {
