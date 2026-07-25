@@ -313,6 +313,13 @@
 
 <p>
   Det finns {{ .Trees.Count }} träd på <a href="https://fruktkartan.se/">fruktkartan.se</a>.
+  De är fördelade så här:<br>
+  {{ range .Trees.TypeCounts }}
+    {{ .Count }} {{ .Type }},
+  {{ end }}
+</p>
+
+<p>
   Under de senaste {{ .History.SinceDays }} dagarna hände följande:
   <ul>
     <li>{{ .History.Inserts }} träd lades till</li>

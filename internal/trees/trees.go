@@ -4,6 +4,7 @@ import (
 	"database/sql"
 	"fmt"
 	"os"
+	"sort"
 
 	"github.com/fruktkartan/fruktsam/internal/types"
 	"github.com/jmoiron/sqlx"
@@ -71,4 +72,35 @@ func (t Trees) Get(key string) (Entry, bool) {
 
 func (t Trees) Count() int {
 	return len(t.entries)
+}
+
+type TypeCount struct {
+	Type  string
+	Count int
+}
+
+func (t Trees) TypeCounts() []TypeCount {
+	counts := make(map[string]int)
+
+	for _, e := range t.entries {
+		counts[e.Type.String()]++
+	}
+
+	typeCounts := make([]TypeCount, 0, len(counts))
+	for typ, count := range counts {
+		typeCounts = append(typeCounts, TypeCount{
+			Type:  typ,
+			Count: count,
+		})
+	}
+
+	sort.Slice(typeCounts, func(i, j int) bool {
+		if typeCounts[i].Count != typeCounts[j].Count {
+			return typeCounts[i].Count > typeCounts[j].Count
+		}
+		// secondary sort alpha for determinism
+		return typeCounts[i].Type < typeCounts[j].Type
+	})
+
+	return typeCounts
 }
