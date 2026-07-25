@@ -31,6 +31,14 @@ type templateData struct {
 }
 
 func main() {
+	if err := run(); err != nil {
+		log.Printf("%s", err)
+		os.Exit(1)
+	}
+	os.Exit(0)
+}
+
+func run() error {
 	sinceFlag := defaultSinceDays
 	var err error
 
@@ -41,50 +49,55 @@ func main() {
 	kingpin.MustParse(app.Parse(os.Args[1:]))
 
 	if err = godotenv.Load(envfile); err != nil && !os.IsNotExist(err) {
-		log.Fatalf("Error loading %s file: %s", envfile, err)
+		return fmt.Errorf("failed load file %s: %w", envfile, err)
 	}
 
 	var data templateData
-	data.DatabaseName = getDatabaseName(os.Getenv("DATABASE_URL"))
+	data.DatabaseName, err = getDatabaseName(os.Getenv("DATABASE_URL"))
+	if err != nil {
+		return err
+	}
 	data.Now = util.FormatDateTime(time.Now())
 
 	if err = data.Trees.FromDB(); err != nil {
-		log.Fatalf("Trees.FromDB: %s", err)
+		return fmt.Errorf("failed Trees.FromDB: %w", err)
 	}
 	fmt.Printf("Trees: %d\n", data.Trees.Count())
 
 	if err = data.History.FromDB(sinceFlag); err != nil {
-		log.Fatalf("History.FromDB: %s", err)
+		return fmt.Errorf("failed History.FromDB: %w", err)
 	}
 	fmt.Printf("History entries during past %d days: %d\n", sinceFlag, data.History.Count())
 
 	tmpl, err := template.ParseFiles("tmpl_index.html")
 	if err != nil {
-		log.Fatal(err)
+		return fmt.Errorf("failed template ParseFiles: %w", err)
 	}
 
 	var f *os.File
 	if err = os.MkdirAll(filepath.Dir(outfile), 0o770); err != nil {
-		log.Fatal(err)
+		return fmt.Errorf("failed MkdirAll: %w", err)
 	}
 	if f, err = os.Create(outfile); err != nil {
-		log.Fatal(err)
+		return fmt.Errorf("failed Create: %w", err)
 	}
 	if err = tmpl.Execute(f, &data); err != nil {
-		log.Fatal(err)
+		return fmt.Errorf("failed template Execute: %w", err)
 	}
+
+	return nil
 }
 
-func getDatabaseName(dbURL string) string {
+func getDatabaseName(dbURL string) (string, error) {
 	if dbURL == "" {
-		log.Fatalf("env variable DATABASE_URL is empty")
+		return "", fmt.Errorf("env variable DATABASE_URL is empty")
 	}
 
 	// split postgres://user:pass:word@example.com:port/dbname
 	parts := strings.Split(dbURL, "/")
 	if len(parts) != 4 {
-		log.Fatal("DATABASE_URL: expected 4 /-separated parts")
+		return "", fmt.Errorf("DATABASE_URL: expected 4 /-separated parts")
 	}
 
-	return parts[3]
+	return parts[3], nil
 }
