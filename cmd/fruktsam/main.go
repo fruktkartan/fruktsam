@@ -2,6 +2,7 @@ package main
 
 import (
 	"bytes"
+	"embed"
 	"fmt"
 	"log"
 	"os"
@@ -25,6 +26,9 @@ const (
 	defaultSinceDays = 90
 	defaultDestDir   = "dist"
 )
+
+//go:embed tmpl_index.html
+var templates embed.FS
 
 type templateData struct {
 	History      history.History
@@ -83,9 +87,9 @@ func run() error {
 	}
 	log.Printf("History entries during past %d days: %d", sinceFlag, data.History.Count())
 
-	tmpl, err := template.ParseFiles("tmpl_index.html")
+	tmpl, err := template.ParseFS(templates, "tmpl_index.html")
 	if err != nil {
-		return fmt.Errorf("failed template ParseFiles: %w", err)
+		return fmt.Errorf("failed template ParseFS: %w", err)
 	}
 
 	if err = os.MkdirAll(destDirFlag, 0o755); err != nil {
