@@ -89,12 +89,13 @@
    float: right;
  }
 
- button.delete {
+ .flagged button.delete {
    color: #fafafa;
    background-color: var(--red-color);
  }
-
-
+ .flagged.handled {
+   background-color: var(--light-red-color) !important;
+ }
 </style>
 
 <script>
@@ -190,8 +191,8 @@
   <span class="lastchange"><em>Senast redigerat: </em>${lastChange}</span>
   <br/>
   <span>
-    <button onclick='deleteFlag("${flagged.tree}", "${flagged.flag}")'>ta bort flaggan</button>
-    <button class="delete right" onclick='deleteTree("${flagged.tree}", "${flagged.flag}")'>ta bort trädet</button>
+    <button onclick='deleteFlag(this, "${flagged.tree}", "${flagged.flag}")'>ta bort flaggan</button>
+    <button class="delete right" onclick='deleteTree(this, "${flagged.tree}", "${flagged.flag}")'>ta bort trädet</button>
   </span>
 </p>
 `
@@ -236,7 +237,7 @@
    }))
  }
 
- async function deleteFlag(key, flag) {
+ async function deleteFlag(btn, key, flag) {
    if ((typeof(key) !== 'string') || (typeof(flag) !== 'string') ||
        (key.length < 2) || (flag !== 'delete') ) {
      window.alert(`dålig input!  key:${key} flag:${flag}`)
@@ -250,24 +251,30 @@
    }
 
    if (!window.confirm(`Träd: ${tree.type} [${key}]\n\nTa bort flaggan "${flag}" från detta träd?`)) {
-    loadFlagged()
     return
    }
 
    const res = await http('DELETE', `${apiBase}/flag/${key}/${flag}`)
    if ('error' in res) {
      window.alert(`fel:\n\n${JSON.stringify(res)}`)
-     loadFlagged()
      return
    }
 
    if (!isEmpty(res)) {
      window.alert(`Kanske gick något snett?\n\nresultat: ${JSON.stringify(res)}`)
+     return
    }
-   loadFlagged()
+
+   const p = btn.closest('p')
+   if (p) {
+     p.classList.add('handled')
+     p.querySelectorAll("button").forEach(btn => {
+       btn.disabled = true
+     })
+   }
  }
 
- async function deleteTree(key, flag) {
+ async function deleteTree(btn, key, flag) {
    if ((typeof(key) !== 'string') || (typeof(flag) !== 'string') ||
        (key.length < 2) || (flag !== 'delete') ) {
      window.alert(`dålig input!  key:${key} flag:${flag}`)
@@ -277,26 +284,31 @@
    const tree = await http('GET', `${apiBase}/tree/${key}`)
    if ('error' in tree) {
      window.alert(`fel:\n\n${JSON.stringify(tree)}`)
-     loadFlagged()
      return
    }
 
    if (!window.confirm(`Träd: ${tree.type} [${key}]\n\nTa bort detta träd? (inkl. alla flaggor)`)) {
-     loadFlagged()
      return
    }
 
    const res = await http('DELETE', `${apiBase}/tree/${key}`)
    if ('error' in res) {
      window.alert(`fel:\n\n${JSON.stringify(res)}`)
-     loadFlagged()
      return
    }
 
    if (!isEmpty(res)) {
      window.alert(`Kanske gick något snett?\n\nresultat: ${JSON.stringify(res)}`)
+     return
    }
-   loadFlagged()
+
+   const p = btn.closest('p')
+   if (p) {
+     p.classList.add('handled')
+     p.querySelectorAll("button").forEach(btn => {
+       btn.disabled = true
+     })
+   }
  }
 
  function isEmpty(obj) {
