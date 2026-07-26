@@ -136,7 +136,7 @@ func (h *History) FromDB(sinceDays int, destDir string) error {
 
 	db, err := sqlx.Connect("postgres", os.Getenv("DATABASE_URL"))
 	if err != nil {
-		return fmt.Errorf("Connect: %w", err)
+		return fmt.Errorf("failed Connect: %w", err)
 	}
 
 	query := `SELECT id AS changeid
@@ -164,7 +164,7 @@ func (h *History) FromDB(sinceDays int, destDir string) error {
 		query += fmt.Sprintf(" AND (at > (CURRENT_DATE - INTERVAL '%d days'))", sinceDays)
 	}
 	if err := db.Select(&h.entries, query); err != nil {
-		return fmt.Errorf("Select trees: %w", err)
+		return fmt.Errorf("failed Select trees: %w", err)
 	}
 
 	// Get all flags which have been deleted (though we currently only
@@ -176,7 +176,7 @@ func (h *History) FromDB(sinceDays int, destDir string) error {
                 WHERE tab='flags'
              ORDER BY at`
 	if err := db.Select(&h.deletedFlags, query2); err != nil {
-		return fmt.Errorf("Select flags: %w", err)
+		return fmt.Errorf("failed Select flags: %w", err)
 	}
 
 	h.SinceDays = sinceDays

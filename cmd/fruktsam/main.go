@@ -62,11 +62,11 @@ func run() error {
 	quiet := false
 
 	app := kingpin.New("fruktsam", "Generate html from Fruktkartan edit history")
-	app.Flag("since", fmt.Sprintf("How many days back, default: %d", sinceFlag)).
+	app.Flag("since", fmt.Sprintf("How many days back (default: %d)", sinceFlag)).
 		PlaceHolder("DAYS").IntVar(&sinceFlag)
-	app.Flag("dest", fmt.Sprintf("Destination directory, default: %s", destDirFlag)).
+	app.Flag("dest", fmt.Sprintf("Destination directory (default: %s)", destDirFlag)).
 		PlaceHolder("DIRECTORY").Short('d').StringVar(&destDirFlag)
-	app.Flag("quiet", fmt.Sprintf("Be quiet, output only warnings, errors and worse, default: %t", quiet)).
+	app.Flag("quiet", "Be quiet, output only warnings and errors").
 		Short('q').BoolVar(&quiet)
 	app.HelpFlag.Short('h')
 	kingpin.MustParse(app.Parse(os.Args[1:]))

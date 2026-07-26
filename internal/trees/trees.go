@@ -48,10 +48,10 @@ func (t *Trees) FromDB() error {
 
 	db, err := sqlx.Connect("postgres", os.Getenv("DATABASE_URL"))
 	if err != nil {
-		return fmt.Errorf("Connect: %w", err)
+		return fmt.Errorf("failed Connect: %w", err)
 	}
 	if err := db.Select(&rows, query); err != nil {
-		return fmt.Errorf("Select: %w", err)
+		return fmt.Errorf("failed Select: %w", err)
 	}
 
 	for idx := range rows {
