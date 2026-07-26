@@ -3,6 +3,7 @@ package main
 import (
 	"bytes"
 	"embed"
+	"flag"
 	"fmt"
 	"log"
 	"log/slog"
@@ -13,7 +14,6 @@ import (
 	"text/template"
 	"time"
 
-	"github.com/alecthomas/kingpin/v2"
 	"github.com/fruktkartan/fruktsam/internal/history"
 	"github.com/fruktkartan/fruktsam/internal/trees"
 	"github.com/fruktkartan/fruktsam/internal/util"
@@ -57,30 +57,25 @@ func main() {
 }
 
 func run() error {
-	sinceFlag := 90
-	destDirFlag := "dist"
-	quiet := false
+	var sinceDays int
+	var destDir string
+	var quiet bool
 
-	app := kingpin.New("fruktsam", "Generate html from Fruktkartan edit history")
-	app.Flag("since", fmt.Sprintf("How many days back (default: %d)", sinceFlag)).
-		PlaceHolder("DAYS").IntVar(&sinceFlag)
-	app.Flag("dest", fmt.Sprintf("Destination directory (default: %s)", destDirFlag)).
-		PlaceHolder("DIRECTORY").Short('d').StringVar(&destDirFlag)
-	app.Flag("quiet", "Be quiet, output only warnings and errors").
-		Short('q').BoolVar(&quiet)
-	app.HelpFlag.Short('h')
-	kingpin.MustParse(app.Parse(os.Args[1:]))
+	flag.IntVar(&sinceDays, "s", 90, "How many `days` back")
+	flag.StringVar(&destDir, "d", "dist", "Destination `directory`")
+	flag.BoolVar(&quiet, "q", false, "Be quiet, output only warnings and errors")
+	flag.Parse()
 
 	if quiet {
 		setLogLevel(slog.LevelWarn)
 	}
 
-	if !path.IsAbs(destDirFlag) {
+	if !path.IsAbs(destDir) {
 		cwd, err := os.Getwd()
 		if err != nil {
 			return fmt.Errorf("failed Getwd: %w", err)
 		}
-		destDirFlag = filepath.Join(cwd, destDirFlag)
+		destDir = filepath.Join(cwd, destDir)
 	}
 
 	if err := godotenv.Load(envFile); err != nil && !os.IsNotExist(err) {
@@ -100,17 +95,17 @@ func run() error {
 	}
 	slog.Info(fmt.Sprintf("Trees: %d", data.Trees.Count()))
 
-	if err = data.History.FromDB(sinceFlag, destDirFlag); err != nil {
+	if err = data.History.FromDB(sinceDays, destDir); err != nil {
 		return fmt.Errorf("failed History.FromDB: %w", err)
 	}
-	slog.Info(fmt.Sprintf("History entries during past %d days: %d", sinceFlag, data.History.Count()))
+	slog.Info(fmt.Sprintf("History entries during past %d days: %d", sinceDays, data.History.Count()))
 
 	tmpl, err := template.ParseFS(templates, "tmpl_index.html")
 	if err != nil {
 		return fmt.Errorf("failed template ParseFS: %w", err)
 	}
 
-	if err = os.MkdirAll(destDirFlag, 0o755); err != nil {
+	if err = os.MkdirAll(destDir, 0o755); err != nil {
 		return fmt.Errorf("failed MkdirAll: %w", err)
 	}
 
@@ -119,7 +114,7 @@ func run() error {
 		return fmt.Errorf("failed template Execute: %w", err)
 	}
 
-	outFile := filepath.Join(destDirFlag, outFile)
+	outFile := filepath.Join(destDir, outFile)
 	if err = renameio.WriteFile(outFile, buf.Bytes(), 0o644); err != nil {
 		return fmt.Errorf("failed WriteFile: %w", err)
 	}
