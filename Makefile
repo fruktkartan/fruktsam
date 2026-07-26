@@ -1,4 +1,4 @@
 
 .PHONY: fruktsam
 fruktsam:
-	go build ./cmd/fruktsam
+	go build
