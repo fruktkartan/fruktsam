@@ -8,7 +8,7 @@ import (
 	"errors"
 	"fmt"
 	"io"
-	"log"
+	"log/slog"
 	"net/http"
 	"os"
 	"path/filepath"
@@ -53,9 +53,9 @@ func (r *ReverseCache) Add(p types.Pos) {
 	if err != nil {
 		var httpErr httpError
 		if errors.As(err, &httpErr) {
-			log.Printf("Reversecache: %v: %s (nothing added)", p, err)
+			slog.Info(fmt.Sprintf("Reversecache: %v: %s (nothing added)", p, err))
 		} else {
-			log.Printf("Reversecache: %v: %s (added nil)", p, err)
+			slog.Info(fmt.Sprintf("Reversecache: %v: %s (added nil)", p, err))
 			// We store in reversecache even if we got nothing
 			r.Table[p] = nil
 		}
@@ -75,7 +75,7 @@ func (r *ReverseCache) Add(p types.Pos) {
 
 func (r *ReverseCache) Save() error {
 	if !r.dirty {
-		log.Printf("Reversecache: no changes, nothing saved")
+		slog.Info("Reversecache: no changes, nothing saved")
 		return nil
 	}
 	b := new(bytes.Buffer)
@@ -87,7 +87,7 @@ func (r *ReverseCache) Save() error {
 	if err := renameio.WriteFile(r.cacheFile, b.Bytes(), 0o644); err != nil {
 		return err
 	}
-	log.Printf("Reversecache: saved %d entries to %s", len(r.Table), r.cacheFile)
+	slog.Info(fmt.Sprintf("Reversecache: saved %d entries to %s", len(r.Table), r.cacheFile))
 
 	return nil
 }
@@ -102,7 +102,7 @@ func (r *ReverseCache) load() error {
 		if !os.IsNotExist(err) {
 			return err
 		}
-		log.Printf("Reversecache: initialized empty in %s", r.cacheFile)
+		slog.Info(fmt.Sprintf("Reversecache: initialized empty in %s", r.cacheFile))
 		return nil
 	}
 	defer f.Close()
@@ -111,7 +111,7 @@ func (r *ReverseCache) load() error {
 	if err := dec.Decode(&r); err != nil {
 		return err
 	}
-	log.Printf("Reversecache: loaded %d entries from %s", len(r.Table), r.cacheFile)
+	slog.Info(fmt.Sprintf("Reversecache: loaded %d entries from %s", len(r.Table), r.cacheFile))
 	return nil
 }
 
@@ -120,14 +120,14 @@ func (r *ReverseCache) FormatAddress(p types.Pos) string {
 		return "?????"
 	}
 	if r.Table[p] == nil {
-		log.Printf("Reversecache: %v: reverse in cache is nil", p)
+		slog.Info(fmt.Sprintf("Reversecache: %v: reverse in cache is nil", p))
 		return "????"
 	}
 
 	root := osm{}
 	err := json.Unmarshal(r.Table[p], &root)
 	if err != nil {
-		log.Printf("Reversecache: %v: %s", p, err)
+		slog.Info(fmt.Sprintf("Reversecache: %v: %s", p, err))
 		return "???"
 	}
 

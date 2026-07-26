@@ -5,6 +5,7 @@ import (
 	"embed"
 	"fmt"
 	"log"
+	"log/slog"
 	"os"
 	"path"
 	"path/filepath"
@@ -21,11 +22,19 @@ import (
 )
 
 const (
-	envfile          = ".env"
-	outFile          = "index.html"
-	defaultSinceDays = 90
-	defaultDestDir   = "dist"
+	envFile = ".env"
+	outFile = "index.html"
 )
+
+// Logging setup with levels, based on slog bridge to classic log.
+// Gives us simple output (not slog `time=... level=FOO msg="..."`).
+// But we have to keep track of current level ourselves.
+var logLevel slog.Level
+
+func setLogLevel(level slog.Level) {
+	logLevel = level
+	slog.SetLogLoggerLevel(level)
+}
 
 //go:embed tmpl_index.html
 var templates embed.FS
@@ -38,24 +47,33 @@ type templateData struct {
 }
 
 func main() {
+	setLogLevel(slog.LevelInfo)
+	log.SetFlags(0)
 	if err := run(); err != nil {
-		log.Printf("%s", err)
+		slog.Error(err.Error())
 		os.Exit(1)
 	}
 	os.Exit(0)
 }
 
 func run() error {
-	sinceFlag := defaultSinceDays
-	destDirFlag := defaultDestDir
+	sinceFlag := 90
+	destDirFlag := "dist"
+	quiet := false
 
 	app := kingpin.New("fruktsam", "Generate html from Fruktkartan edit history")
-	app.Flag("since", fmt.Sprintf("How many days back, default: %d", defaultSinceDays)).
+	app.Flag("since", fmt.Sprintf("How many days back, default: %d", sinceFlag)).
 		PlaceHolder("DAYS").IntVar(&sinceFlag)
-	app.Flag("dest", fmt.Sprintf("Destination directory, default: %s", defaultDestDir)).
+	app.Flag("dest", fmt.Sprintf("Destination directory, default: %s", destDirFlag)).
 		PlaceHolder("DIRECTORY").Short('d').StringVar(&destDirFlag)
+	app.Flag("quiet", fmt.Sprintf("Be quiet, output only warnings, errors and worse, default: %t", quiet)).
+		Short('q').BoolVar(&quiet)
 	app.HelpFlag.Short('h')
 	kingpin.MustParse(app.Parse(os.Args[1:]))
+
+	if quiet {
+		setLogLevel(slog.LevelWarn)
+	}
 
 	if !path.IsAbs(destDirFlag) {
 		cwd, err := os.Getwd()
@@ -65,8 +83,8 @@ func run() error {
 		destDirFlag = filepath.Join(cwd, destDirFlag)
 	}
 
-	if err := godotenv.Load(envfile); err != nil && !os.IsNotExist(err) {
-		return fmt.Errorf("failed load file %s: %w", envfile, err)
+	if err := godotenv.Load(envFile); err != nil && !os.IsNotExist(err) {
+		return fmt.Errorf("failed load file %s: %w", envFile, err)
 	}
 
 	var data templateData
@@ -80,12 +98,12 @@ func run() error {
 	if err = data.Trees.FromDB(); err != nil {
 		return fmt.Errorf("failed Trees.FromDB: %w", err)
 	}
-	log.Printf("Trees: %d", data.Trees.Count())
+	slog.Info(fmt.Sprintf("Trees: %d", data.Trees.Count()))
 
 	if err = data.History.FromDB(sinceFlag, destDirFlag); err != nil {
 		return fmt.Errorf("failed History.FromDB: %w", err)
 	}
-	log.Printf("History entries during past %d days: %d", sinceFlag, data.History.Count())
+	slog.Info(fmt.Sprintf("History entries during past %d days: %d", sinceFlag, data.History.Count()))
 
 	tmpl, err := template.ParseFS(templates, "tmpl_index.html")
 	if err != nil {
@@ -105,7 +123,7 @@ func run() error {
 	if err = renameio.WriteFile(outFile, buf.Bytes(), 0o644); err != nil {
 		return fmt.Errorf("failed WriteFile: %w", err)
 	}
-	log.Printf("Wrote %s", outFile)
+	slog.Info(fmt.Sprintf("Wrote %s", outFile))
 
 	return nil
 }

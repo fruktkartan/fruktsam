@@ -8,7 +8,7 @@ import (
 	"image"
 	"image/jpeg"
 	"io"
-	"log"
+	"log/slog"
 	"net/http"
 	"os"
 	"path/filepath"
@@ -249,7 +249,7 @@ func (h *History) prepare() error {
 		if he.Lat.Valid {
 			p := types.Pos{Lat: he.Lat.Float64, Lon: he.Lon.Float64}
 			if !h.reverseCache.Has(p) {
-				log.Printf("get reverse address for history entry %d", he.ChangeID)
+				slog.Info(fmt.Sprintf("get reverse address for history entry %d", he.ChangeID))
 				h.reverseCache.Add(p)
 				time.Sleep(1 * time.Second)
 			}
@@ -259,7 +259,7 @@ func (h *History) prepare() error {
 		if he.LatNew.Valid {
 			p := types.Pos{Lat: he.LatNew.Float64, Lon: he.LonNew.Float64}
 			if !h.reverseCache.Has(p) {
-				log.Printf("get reverse address (new) for history entry %d", he.ChangeID)
+				slog.Info(fmt.Sprintf("get reverse address (new) for history entry %d", he.ChangeID))
 				h.reverseCache.Add(p)
 				time.Sleep(1 * time.Second)
 			}
@@ -298,7 +298,7 @@ func (h *History) prepare() error {
 	}
 
 	if err := h.reverseCache.Save(); err != nil {
-		log.Printf("failed reversecache.Save: %s", err)
+		slog.Error(fmt.Sprintf("failed reversecache.Save: %s", err))
 	}
 
 	sort.Slice(h.entries, func(i, j int) bool {
@@ -331,13 +331,13 @@ func createImageThumb(dbImgName string, destDir string) {
 
 	data, err := fetchURL(imageURL)
 	if err != nil {
-		log.Printf("failed fetch %s: %s", imageURL, err)
+		slog.Error(fmt.Sprintf("failed fetch %s: %s", imageURL, err))
 		return
 	}
 
 	decoded, err := jpeg.Decode(bytes.NewReader(data))
 	if err != nil {
-		log.Printf("failed jpeg.Decode %s: %s", imageURL, err)
+		slog.Error(fmt.Sprintf("failed jpeg.Decode %s: %s", imageURL, err))
 		return
 	}
 
@@ -345,18 +345,18 @@ func createImageThumb(dbImgName string, destDir string) {
 
 	f, err := os.OpenFile(imageFileOutPath, os.O_RDWR|os.O_CREATE|os.O_TRUNC, 0o644)
 	if err != nil {
-		log.Printf("failed OpenFile %s: %s", imageFileOutPath, err)
+		slog.Error(fmt.Sprintf("failed OpenFile %s: %s", imageFileOutPath, err))
 		return
 	}
 	defer f.Close()
 
 	if err = jpeg.Encode(f, thumb, &jpeg.Options{Quality: 80}); err != nil {
-		log.Printf("failed jpeg.Encode %s: %s", imageFileOutPath, err)
+		slog.Error(fmt.Sprintf("failed jpeg.Encode %s: %s", imageFileOutPath, err))
 		_ = os.Remove(imageFileOutPath)
 		return
 	}
 
-	log.Printf("downloaded %s", imageFileOutPath)
+	slog.Info(fmt.Sprintf("downloaded %s", imageFileOutPath))
 }
 
 func fetchURL(url string) ([]byte, error) {
